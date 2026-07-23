@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "validatedAt": "2026-07-23T06:39:59.835Z",
+  "validator": {
+    "name": "validate-plan.mjs",
+    "version": "3.4"
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 4,
+    "requirements": 1,
+    "mvpRequirements": 1,
+    "coveredMvpRequirements": 1,
+    "mvpFunctions": 5,
+    "unresolvedMvpFunctions": 0,
+    "mvpBehaviors": 5,
+    "coveredMvpBehaviors": 5,
+    "capabilities": 7,
+    "epics": 5,
+    "decomposedEpics": 5,
+    "tasks": 7
+  },
+  "blockingIssues": [],
+  "warnings": [
+    {
+      "code": "TASK_CROSS_EPIC_DEPENDENCY",
+      "message": "TASK-004 depende de TASK-002, que pertenece a otra épica.",
+      "file": "task-planning/task-plan.json",
+      "reference": "TASK-004"
+    },
+    {
+      "code": "TASK_CROSS_EPIC_DEPENDENCY",
+      "message": "TASK-005 depende de TASK-002, que pertenece a otra épica.",
+      "file": "task-planning/task-plan.json",
+      "reference": "TASK-005"
+    },
+    {
+      "code": "TASK_CROSS_EPIC_DEPENDENCY",
+      "message": "TASK-006 depende de TASK-002, que pertenece a otra épica.",
+      "file": "task-planning/task-plan.json",
+      "reference": "TASK-006"
+    },
+    {
+      "code": "TASK_CROSS_EPIC_DEPENDENCY",
+      "message": "TASK-007 depende de TASK-002, que pertenece a otra épica.",
+      "file": "task-planning/task-plan.json",
+      "reference": "TASK-007"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 3,
+  "planner": {
+    "name": "task-planner",
+    "workflowVersion": 7,
+    "validatorVersion": "3.5",
+    "timestampToolVersion": "1.0",
+    "epicGraphVersion": "1.0"
+  },
+  "project": {
+    "id": "mailadmin-fixture",
+    "name": "MailAdmin - Fixture de validación",
+    "planningVersion": 1
+  },
+  "source": {
+    "blueprintPath": "SOFTWARE-BLUEPRINT-PILOT.md",
+    "blueprintVersion": null
+  },
+  "workflow": {
+    "phase": "plan_approval",
+    "status": "awaiting_user",
+    "resumeFrom": null,
+    "currentDecisionId": null,
+    "currentEpicId": null,
+    "pendingUserAction": "final_plan_approval",
+    "blocker": null
+  },
+  "approvals": {
+    "resolvedBlueprint": {
+      "status": "approved",
+      "requestedAt": "2026-07-22T00:00:00.000Z",
+      "resolvedAt": "2026-07-22T00:00:00.000Z",
+      "resolvedBy": "user",
+      "comment": "Aprobación explícita del blueprint resuelto, contrato semántico y requisitos."
+    },
+    "finalPlan": {
+      "status": "not_requested",
+      "requestedAt": null,
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "comment": null
+    }
+  },
+  "progress": {
+    "blueprintRead": true,
+    "analysisComplete": true,
+    "decisionsDetected": 0,
+    "blockingDecisionsPending": 0,
+    "decisionsResolved": 0,
+    "resolvedBlueprintCreated": true,
+    "resolvedBlueprintApproved": true,
+    "constructionStrategyCreated": true,
+    "capabilitiesMapped": 7,
+    "capabilityMapValidated": true,
+    "epicsGenerated": 1,
+    "epicsDecomposed": 1,
+    "tasksGenerated": 7,
+    "semanticContractsDetected": 5,
+    "semanticContractApproved": true,
+    "mvpRequirementsDetected": 1,
+    "mvpFunctionsDetected": 5,
+    "mvpFunctionsAtomic": 5,
+    "mvpFunctionsUnresolved": 0,
+    "mvpBehaviorsDetected": 5,
+    "mvpBehaviorsCovered": 5,
+    "mvpRequirementsCovered": 1,
+    "planValidated": true,
+    "planPublished": false,
+    "finalPlanApproved": false,
+    "epicDependenciesDetected": 0,
+    "executionWavesGenerated": 1,
+    "parallelEpicCandidates": 0,
+    "epicGraphValidated": true
+  },
+  "artifacts": {
+    "workflow": {
+      "path": "task-planning/workflow.md",
+      "status": "available"
+    },
+    "decisions": {
+      "path": "task-planning/decisions.json",
+      "status": "initialized"
+    },
+    "semanticContract": {
+      "path": "task-planning/semantic-contract.json",
+      "status": "approved"
+    },
+    "requirements": {
+      "path": "task-planning/requirements.json",
+      "status": "validated"
+    },
+    "resolvedBlueprint": {
+      "path": "task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md",
+      "status": "generated"
+    },
+    "constructionStrategy": {
+      "path": "task-planning/construction-strategy.md",
+      "status": "generated"
+    },
+    "capabilityMap": {
+      "path": "task-planning/capability-map.json",
+      "status": "validated"
+    },
+    "epicPlan": {
+      "path": "task-planning/epic-plan.json",
+      "status": "validated"
+    },
+    "epicsDirectory": {
+      "path": "task-planning/epics",
+      "status": "populated"
+    },
+    "readiness": {
+      "path": "task-planning/readiness.json",
+      "status": "passed"
+    },
+    "validationReport": {
+      "path": "task-planning/validation-report.md",
+      "status": "generated"
+    },
+    "planValidator": {
+      "path": "task-planning/tools/validate-plan.mjs",
+      "status": "available"
+    },
+    "taskPlan": {
+      "path": "task-planning/task-plan.json",
+      "status": "validated"
+    },
+    "tasksDirectory": {
+      "path": "task-planning/tasks",
+      "status": "populated"
+    },
+    "timestampUpdater": {
+      "path": "task-planning/tools/update-timestamps.mjs",
+      "status": "available"
+    },
+    "epicGraphBuilder": {
+      "path": "task-planning/tools/build-epic-graph.mjs",
+      "status": "available"
+    }
+  },
+  "timestamps": {
+    "createdAt": "2026-07-22T00:00:00.000Z",
+    "updatedAt": "2026-07-23T09:00:00.000Z",
+    "completedAt": null,
+    "contentHash": "sha256:73fc2085a212a7f02236ea1ff40a443d1d20c431e7541d37f86da9ae1c75390e"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 3,
+  "planner": {
+    "name": "task-planner",
+    "workflowVersion": 7,
+    "validatorVersion": "3.5",
+    "timestampToolVersion": "1.0",
+    "epicGraphVersion": "1.0"
+  },
+  "project": {
+    "id": "<project-slug>",
+    "name": "<project-name>",
+    "planningVersion": 1
+  },
+  "source": {
+    "blueprintPath": "<blueprint-path>",
+    "blueprintVersion": null
+  },
+  "workflow": {
+    "phase": "blueprint_analysis",
+    "status": "in_progress",
+    "resumeFrom": "load_required_files",
+    "currentDecisionId": null,
+    "currentEpicId": null,
+    "pendingUserAction": null,
+    "blocker": null
+  },
+  "approvals": {
+    "resolvedBlueprint": {
+      "status": "not_requested",
+      "requestedAt": null,
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "comment": null
+    },
+    "finalPlan": {
+      "status": "not_requested",
+      "requestedAt": null,
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "comment": null
+    }
+  },
+  "progress": {
+    "blueprintRead": false,
+    "analysisComplete": false,
+    "decisionsDetected": 0,
+    "blockingDecisionsPending": 0,
+    "decisionsResolved": 0,
+    "resolvedBlueprintCreated": false,
+    "resolvedBlueprintApproved": false,
+    "constructionStrategyCreated": false,
+    "capabilitiesMapped": 0,
+    "capabilityMapValidated": false,
+    "epicsGenerated": 0,
+    "epicsDecomposed": 0,
+    "tasksGenerated": 0,
+    "semanticContractsDetected": 0,
+    "semanticContractApproved": false,
+    "mvpRequirementsDetected": 0,
+    "mvpFunctionsDetected": 0,
+    "mvpFunctionsAtomic": 0,
+    "mvpFunctionsUnresolved": 0,
+    "mvpBehaviorsDetected": 0,
+    "mvpBehaviorsCovered": 0,
+    "mvpRequirementsCovered": 0,
+    "planValidated": false,
+    "planPublished": false,
+    "finalPlanApproved": false,
+    "epicDependenciesDetected": 0,
+    "executionWavesGenerated": 0,
+    "parallelEpicCandidates": 0,
+    "epicGraphValidated": false
+  },
+  "artifacts": {
+    "workflow": {
+      "path": "task-planning/workflow.md",
+      "status": "available"
+    },
+    "decisions": {
+      "path": "task-planning/decisions.json",
+      "status": "initialized"
+    },
+    "semanticContract": {
+      "path": "task-planning/semantic-contract.json",
+      "status": "initialized"
+    },
+    "requirements": {
+      "path": "task-planning/requirements.json",
+      "status": "initialized"
+    },
+    "resolvedBlueprint": {
+      "path": "task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md",
+      "status": "not_created"
+    },
+    "constructionStrategy": {
+      "path": "task-planning/construction-strategy.md",
+      "status": "not_created"
+    },
+    "capabilityMap": {
+      "path": "task-planning/capability-map.json",
+      "status": "initialized"
+    },
+    "epicPlan": {
+      "path": "task-planning/epic-plan.json",
+      "status": "initialized"
+    },
+    "epicsDirectory": {
+      "path": "task-planning/epics",
+      "status": "initialized"
+    },
+    "readiness": {
+      "path": "task-planning/readiness.json",
+      "status": "initialized"
+    },
+    "validationReport": {
+      "path": "task-planning/validation-report.md",
+      "status": "not_created"
+    },
+    "planValidator": {
+      "path": "task-planning/tools/validate-plan.mjs",
+      "status": "available"
+    },
+    "taskPlan": {
+      "path": "task-planning/task-plan.json",
+      "status": "initialized"
+    },
+    "tasksDirectory": {
+      "path": "task-planning/tasks",
+      "status": "initialized"
+    },
+    "timestampUpdater": {
+      "path": "task-planning/tools/update-timestamps.mjs",
+      "status": "available"
+    },
+    "epicGraphBuilder": {
+      "path": "task-planning/tools/build-epic-graph.mjs",
+      "status": "available"
+    }
+  },
+  "timestamps": {
+    "createdAt": null,
+    "updatedAt": null,
+    "completedAt": null,
+    "contentHash": null
+  }
+}

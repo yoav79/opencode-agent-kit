@@ -21,18 +21,25 @@ required_paths = [
     "Makefile",
     "opencode/AGENTS.md",
     "opencode/agents/software-architect.md",
-    "opencode/agents/requirements-analyst.md",
-    "opencode/agents/architecture-reviewer.md",
-    "opencode/commands/new-blueprint.md",
-    "opencode/commands/continue-blueprint.md",
-    "opencode/commands/validate-blueprint.md",
-    "opencode/skills/requirements-discovery/SKILL.md",
-    "opencode/skills/software-blueprint/SKILL.md",
-    "opencode/skills/architecture-review/SKILL.md",
+    "opencode/agents/task-planner.md",
+    "opencode/commands/init-software-architect.md",
+    "opencode/commands/init-task-planner.md",
     "opencode/rules/general.md",
     "opencode/rules/git-policy.md",
     "opencode/rules/documentation-policy.md",
-    "templates/software-design-project/software-design/project-state.json",
+    "templates/software-architect/project-state.json",
+    "templates/software-architect/workflow.md",
+    "templates/task-planner/project-state.json",
+    "templates/task-planner/workflow.md",
+    "templates/task-planner/semantic-contract.json",
+    "templates/task-planner/requirements.json",
+    "templates/task-planner/capability-map.json",
+    "templates/task-planner/epic-plan.json",
+    "templates/task-planner/task-plan.json",
+    "templates/task-planner/task-template.md",
+    "templates/task-planner/tools/validate-plan.mjs",
+    "templates/task-planner/tools/update-timestamps.mjs",
+    "templates/task-planner/tools/build-epic-graph.mjs",
     "scripts/install.sh",
     "scripts/uninstall.sh",
     "scripts/create-project.sh",
@@ -66,33 +73,6 @@ for path in sorted((root / "opencode/agents").glob("*.md")):
     if "permission:" not in frontmatter:
         errors.append(f"Missing permissions: {path.relative_to(root)}")
 
-skill_name_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-for skill_dir in sorted((root / "opencode/skills").iterdir()):
-    if not skill_dir.is_dir():
-        continue
-    skill_file = skill_dir / "SKILL.md"
-    if not skill_file.exists():
-        errors.append(f"Missing SKILL.md: {skill_dir.relative_to(root)}")
-        continue
-    text = skill_file.read_text(encoding="utf-8")
-    match = frontmatter_re.match(text)
-    if not match:
-        errors.append(f"Missing skill frontmatter: {skill_file.relative_to(root)}")
-        continue
-    frontmatter = match.group(1)
-    name_match = re.search(r"^name:\s*(\S+)", frontmatter, re.MULTILINE)
-    description_match = re.search(r"^description:\s*(.+)$", frontmatter, re.MULTILINE)
-    if not name_match:
-        errors.append(f"Missing skill name: {skill_file.relative_to(root)}")
-    else:
-        name = name_match.group(1)
-        if name != skill_dir.name:
-            errors.append(f"Skill name does not match directory: {skill_file.relative_to(root)}")
-        if not skill_name_re.fullmatch(name):
-            errors.append(f"Invalid skill name: {name}")
-    if not description_match or not description_match.group(1).strip():
-        errors.append(f"Missing skill description: {skill_file.relative_to(root)}")
-
 for path in sorted((root / "opencode/commands").glob("*.md")):
     text = path.read_text(encoding="utf-8")
     match = frontmatter_re.match(text)
@@ -105,13 +85,30 @@ for path in sorted((root / "opencode/commands").glob("*.md")):
     if not re.search(r"^agent:\s*\S", frontmatter, re.MULTILINE):
         errors.append(f"Missing command agent: {path.relative_to(root)}")
 
-state_path = root / "templates/software-design-project/software-design/project-state.json"
-if state_path.exists():
-    state = json.loads(state_path.read_text(encoding="utf-8"))
-    expected_phases = {"discovery", "requirements", "architecture", "delivery-plan", "validation"}
-    phases = set(state.get("workflow", {}).get("phases", {}))
-    if phases != expected_phases:
-        errors.append(f"Unexpected phase set: {sorted(phases)}")
+sa_state = root / "templates/software-architect/project-state.json"
+if sa_state.exists():
+    try:
+        state = json.loads(sa_state.read_text(encoding="utf-8"))
+        phases = state.get("phases", {})
+        if len(phases) < 10:
+            errors.append(f"software-architect project-state.json has only {len(phases)} phases, expected >= 10")
+    except Exception as exc:
+        errors.append(f"Error reading software-architect state: {exc}")
+
+tp_state = root / "templates/task-planner/project-state.json"
+if tp_state.exists():
+    try:
+        state = json.loads(tp_state.read_text(encoding="utf-8"))
+        schema = state.get("schemaVersion")
+        if schema != 3:
+            errors.append(f"task-planner schemaVersion = {schema}, expected 3")
+        planner = state.get("planner", {})
+        if planner.get("workflowVersion") != 7:
+            errors.append(f"task-planner workflowVersion = {planner.get('workflowVersion')}, expected 7")
+        if planner.get("validatorVersion") != "3.5":
+            errors.append(f"task-planner validatorVersion = {planner.get('validatorVersion')}, expected 3.5")
+    except Exception as exc:
+        errors.append(f"Error reading task-planner state: {exc}")
 
 if errors:
     print("Validation failed:")

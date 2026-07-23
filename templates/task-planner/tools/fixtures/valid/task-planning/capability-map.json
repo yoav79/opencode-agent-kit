@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 3,
+  "status": "validated",
+  "capabilities": [
+    {
+      "id": "CAP-DOM-CREATE",
+      "name": "Crear dominio de correo",
+      "result": "El backend confirma la creación del dominio solicitado y la WebUI muestra el resultado sin modificarlo.",
+      "type": "functional",
+      "implementationKind": "planned",
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-CREATE"
+      ],
+      "semanticKeys": [
+        "dom.create"
+      ],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-003",
+      "requiredCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumerCapabilityIds": [],
+      "incrementId": "INC-1"
+    },
+    {
+      "id": "CAP-DOM-ENABLE",
+      "name": "Habilitar dominio de correo",
+      "result": "El backend confirma que el dominio seleccionado quedó habilitado y la WebUI muestra el resultado sin modificarlo.",
+      "type": "functional",
+      "implementationKind": "planned",
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-ENABLE"
+      ],
+      "semanticKeys": [
+        "dom.enable"
+      ],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-004",
+      "requiredCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumerCapabilityIds": [],
+      "incrementId": "INC-2"
+    },
+    {
+      "id": "CAP-DOM-DISABLE",
+      "name": "Deshabilitar dominio de correo",
+      "result": "El backend confirma que el dominio seleccionado quedó deshabilitado y la WebUI muestra el resultado sin modificarlo.",
+      "type": "functional",
+      "implementationKind": "planned",
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-DISABLE"
+      ],
+      "semanticKeys": [
+        "dom.disable"
+      ],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-005",
+      "requiredCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumerCapabilityIds": [],
+      "incrementId": "INC-3"
+    },
+    {
+      "id": "CAP-DOM-DELETE",
+      "name": "Eliminar dominio de correo",
+      "result": "El backend confirma la eliminación del dominio seleccionado y la WebUI muestra el resultado sin modificarlo.",
+      "type": "functional",
+      "implementationKind": "planned",
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-DELETE"
+      ],
+      "semanticKeys": [
+        "dom.delete"
+      ],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-006",
+      "requiredCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumerCapabilityIds": [],
+      "incrementId": "INC-4"
+    },
+    {
+      "id": "CAP-DOM-VALIDATE",
+      "name": "Validar configuración de correo",
+      "result": "La WebUI muestra el resultado de validación producido por el backend sin modificarlo.",
+      "type": "functional",
+      "implementationKind": "planned",
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-VALIDATE"
+      ],
+      "semanticKeys": [
+        "dom.validate"
+      ],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-007",
+      "requiredCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumerCapabilityIds": [],
+      "incrementId": "INC-5"
+    },
+    {
+      "id": "CAP-API-LAYER",
+      "name": "Capa de API routes de Next.js",
+      "result": "Las API routes de Next.js permiten invocar mailctl desde el servidor sin exponer credenciales al cliente.",
+      "type": "enabling",
+      "implementationKind": "planned",
+      "requirementIds": [],
+      "behaviorIds": [],
+      "semanticKeys": [],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-002",
+      "requiredCapabilityIds": [],
+      "consumerCapabilityIds": [
+        "CAP-DOM-CREATE",
+        "CAP-DOM-ENABLE",
+        "CAP-DOM-DISABLE",
+        "CAP-DOM-DELETE",
+        "CAP-DOM-VALIDATE"
+      ],
+      "incrementId": "INC-1"
+    },
+    {
+      "id": "CAP-SCAFFOLD",
+      "name": "Scaffolding de la aplicación Next.js",
+      "result": "Proyecto Next.js con build, dev server, estructura de componentes y configuración base establecidos.",
+      "type": "enabling",
+      "implementationKind": "planned",
+      "requirementIds": [],
+      "behaviorIds": [],
+      "semanticKeys": [],
+      "decisionIds": [],
+      "logicalOwner": "WebUI-NextJS",
+      "ownerEpicId": "EPIC-DOM-001",
+      "ownerTaskId": "TASK-001",
+      "requiredCapabilityIds": [],
+      "consumerCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "incrementId": "INC-1"
+    }
+  ],
+  "timestamps": {
+    "createdAt": "2026-07-23T06:40:00.000Z",
+    "updatedAt": "2026-07-23T06:50:00.000Z",
+    "contentHash": "sha256:53da568c21c9d69655260b11fb3deb792647527dc4c43a2acad423ac206f8a24"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 4,
+  "status": "initialized",
+  "epics": [],
+  "timestamps": {
+    "createdAt": null,
+    "updatedAt": null,
+    "contentHash": null
+  },
+  "graph": {
+    "version": "1.0",
+    "status": "initialized",
+    "dependencyCount": 0,
+    "waveCount": 0,
+    "parallelCandidateCount": 0
+  },
+  "executionWaves": []
+}

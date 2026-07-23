@@ -4,7 +4,7 @@ Gracias por tu interes en contribuir. Este documento explica como participar de 
 
 ## Principios Fundamentales
 
-1. **Separar configuracion de artefactos.** Los agentes, skills y comandos van en `opencode/`. Los resultados de cada proyecto van en su propio `software-design/`.
+1. **Separar configuracion de artefactos.** Los agentes, comandos y plantillas van en `opencode/` y `templates/`. Los resultados de cada proyecto van en su propio `software-design/` o `task-planning/`.
 2. **Minimo privilegio.** Cada agente solo debe tener los permisos estrictamente necesarios para su rol.
 3. **No inventar.** Nunca agregar requisitos, features o decisiones que no esten respaldadas por evidencia.
 4. **Trazabilidad.** Cada cambio debe poder justificarse con un problema concreto o una mejora verificable.
@@ -20,7 +20,7 @@ descripcion mas detallada si es necesaria
 ```
 
 Tipos permitidos:
-- `feat`: nueva funcionalidad (agente, skill, comando)
+- `feat`: nueva funcionalidad (agente, comando, plantilla)
 - `fix`: correccion de un bug o problema de integracion
 - `docs`: cambios solo de documentacion
 - `refactor`: reestructuracion sin cambio de comportamiento
@@ -29,9 +29,9 @@ Tipos permitidos:
 
 Ejemplos:
 ```
-feat(agents): add security-reviewer subagent
-fix(skills): correct exit criteria in requirements-discovery
-docs: update README with installation troubleshooting
+feat(agents): add task-planner agent with 10-phase workflow
+fix(commands): correct template path in init-task-planner
+docs: update README with new architecture diagram
 ```
 
 ## Cambios a Agentes
@@ -59,46 +59,16 @@ permission:
 
 - **Explica el rol, autoridad y limites** del agente en el cuerpo del markdown.
 - **No agregues un modelo obligatorio** salvo que exista una razon comprobada.
-- **Define permisos por minimo privilegio.** Un subagente de revision no necesita permiso de edicion.
-- **No dupliques instrucciones** que pertenecen a una skill o regla compartida.
+- **Define permisos por minimo privilegio.** Un agente de solo lectura no necesita permiso de edicion.
+- **No dupliques instrucciones** que pertenecen a una regla compartida.
 - **Incluye restricciones explicitas.** Por ejemplo, si el agente no debe hacer commits, declaralo en el frontmatter Y en el cuerpo.
-- **Especifica que skills carga** y en que fase del workflow.
+- **Documenta el workflow completo** con fases, precondiciones y salidas.
 
 ### Verificacion
 
 ```bash
 ./scripts/validate.sh
 ```
-
-## Cambios a Skills
-
-### Estructura de una Skill
-
-Cada skill vive en un directorio bajo `opencode/skills/` con un archivo `SKILL.md`:
-
-```yaml
----
-name: skill-name
-description: Descripcion de cuando cargar esta skill
-license: MIT
-compatibility: opencode >= 1.0
-metadata:
-  audience: software-architects | architecture-reviewers | all
-  workflow: discovery | requirements | architecture | validation
-  tags:
-    - tag1
-    - tag2
----
-```
-
-### Reglas para Skills
-
-- **Usa nombres lowercase kebab-case.** El nombre del directorio debe coincidir con el campo `name`.
-- **Describe con precision cuando debe cargarse.** Incluye criterios de activacion claros.
-- **Conserva archivos de apoyo** dentro del directorio de la skill.
-- **Define criterios de salida explicitos.** El agente debe saber cuando la skill esta completa.
-- **No asumas contexto externo.** La skill debe ser autocontenido en su procedimiento.
-- **Numera los pasos** cuando el procedimiento es secuencial.
 
 ## Cambios a Comandos
 
@@ -110,6 +80,7 @@ Cada comando es un archivo `.md` en `opencode/commands/`:
 ---
 description: Que hace el comando y cuando usarlo
 agent: nombre-del-agente
+subtask: false
 ---
 ```
 
@@ -118,7 +89,22 @@ agent: nombre-del-agente
 - **Un comando = un flujo repetible.** No combines multiples flujos en un solo comando.
 - **Especifica el agente** que maneja el comando.
 - **Documenta el flujo completo** en el cuerpo del markdown.
-- **Incluye validaciones** al inicio (verificar scaffold, estado, etc.).
+- **Incluye validaciones** al inicio (verificar scaffold, estado, versiones, etc.).
+- **Define contrato de version** si el comando depende de versiones especificas de archivos.
+
+## Cambios a Plantillas
+
+### Estructura
+
+Las plantillas viven en `templates/nombre-agente/` y se copian al proyecto destino durante la inicializacion.
+
+### Reglas para Plantillas
+
+- **Cada plantilla debe ser autocontenido.** No dependa de archivos externos al directorio.
+- **Incluye `project-state.json`** con la estructura de estado correcta.
+- **Incluye `workflow.md`** que documente las fases y criterios de salida.
+- **Valida las versiones** en `project-state.json` contra las esperadas por el agente.
+- **No incluyas archivos de test** o fixtures en las plantillas.
 
 ## Cambios a Reglas
 
@@ -128,7 +114,7 @@ Las reglas en `opencode/rules/` aplican a todos los agentes. Solo modificalas si
 
 - Existe un problema de comportamiento documentado.
 - La regla afecta a multiples agentes, no solo a uno.
-- No puede resolverse cambiando la skill o el agente especifico.
+- No puede resolverse cambiando el agente especifico.
 
 ### Estructura
 
@@ -189,7 +175,7 @@ Incluye en tu PR:
 - **Descripcion** del problema que resuelve
 - **Tipo de cambio** (feat/fix/docs/refactor/test/chore)
 - **Archivos modificados** y por que
-- **Criterio de verificacion** (como se puede probar)
+- **Criterio de verificacion** (como se puede probar, que comando ejecutar)
 - **Screenshots o output** si aplica
 
 ## Reglas de Seguridad
@@ -198,6 +184,7 @@ Incluye en tu PR:
 - **No expongas informacion sensible** en logs o mensajes de error.
 - **Los agentes no deben tener permisos de deploy** sin autorizacion explicita.
 - **Verifica que los scripts** no contengan comandos destructivos sin proteccion.
+- **No hardcodees paths de usuarios.** Usa `$HOME` o variables de entorno.
 
 ## Preguntas Frecuentes
 
@@ -205,23 +192,28 @@ Incluye en tu PR:
 
 1. Crea `opencode/agents/nombre-agente.md` con frontmatter YAML
 2. Define permisos por minimo privilegio
-3. Especifica que skills carga
-4. Actualiza `scripts/validate.sh` si es necesario
-5. Ejecuta `./scripts/validate.sh`
-
-### Como agrego una nueva skill?
-
-1. Crea el directorio `opencode/skills/nombre-skill/`
-2. Agrega `SKILL.md` con frontmatter y procedimiento
-3. Define criterios de salida explicitos
-4. Ejecuta `./scripts/validate.sh`
+3. Crea sus plantillas en `templates/nombre-agente/`
+4. Crea un comando en `opencode/commands/init-nombre-agente.md`
+5. Actualiza `scripts/validate.sh` con las rutas requeridas
+6. Actualiza `scripts/install.sh` si es necesario
+7. Ejecuta `./scripts/validate.sh`
 
 ### Como agrego un nuevo comando?
 
 1. Crea `opencode/commands/nombre-comando.md`
-2. Especifica el agente que lo maneja
-3. Documenta el flujo completo
-4. Ejecuta `./scripts/validate.sh`
+2. Especifica el agente que lo maneja en el frontmatter
+3. Documenta el flujo completo con validaciones
+4. Define contrato de version si aplica
+5. Ejecuta `./scripts/validate.sh`
+
+### Como agrego una nueva plantilla?
+
+1. Crea el directorio `templates/nombre-agente/`
+2. Agrega `project-state.json` con el schema correcto
+3. Agrega `workflow.md` con las fases y criterios de salida
+4. Agrega archivos adicionales que el agente necesite
+5. Actualiza `scripts/validate.sh` con las rutas requeridas
+6. Ejecuta `./scripts/validate.sh`
 
 ### Que hago si no estoy seguro?
 

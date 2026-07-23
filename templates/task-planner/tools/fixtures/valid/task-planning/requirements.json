@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 3,
+  "status": "validated",
+  "requirements": [
+    {
+      "id": "REQ-DOM-001",
+      "title": "Gestión de Dominios",
+      "description": "Administrar dominios de correo desde una WebUI invocando mailctl para todas las operaciones administrativas.",
+      "scope": "mvp",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "decisionIds": [],
+      "confirmationStatus": "confirmed",
+      "behaviors": [
+        {
+          "id": "BEH-DOM-CREATE",
+          "semanticKey": "dom.create",
+          "sourceFunctionId": "FUN-DOM-CREATE",
+          "operation": "create_domain",
+          "backendBinding": "mailctl domain create",
+          "outcome": "El backend confirma la creación del dominio solicitado y la WebUI muestra el resultado sin modificarlo.",
+          "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+          "sourceItem": "Crear dominio",
+          "scope": "mvp",
+          "confirmationStatus": "confirmed"
+        },
+        {
+          "id": "BEH-DOM-ENABLE",
+          "semanticKey": "dom.enable",
+          "sourceFunctionId": "FUN-DOM-ENABLE",
+          "operation": "enable_domain",
+          "backendBinding": "mailctl domain enable",
+          "outcome": "El backend confirma que el dominio seleccionado quedó habilitado y la WebUI muestra el resultado sin modificarlo.",
+          "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+          "sourceItem": "Habilitar dominio",
+          "scope": "mvp",
+          "confirmationStatus": "confirmed"
+        },
+        {
+          "id": "BEH-DOM-DISABLE",
+          "semanticKey": "dom.disable",
+          "sourceFunctionId": "FUN-DOM-DISABLE",
+          "operation": "disable_domain",
+          "backendBinding": "mailctl domain disable",
+          "outcome": "El backend confirma que el dominio seleccionado quedó deshabilitado y la WebUI muestra el resultado sin modificarlo.",
+          "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+          "sourceItem": "Deshabilitar dominio",
+          "scope": "mvp",
+          "confirmationStatus": "confirmed"
+        },
+        {
+          "id": "BEH-DOM-DELETE",
+          "semanticKey": "dom.delete",
+          "sourceFunctionId": "FUN-DOM-DELETE",
+          "operation": "delete_domain",
+          "backendBinding": "mailctl domain delete",
+          "outcome": "El backend confirma la eliminación del dominio seleccionado y la WebUI muestra el resultado sin modificarlo.",
+          "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+          "sourceItem": "Eliminar dominio",
+          "scope": "mvp",
+          "confirmationStatus": "confirmed"
+        },
+        {
+          "id": "BEH-DOM-VALIDATE",
+          "semanticKey": "dom.validate",
+          "sourceFunctionId": "FUN-DOM-VALIDATE",
+          "operation": "validate_config",
+          "backendBinding": "mailctl validate",
+          "outcome": "La WebUI muestra el resultado de validación producido por el backend sin modificarlo.",
+          "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+          "sourceItem": "Validar configuración",
+          "scope": "mvp",
+          "confirmationStatus": "confirmed"
+        }
+      ],
+      "unresolvedFunctions": []
+    }
+  ],
+  "timestamps": {
+    "createdAt": "2026-07-23T06:40:00.000Z",
+    "updatedAt": "2026-07-23T06:50:00.000Z",
+    "contentHash": "sha256:2cd1de12ba8e7744627e35b316d6650a9531434c35886e672813d6f415c9a2fe"
+  }
+}

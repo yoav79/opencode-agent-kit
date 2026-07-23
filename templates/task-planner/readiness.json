@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "not_run",
+  "validatedAt": null,
+  "validator": {
+    "name": "validate-plan.mjs",
+    "version": "3.4"
+  },
+  "summary": {},
+  "blockingIssues": [],
+  "warnings": []
+}

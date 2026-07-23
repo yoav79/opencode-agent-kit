@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 4,
+  "status": "validated",
+  "epics": [
+    {
+      "id": "EPIC-DOM-001",
+      "title": "Gestión de Dominios",
+      "file": "task-planning/epics/EPIC-DOM-001.md",
+      "incrementId": "INC-DOM-001",
+      "dependencyIds": [],
+      "capabilityIds": [
+        "CAP-DOM-CREATE",
+        "CAP-DOM-ENABLE",
+        "CAP-DOM-DISABLE",
+        "CAP-DOM-DELETE",
+        "CAP-DOM-VALIDATE",
+        "CAP-API-LAYER",
+        "CAP-SCAFFOLD"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-CREATE",
+        "BEH-DOM-ENABLE",
+        "BEH-DOM-DISABLE",
+        "BEH-DOM-DELETE",
+        "BEH-DOM-VALIDATE"
+      ],
+      "requirementIds": [
+        "REQ-DOM-001"
+      ],
+      "decisionIds": [],
+      "splitReason": null,
+      "taskIds": [
+        "TASK-001",
+        "TASK-002",
+        "TASK-003",
+        "TASK-004",
+        "TASK-005",
+        "TASK-006",
+        "TASK-007"
+      ],
+      "decomposed": true,
+      "dependencyDetails": [],
+      "executionWave": 1
+    }
+  ],
+  "timestamps": {
+    "createdAt": "2026-07-23T06:40:00.000Z",
+    "updatedAt": "2026-07-23T09:00:00.000Z",
+    "contentHash": "sha256:80263d1de8783a04ecfe84534e18feee3050f14502ca79100f69d353c13e1d15"
+  },
+  "graph": {
+    "version": "1.0",
+    "status": "generated",
+    "dependencyCount": 0,
+    "waveCount": 1,
+    "parallelCandidateCount": 0
+  },
+  "executionWaves": [
+    {
+      "wave": 1,
+      "epicIds": [
+        "EPIC-DOM-001"
+      ]
+    }
+  ]
+}

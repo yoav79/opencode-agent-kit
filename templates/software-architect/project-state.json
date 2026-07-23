@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": null,
+    "workingTitle": null,
+    "description": null,
+    "status": "in_progress",
+    "currentPhase": 1,
+    "createdAt": null,
+    "updatedAt": null
+  },
+  "phases": {
+    "1_discovery": "in_progress",
+    "2_executive_definition": "pending",
+    "3_users_and_processes": "pending",
+    "4_module_catalog": "pending",
+    "5_functional_requirements": "pending",
+    "6_data_and_integrations": "pending",
+    "7_architecture": "pending",
+    "8_technology_stack": "pending",
+    "9_security_and_nfr": "pending",
+    "10_delivery_roadmap": "pending",
+    "11_consistency_review": "pending",
+    "12_final_document": "pending"
+  },
+  "confirmed": {
+    "problem": null,
+    "currentOperation": null,
+    "targetUsers": [],
+    "buyer": null,
+    "beneficiaries": [],
+    "objectives": [],
+    "successCriteria": [],
+    "constraints": [],
+    "scope": [],
+    "outOfScope": []
+  },
+  "actors": [],
+  "processes": [],
+  "modules": [],
+  "functionalRequirements": [],
+  "entities": [],
+  "integrations": [],
+  "architecture": {
+    "status": "pending",
+    "style": null,
+    "description": null,
+    "layers": [],
+    "principles": []
+  },
+  "technologyStack": {
+    "status": "pending",
+    "approvedStack": {}
+  },
+  "backendContract": {
+    "description": null,
+    "operations": []
+  },
+  "approvedDecisions": [],
+  "assumptions": [],
+  "risks": [],
+  "openQuestions": [],
+  "pendingApprovals": [],
+  "documents": {
+    "01_discovery": {
+      "path": "software-design/docs/01-discovery.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "02_executive_definition": {
+      "path": "software-design/docs/02-executive-definition.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "03_users_and_processes": {
+      "path": "software-design/docs/03-users-and-processes.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "04_module_catalog": {
+      "path": "software-design/docs/04-module-catalog.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "05_functional_requirements": {
+      "path": "software-design/docs/05-functional-requirements.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "06_data_and_integrations": {
+      "path": "software-design/docs/06-data-and-integrations.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "07_solution_architecture": {
+      "path": "software-design/docs/07-solution-architecture.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "08_technology_stack": {
+      "path": "software-design/docs/08-technology-stack.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "09_security_and_nfr": {
+      "path": "software-design/docs/09-security-and-nfr.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "10_delivery_roadmap": {
+      "path": "software-design/docs/10-delivery-roadmap.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "11_consistency_review": {
+      "path": "software-design/docs/11-consistency-review.md",
+      "status": "pending",
+      "approvedAt": null
+    },
+    "12_final_document": {
+      "path": "software-design/docs/SOFTWARE-BLUEPRINT.md",
+      "status": "pending",
+      "approvedAt": null
+    }
+  },
+  "changeLog": [
+    {
+      "date": null,
+      "action": "Blueprint inicializado",
+      "details": "Estructura inicial creada. Fase 1 de descubrimiento iniciada."
+    }
+  ]
+}

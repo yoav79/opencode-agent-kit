@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 4,
+  "status": "validated",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Scaffolding de la aplicación Next.js",
+      "file": "task-planning/tasks/TASK-001.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "enabling",
+      "dependencyIds": [],
+      "createsCapabilityIds": [
+        "CAP-SCAFFOLD"
+      ],
+      "consumesCapabilityIds": [],
+      "behaviorIds": [],
+      "semanticKeys": [],
+      "requirementCoverage": []
+    },
+    {
+      "id": "TASK-002",
+      "title": "Capa de API routes de Next.js",
+      "file": "task-planning/tasks/TASK-002.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "enabling",
+      "dependencyIds": [
+        "TASK-001"
+      ],
+      "createsCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-SCAFFOLD"
+      ],
+      "behaviorIds": [],
+      "semanticKeys": [],
+      "requirementCoverage": []
+    },
+    {
+      "id": "TASK-003",
+      "title": "Crear dominio de correo",
+      "file": "task-planning/tasks/TASK-003.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "functional",
+      "dependencyIds": [
+        "TASK-002"
+      ],
+      "createsCapabilityIds": [
+        "CAP-DOM-CREATE"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-CREATE"
+      ],
+      "semanticKeys": [
+        "dom.create"
+      ],
+      "requirementCoverage": [
+        {
+          "requirementId": "REQ-DOM-001",
+          "behaviorIds": [
+            "BEH-DOM-CREATE"
+          ],
+          "scopeItemIds": [
+            "SCOPE-003"
+          ],
+          "acceptanceCriterionIds": [
+            "AC-001",
+            "AC-002"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TASK-004",
+      "title": "Habilitar dominio de correo",
+      "file": "task-planning/tasks/TASK-004.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "functional",
+      "dependencyIds": [
+        "TASK-002"
+      ],
+      "createsCapabilityIds": [
+        "CAP-DOM-ENABLE"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-ENABLE"
+      ],
+      "semanticKeys": [
+        "dom.enable"
+      ],
+      "requirementCoverage": [
+        {
+          "requirementId": "REQ-DOM-001",
+          "behaviorIds": [
+            "BEH-DOM-ENABLE"
+          ],
+          "scopeItemIds": [
+            "SCOPE-004"
+          ],
+          "acceptanceCriterionIds": [
+            "AC-001",
+            "AC-002"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TASK-005",
+      "title": "Deshabilitar dominio de correo",
+      "file": "task-planning/tasks/TASK-005.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "functional",
+      "dependencyIds": [
+        "TASK-002"
+      ],
+      "createsCapabilityIds": [
+        "CAP-DOM-DISABLE"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-DISABLE"
+      ],
+      "semanticKeys": [
+        "dom.disable"
+      ],
+      "requirementCoverage": [
+        {
+          "requirementId": "REQ-DOM-001",
+          "behaviorIds": [
+            "BEH-DOM-DISABLE"
+          ],
+          "scopeItemIds": [
+            "SCOPE-005"
+          ],
+          "acceptanceCriterionIds": [
+            "AC-001",
+            "AC-002"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TASK-006",
+      "title": "Eliminar dominio de correo",
+      "file": "task-planning/tasks/TASK-006.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "functional",
+      "dependencyIds": [
+        "TASK-002"
+      ],
+      "createsCapabilityIds": [
+        "CAP-DOM-DELETE"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-DELETE"
+      ],
+      "semanticKeys": [
+        "dom.delete"
+      ],
+      "requirementCoverage": [
+        {
+          "requirementId": "REQ-DOM-001",
+          "behaviorIds": [
+            "BEH-DOM-DELETE"
+          ],
+          "scopeItemIds": [
+            "SCOPE-006"
+          ],
+          "acceptanceCriterionIds": [
+            "AC-001",
+            "AC-002"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TASK-007",
+      "title": "Validar configuración de correo",
+      "file": "task-planning/tasks/TASK-007.md",
+      "epicId": "EPIC-DOM-001",
+      "type": "functional",
+      "dependencyIds": [
+        "TASK-002"
+      ],
+      "createsCapabilityIds": [
+        "CAP-DOM-VALIDATE"
+      ],
+      "consumesCapabilityIds": [
+        "CAP-API-LAYER"
+      ],
+      "behaviorIds": [
+        "BEH-DOM-VALIDATE"
+      ],
+      "semanticKeys": [
+        "dom.validate"
+      ],
+      "requirementCoverage": [
+        {
+          "requirementId": "REQ-DOM-001",
+          "behaviorIds": [
+            "BEH-DOM-VALIDATE"
+          ],
+          "scopeItemIds": [
+            "SCOPE-007"
+          ],
+          "acceptanceCriterionIds": [
+            "AC-001",
+            "AC-002"
+          ]
+        }
+      ]
+    }
+  ],
+  "timestamps": {
+    "createdAt": "2026-07-23T06:40:00.000Z",
+    "updatedAt": "2026-07-23T06:50:00.000Z",
+    "contentHash": "sha256:1206998068e8d2ecdde0d5d822aa8737a8f795ab16ff05bb70fdb04ca3d3b401"
+  }
+}

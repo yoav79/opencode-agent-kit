@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "status": "approved",
+  "contracts": [
+    {
+      "behaviorId": "BEH-DOM-CREATE",
+      "semanticKey": "dom.create",
+      "sourceFunctionId": "FUN-DOM-CREATE",
+      "requirementId": "REQ-DOM-001",
+      "operation": "create_domain",
+      "backendBinding": "mailctl domain create",
+      "outcome": "El backend confirma la creación del dominio solicitado y la WebUI muestra el resultado sin modificarlo.",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "sourceItem": "Crear dominio",
+      "scope": "mvp"
+    },
+    {
+      "behaviorId": "BEH-DOM-ENABLE",
+      "semanticKey": "dom.enable",
+      "sourceFunctionId": "FUN-DOM-ENABLE",
+      "requirementId": "REQ-DOM-001",
+      "operation": "enable_domain",
+      "backendBinding": "mailctl domain enable",
+      "outcome": "El backend confirma que el dominio seleccionado quedó habilitado y la WebUI muestra el resultado sin modificarlo.",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "sourceItem": "Habilitar dominio",
+      "scope": "mvp"
+    },
+    {
+      "behaviorId": "BEH-DOM-DISABLE",
+      "semanticKey": "dom.disable",
+      "sourceFunctionId": "FUN-DOM-DISABLE",
+      "requirementId": "REQ-DOM-001",
+      "operation": "disable_domain",
+      "backendBinding": "mailctl domain disable",
+      "outcome": "El backend confirma que el dominio seleccionado quedó deshabilitado y la WebUI muestra el resultado sin modificarlo.",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "sourceItem": "Deshabilitar dominio",
+      "scope": "mvp"
+    },
+    {
+      "behaviorId": "BEH-DOM-DELETE",
+      "semanticKey": "dom.delete",
+      "sourceFunctionId": "FUN-DOM-DELETE",
+      "requirementId": "REQ-DOM-001",
+      "operation": "delete_domain",
+      "backendBinding": "mailctl domain delete",
+      "outcome": "El backend confirma la eliminación del dominio seleccionado y la WebUI muestra el resultado sin modificarlo.",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "sourceItem": "Eliminar dominio",
+      "scope": "mvp"
+    },
+    {
+      "behaviorId": "BEH-DOM-VALIDATE",
+      "semanticKey": "dom.validate",
+      "sourceFunctionId": "FUN-DOM-VALIDATE",
+      "requirementId": "REQ-DOM-001",
+      "operation": "validate_config",
+      "backendBinding": "mailctl validate",
+      "outcome": "La WebUI muestra el resultado de validación producido por el backend sin modificarlo.",
+      "sourceSection": "REQ-DOM-001: Gestión de Dominios",
+      "sourceItem": "Validar configuración",
+      "scope": "mvp"
+    }
+  ],
+  "timestamps": {
+    "createdAt": "2026-07-23T06:40:00.000Z",
+    "updatedAt": "2026-07-23T06:50:00.000Z",
+    "contentHash": "sha256:aa66ee0a4177e05ec07f6115258b99066f90a38d00c67486bffb790a79e08f27"
+  }
+}

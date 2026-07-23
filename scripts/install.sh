@@ -124,6 +124,11 @@ install_files_from_dir "$SOURCE_DIR/agents" "$CONFIG_DIR/agents"
 install_directories_from_dir "$SOURCE_DIR/skills" "$CONFIG_DIR/skills"
 install_files_from_dir "$SOURCE_DIR/commands" "$CONFIG_DIR/commands"
 
+REPO_TEMPLATES="$REPO_ROOT/templates"
+if [ -d "$REPO_TEMPLATES" ]; then
+  install_directories_from_dir "$REPO_TEMPLATES" "$CONFIG_DIR/templates"
+fi
+
 if [ "$WITH_GLOBAL_RULES" -eq 1 ]; then
   link_item "$SOURCE_DIR/AGENTS.md" "$CONFIG_DIR/AGENTS.md"
   link_item "$SOURCE_DIR/rules" "$CONFIG_DIR/rules"

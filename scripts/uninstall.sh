@@ -59,14 +59,11 @@ remove_managed_link() {
 
 for path in \
   "$CONFIG_DIR/agents/software-architect.md" \
-  "$CONFIG_DIR/agents/requirements-analyst.md" \
-  "$CONFIG_DIR/agents/architecture-reviewer.md" \
-  "$CONFIG_DIR/commands/new-blueprint.md" \
-  "$CONFIG_DIR/commands/continue-blueprint.md" \
-  "$CONFIG_DIR/commands/validate-blueprint.md" \
-  "$CONFIG_DIR/skills/requirements-discovery" \
-  "$CONFIG_DIR/skills/software-blueprint" \
-  "$CONFIG_DIR/skills/architecture-review" \
+  "$CONFIG_DIR/agents/task-planner.md" \
+  "$CONFIG_DIR/commands/init-software-architect.md" \
+  "$CONFIG_DIR/commands/init-task-planner.md" \
+  "$CONFIG_DIR/templates/software-architect" \
+  "$CONFIG_DIR/templates/task-planner" \
   "$CONFIG_DIR/AGENTS.md" \
   "$CONFIG_DIR/rules"
 do

@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
-TEMPLATE_DIR="$REPO_ROOT/templates/software-design-project"
+TEMPLATE_DIR="$REPO_ROOT/templates/software-architect"
 FORCE=0
 
 usage() {
@@ -44,12 +44,30 @@ if [ "$FORCE" -eq 1 ]; then
   rm -rf "$TARGET/software-design"
 fi
 
-cp -R "$TEMPLATE_DIR/software-design" "$TARGET/software-design"
+mkdir -p "$TARGET/software-design/drafts" "$TARGET/software-design/docs" "$TARGET/software-design/decisions" "$TARGET/software-design/archive"
+
+if [ ! -e "$TARGET/software-design/project-state.json" ]; then
+  cp "$TEMPLATE_DIR/project-state.json" "$TARGET/software-design/project-state.json"
+fi
+
+if [ ! -e "$TARGET/software-design/workflow.md" ]; then
+  cp "$TEMPLATE_DIR/workflow.md" "$TARGET/software-design/workflow.md"
+fi
 
 if [ ! -e "$TARGET/AGENTS.md" ]; then
-  cp "$TEMPLATE_DIR/AGENTS.md" "$TARGET/AGENTS.md"
-else
-  echo "Preserved existing AGENTS.md"
+  cat > "$TARGET/AGENTS.md" <<'AGENTS_EOF'
+# Instrucciones del proyecto
+
+## Alcance de los agentes de diseno
+
+- Los artefactos de diseno viven en `software-design/`.
+- No modificar codigo de producto durante discovery o arquitectura salvo
+  autorizacion explicita.
+- Leer `software-design/project-state.json` antes de continuar un flujo.
+- No declarar una fase terminada sin cumplir sus criterios de salida.
+- Registrar decisiones materiales en `software-design/decisions/`.
+- Mantener borradores y versiones reemplazadas; no borrarlos.
+AGENTS_EOF
 fi
 
 PROJECT_NAME=$(basename "$TARGET")
@@ -69,7 +87,8 @@ repository = sys.argv[3] or None
 
 data = json.loads(path.read_text(encoding="utf-8"))
 data["project"]["name"] = name
-data["project"]["repository"] = repository
+if "project" in data and "workingTitle" in data["project"]:
+    data["project"]["workingTitle"] = name
 path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 
@@ -80,5 +99,5 @@ Created project scaffold:
 Next:
   cd "$TARGET"
   opencode
-  /new-blueprint
+  /init-software-architect
 EOF_SUMMARY

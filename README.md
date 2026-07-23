@@ -2,13 +2,13 @@
 
 Repositorio base para versionar, instalar y mantener agentes reutilizables de OpenCode.
 
-> **OpenCode Agent Kit** es un framework de proceso-as-código que convierte a un asistente de IA en un arquitecto de software disciplinado, siguiendo una metodología de diseño estructurada, auditable y trazable con barreras de seguridad incorporadas.
+> **OpenCode Agent Kit** es un framework de proceso-as-codigo que convierte a un asistente de IA en un arquitecto de software disciplinado, siguiendo una metodologia de diseno estructurada, auditable y trazable con barreras de seguridad incorporadas.
 
 ## Objetivo
 
 Separar claramente:
 
-- La configuracion reusable de agentes, skills y comandos.
+- La configuracion reusable de agentes, comandos y plantillas.
 - Las reglas compartidas.
 - Los artefactos generados dentro de cada proyecto.
 
@@ -17,87 +17,104 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 ## Arquitectura del Sistema
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                    OpenCode Agent Kit                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
-│  │   Agents     │   │    Skills    │   │   Commands   │    │
-│  │              │   │              │   │              │    │
-│  │ architect ───┼──►│ discovery    │   │ /new-blue    │    │
-│  │ analyst  ────┤   │ blueprint    │   │ /continue    │    │
-│  │ reviewer ────┤   │ review       │   │ /validate    │    │
-│  └──────────────┘   └──────────────┘   └──────────────┘    │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │                   Shared Rules                        │   │
-│  │  general.md | git-policy.md | documentation-policy.md │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Proyecto Destino                             │
-│  software-design/                                            │
-│  ├── project-state.json  (maquina de estados)               │
-│  ├── workflow.md         (criterios de salida por fase)     │
-│  ├── decisions/         (Architecture Decision Records)     │
-│  ├── docs/              (documentos aprobados)              │
-│  ├── drafts/            (borradores en progreso)            │
-│  └── archive/           (documentos reemplazados)           │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                       OpenCode Agent Kit                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────┐       ┌──────────────────────┐        │
+│  │       Agents         │       │      Commands         │        │
+│  │                      │       │                       │        │
+│  │  software-architect  │◄──────│  init-software-       │        │
+│  │  task-planner        │◄──────│  init-task-planner    │        │
+│  └──────────────────────┘       └──────────────────────┘        │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                     Shared Rules                          │   │
+│  │   general.md | git-policy.md | documentation-policy.md   │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                     Templates                             │   │
+│  │   software-architect/  |  task-planner/                   │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Proyecto Destino                            │
+│  software-design/                                                │
+│  ├── project-state.json  (maquina de estados)                   │
+│  ├── workflow.md         (criterios de salida por fase)         │
+│  ├── decisions/         (Architecture Decision Records)         │
+│  ├── docs/              (documentos aprobados)                  │
+│  ├── drafts/            (borradores en progreso)                │
+│  └── archive/           (documentos reemplazados)               │
+│                                                                  │
+│  task-planning/                                                  │
+│  ├── project-state.json  (estado del plan de tareas)            │
+│  ├── workflow.md         (fases de planificacion)               │
+│  ├── semantic-contract.json                                     │
+│  ├── requirements.json                                          │
+│  ├── capability-map.json                                        │
+│  ├── epic-plan.json                                             │
+│  ├── task-plan.json                                             │
+│  ├── epics/                                                     │
+│  ├── tasks/                                                     │
+│  └── tools/         (validador y actualizador determinista)     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Agentes
 
-### `software-architect` — Agente Principal
+### `software-architect` — Agente de Diseno
 
-El agente principal que interactua con el usuario. Convierte una idea incompleta en un blueprint coherente, trazable e implementable.
+Convierte una idea incompleta en un blueprint coherente, trazable y listo para ejecucion. Workflow de 12 fases con documentos aprobados en puertas criticas.
 
 - **Modo:** primary
-- **Temperatura:** 0.1 (determinista)
+- **Temperatura:** 0.1 (near-determinista)
 - **Fases del workflow:**
-  1. **Discovery** — Problema, usuarios, proceso actual, restricciones, criterios de exito
-  2. **Requirements** — Requisitos funcionales y no funcionales, verificables
-  3. **Architecture** — Componentes, limites, datos, integraciones, tradeoffs
-  4. **Delivery Plan** — Secuencia de implementacion, tests, gates, riesgos
-  5. **Validation** — Consistencia, cobertura, contradicciones, preparacion
+  1. Discovery — Problema, usuarios, contexto
+  2. Executive Definition — Vision, solucion propuesta (requiere aprobacion)
+  3. Users and Processes — Actores, procesos, excepciones
+  4. Module Catalog — Modulos, responsabilidades, dependencias (requiere aprobacion)
+  5. Functional Requirements — Requisitos trazables con criterios de aceptacion
+  6. Data and Integrations — Entidades, datos sensibles, sistemas externos
+  7. Architecture — Alternativas, estilo, principios (requiere aprobacion)
+  8. Technology Stack — Stack seleccionado con justificacion
+  9. Security and NFR — Seguridad, rendimiento, disponibilidad
+  10. Delivery Roadmap — MVP, epicas, fases, despliegue (requiere aprobacion)
+  11. Consistency Review — Contradicciones, omisiones
+  12. Final Document — Blueprint consolidado
 
-  Un blueprint se considera completado cuando validation se resuelve sin hallazgos
-  `blocker` ni `major` abiertos.
+**Permisos:** Puede editar archivos en `software-design/`. **No puede** hacer `git commit` ni `git push`.
 
-**Permisos:** Puede editar archivos, delegar a subagentes. **No puede** hacer `git commit` ni `git push`.
+### `task-planner` — Agente de Planificacion
 
-### `requirements-analyst` — Subagente (Solo Lectura)
+Transforma un Software Blueprint aprobado en un plan completo de tareas para DevFlow. Workflow de 10 fases con validacion determinista.
 
-Diagnostica que falta antes de que una idea pueda tratarse como una especificacion.
+- **Modo:** primary
+- **Temperatura:** 0.2
+- **Fases del workflow:**
+  1. Blueprint Analysis — Audita el blueprint completo
+  2. Decision Resolution — Resuelve decisiones bloqueantes (una por turno)
+  3. Blueprint Consolidation — Combina blueprint y decisiones, genera contratos semanticos
+  4. Blueprint Approval — Solicita aprobacion humana del blueprint resuelto
+  5. Construction Strategy — Define como se construira el sistema
+  6. Capability Mapping — Inventario de capacidades funcionales y habilitadoras
+  7. Epic Generation — Agrupa capacidades en epicas por incremento
+  8. Epic Decomposition — Descompone epicas en tareas ejecutables
+  9. Plan Validation — Ejecuta validador determinista
+  10. Plan Approval — Solicita aprobacion humana del plan final
 
-- **Modo:** subagent (solo lectura)
-- Produce: hechos confirmados, contradicciones, requisitos no verificables, suposiciones prohibidas, preguntas minimas
-
-### `architecture-reviewer` — Subagente (Solo Lectura)
-
-Revisor independiente de arquitectura. Evalua componentes, dependencias, contratos, seguridad, observabilidad y trazabilidad.
-
-- **Modo:** subagent (solo lectura, bash limitado a `git status`/`git diff`)
-- Clasifica hallazgos como: `blocker`, `major`, `minor`, `observation`
-
-## Skills
-
-| Skill | Fase | Descripcion |
-|-------|------|-------------|
-| `requirements-discovery` | Discovery | 7 pasos para convertir informacion inicial en evidencia suficiente |
-| `software-blueprint` | Architecture | Produce 13 entregables: resumen, actores, requisitos, componentes, flujos, datos, integraciones, seguridad, observabilidad, testing, riesgos, plan |
-| `architecture-review` | Validation | Auditoria de 8 pasos con matriz requisito-componente-validacion |
+**Permisos:** Puede editar archivos en `task-planning/`. **No puede** ejecutar codigo, hacer commits, ni modificar el producto.
 
 ## Comandos
 
 | Comando | Agente | Descripcion |
 |---------|--------|-------------|
-| `/new-blueprint` | software-architect | Inicia o diagnostica un flujo de blueprint en el proyecto actual |
-| `/continue-blueprint` | software-architect | Reanuda el blueprint desde la fase registrada en `project-state.json` |
-| `/validate-blueprint` | architecture-reviewer | Revisa consistencia, cobertura y preparacion del blueprint |
+| `/init-software-architect` | software-architect | Inicializa o continua el diseno de arquitectura del proyecto |
+| `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
 
 ## Estructura del Repositorio
 
@@ -106,16 +123,10 @@ opencode-agent-kit/
 ├── opencode/
 │   ├── agents/                    # Definiciones de agentes (.md + frontmatter YAML)
 │   │   ├── software-architect.md
-│   │   ├── requirements-analyst.md
-│   │   └── architecture-reviewer.md
-│   ├── skills/                    # Skills reutilizables (SKILL.md por skill)
-│   │   ├── requirements-discovery/
-│   │   ├── software-blueprint/
-│   │   └── architecture-review/
+│   │   └── task-planner.md
 │   ├── commands/                  # Comandos slash (.md)
-│   │   ├── new-blueprint.md
-│   │   ├── continue-blueprint.md
-│   │   └── validate-blueprint.md
+│   │   ├── init-software-architect.md
+│   │   └── init-task-planner.md
 │   ├── rules/                     # Reglas compartidas (.md)
 │   │   ├── general.md
 │   │   ├── git-policy.md
@@ -123,7 +134,19 @@ opencode-agent-kit/
 │   ├── AGENTS.md                  # Reglas globales para todos los agentes
 │   └── opencode.example.json      # Configuracion de ejemplo
 ├── templates/
-│   └── software-design-project/   # Plantilla de scaffold
+│   ├── software-architect/        # Plantillas del agente de diseno
+│   │   ├── project-state.json
+│   │   └── workflow.md
+│   └── task-planner/              # Plantillas del agente de planificacion
+│       ├── project-state.json
+│       ├── workflow.md
+│       ├── semantic-contract.json
+│       ├── requirements.json
+│       ├── capability-map.json
+│       ├── epic-plan.json
+│       ├── task-plan.json
+│       ├── task-template.md
+│       └── tools/                 # Validador y actualizador determinista
 ├── scripts/
 │   ├── install.sh                 # Instalacion global via symlinks
 │   ├── uninstall.sh               # Desinstalacion segura
@@ -132,7 +155,8 @@ opencode-agent-kit/
 ├── tests/
 │   └── test-scripts.sh            # Tests de integracion
 ├── examples/                      # Ejemplos sanitizados
-└── Makefile                       # Targets: validate, test, install, dry-run
+├── .gitignore
+└── Makefile                       # Targets: help, validate, test, install, dry-run
 ```
 
 ## Instalacion
@@ -142,6 +166,7 @@ opencode-agent-kit/
 - [OpenCode](https://opencode.ai) instalado y configurado
 - Bash
 - Python 3 (para validacion)
+- Node.js (para las herramientas deterministas del task-planner)
 
 ### Instalacion Global
 
@@ -187,53 +212,34 @@ cp opencode/opencode.example.json ~/.config/opencode/opencode.json
 
 ## Uso
 
-### Crear un Proyecto
-
-Desde este repositorio, scaffoldea la estructura de diseno en un proyecto destino:
-
-```bash
-./scripts/create-project.sh /ruta/al/proyecto
-```
-
-Esto crea:
-
-```text
-proyecto/
-├── AGENTS.md                 # solo si no existe
-└── software-design/
-    ├── project-state.json    # maquina de estados del workflow
-    ├── workflow.md           # criterios de salida por fase
-    ├── decisions/            # Architecture Decision Records
-    ├── drafts/               # borradores en progreso
-    ├── docs/                 # documentos aprobados
-    └── archive/              # documentos reemplazados
-```
-
 ### Flujo de Trabajo
 
-1. **Iniciar un blueprint:**
-   ```
-   /new-blueprint
-   ```
-   El agente carga la skill `requirements-discovery` y comienza la fase de discovery.
+#### 1. Software Design (Bluepritting)
 
-2. **Proporcionar contexto:**
-   El agente recopila hechos, identifica gaps y registra decisiones. Puede delegar al `requirements-analyst` para diagnostico de requisitos.
+Inicializa el proceso de diseno para el proyecto:
 
-3. **Avanzar fases:**
-   Cuando discovery esta completo, el agente avanza a requirements, architecture (carga `software-blueprint`), delivery-plan y validation.
+```
+/init-software-architect
+```
 
-4. **Continuar despues de una pausa:**
-   ```
-   /continue-blueprint
-   ```
-   Reanuda desde donde quedo la maquina de estados.
+El agente:
+- Verifica o crea `software-design/` con `project-state.json` y `workflow.md`
+- Lee el estado actual y continua desde la fase pendiente
+- Genera documentos por fase con aprobacion en puertas criticas
 
-5. **Validar el blueprint:**
-   ```
-   /validate-blueprint
-   ```
-   Ejecuta el `architecture-reviewer` (solo lectura) que audita el blueprint y produce hallazgos clasificados por severidad.
+#### 2. Task Planning
+
+Una vez aprobado el blueprint, inicializa la planificacion:
+
+```
+/init-task-planner
+```
+
+El agente:
+- Verifica o crea `task-planning/` con todos los archivos iniciales
+- Analiza el blueprint y resuelve decisiones pendientes
+- Genera capacidades, epicas y tareas con validacion determinista
+- Produce un plan validado listo para DevFlow
 
 ### Validacion del Repositorio
 
@@ -244,8 +250,8 @@ proyecto/
 Valida:
 - Todos los archivos requeridos existen
 - JSON valido en todos los archivos
-- Frontmatter obligatorio en agentes y skills
-- Nombres de skills en kebab-case
+- Frontmatter obligatorio en agentes y comandos
+- Versiones correctas en templates
 - Permisos basicos y referencias internas
 
 ### Tests
@@ -259,13 +265,13 @@ make test
 ## Principios del Repositorio
 
 1. **Los agentes definen roles y autoridad.** Cada agente tiene un alcance claro y permisos minimos.
-2. **Las skills definen capacidades reutilizables.** Se cargan dinamicamente segun la fase del workflow.
-3. **Los comandos inician flujos repetibles.** Cada comando tiene un agente asignado y un proposito definido.
-4. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene su propio `software-design/`.
-5. **Ningun agente puede hacer `git commit` o `git push`** sin cambiar explicitamente su politica.
-6. **Los borradores nunca se eliminan.** Se promueven a docs o se mueven a archive.
-7. **`project-state.json` es la unica fuente de verdad** para el progreso del workflow.
-8. **Las decisiones arquitectonicas se registran como ADRs** en `decisions/`.
+2. **Los comandos inician flujos repetibles.** Cada comando tiene un agente asignado y un proposito definido.
+3. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene su propio `software-design/` y `task-planning/`.
+4. **Ningun agente puede hacer `git commit` o `git push`** sin cambiar explicitamente su politica.
+5. **Los borradores nunca se eliminan.** Se promueven a docs o se mueven a archive.
+6. **`project-state.json` es la unica fuente de verdad** para el progreso del workflow.
+7. **Las decisiones arquitectonicas se registran como ADRs** en `decisions/`.
+8. **El validador determinista es la unica forma de declarar un plan validado.** No se confia en revision narrativa.
 
 ## Contribuir
 
