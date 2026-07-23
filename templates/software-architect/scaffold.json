@@ -5,11 +5,30 @@
     "workflow.md"
   ],
   "dirs": [
-    "drafts",
     "docs",
+    "drafts",
     "decisions",
     "archive"
   ],
   "command": "/init-software-architect",
+  "phases": [
+    "1_discovery",
+    "2_executive_definition",
+    "3_users_and_processes",
+    "4_module_catalog",
+    "5_functional_requirements",
+    "6_data_and_integrations",
+    "7_architecture",
+    "8_technology_stack",
+    "9_security_and_nfr",
+    "10_delivery_roadmap",
+    "11_consistency_review",
+    "12_final_document"
+  ],
+  "agent": {
+    "description": "Convierte ideas de software en blueprints ejecutivos, funcionales y técnicos mediante una entrevista estructurada.",
+    "mode": "primary",
+    "temperature": "0.2"
+  },
   "agentsMd": "# Instrucciones del proyecto\n\n## Alcance de los agentes de diseno\n\n- Los artefactos de diseno viven en `software-design/`.\n- No modificar codigo de producto durante discovery o arquitectura salvo\n  autorizacion explicita.\n- Leer `software-design/project-state.json` antes de continuar un flujo.\n- No declarar una fase terminada sin cumplir sus criterios de salida.\n- Registrar decisiones materiales en `software-design/decisions/`.\n- Mantener borradores y versiones reemplazadas; no borrarlos.\n"
 }

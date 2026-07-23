@@ -1,16 +1,18 @@
 {
   "directory": "task-planning",
   "files": [
-    "project-state.json",
-    "workflow.md",
-    "decisions.json",
-    "semantic-contract.json",
-    "requirements.json",
+    "SEMANTIC-CONTRACT.md",
     "capability-map.json",
+    "decisions.json",
     "epic-plan.json",
+    "project-state.json",
     "readiness.json",
+    "requirements.json",
+    "semantic-contract.json",
     "task-plan.json",
-    "task-template.md"
+    "task-planner.md",
+    "task-template.md",
+    "workflow.md"
   ],
   "dirs": [
     "epics",
@@ -18,9 +20,14 @@
     "tools"
   ],
   "toolFiles": [
-    "tools/validate-plan.mjs",
+    "tools/build-epic-graph.mjs",
     "tools/update-timestamps.mjs",
-    "tools/build-epic-graph.mjs"
+    "tools/validate-plan.mjs"
   ],
-  "command": "/init-task-planner"
+  "command": "/init-task-planner",
+  "agent": {
+    "description": "Analiza un Software Blueprint, resuelve decisiones pendientes y genera un plan completo de solicitudes de tareas para DevFlow mediante un workflow obligatorio de diez fases.",
+    "mode": "primary",
+    "temperature": "0.2"
+  }
 }
