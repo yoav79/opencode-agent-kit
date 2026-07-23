@@ -1,0 +1,42 @@
+# Build artifacts
+build/
+dist/
+*.o
+*.so
+*.dylib
+
+# Dependencies
+node_modules/
+vendor/
+.target/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Temp
+tmp/
+temp/
+*.tmp

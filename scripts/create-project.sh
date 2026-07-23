@@ -14,10 +14,16 @@ Creates the software design scaffold inside an existing or new project.
 USAGE
 }
 
-if [ "${1:-}" = "--force" ]; then
-  FORCE=1
-  shift
-fi
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  --force)
+    FORCE=1
+    shift
+    ;;
+esac
 
 if [ "$#" -ne 1 ]; then
   usage >&2

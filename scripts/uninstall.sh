@@ -48,11 +48,11 @@ remove_managed_link() {
   case "$target" in
     "$REPO_ROOT"/*)
       if [ "$DRY_RUN" -eq 1 ]; then
-        echo "[dry-run] rm -f $path"
+        echo "[dry-run] Would remove: $path"
       else
         rm -f "$path"
+        echo "Removed: $path"
       fi
-      echo "Removed: $path"
       ;;
   esac
 }

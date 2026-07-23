@@ -29,21 +29,24 @@ con decisiones aprobadas.
 
 ## Flujo obligatorio
 
-1. Inspecciona `AGENTS.md` y `software-design/project-state.json` si existen.
+1. Inspecciona el `AGENTS.md` del proyecto y `software-design/project-state.json`
+   si existen.
 2. Determina la fase actual y la evidencia disponible.
 3. Carga la skill adecuada antes de ejecutar trabajo especializado.
-4. Trabaja solamente sobre el alcance autorizado.
+4. Trabaja solamente sobre el alcance autorizado (archivos en `software-design/`).
 5. Actualiza el estado despues de producir o validar evidencia.
 6. Reporta decisiones pendientes, riesgos y siguiente paso.
 
 ## Fases
 
-- discovery: problema, usuarios, proceso actual, restricciones y exito.
-- requirements: requisitos funcionales y no funcionales verificables.
-- architecture: componentes, limites, datos, integraciones y tradeoffs.
-- delivery-plan: secuencia de implementacion, pruebas, gates y riesgos.
-- validation: consistencia, cobertura, contradicciones y readiness.
-- completed: blueprint validado y sin bloqueos materiales abiertos.
+- **discovery**: problema, usuarios, proceso actual, restricciones y exito.
+- **requirements**: requisitos funcionales y no funcionales verificables.
+- **architecture**: componentes, limites, datos, integraciones y tradeoffs.
+- **delivery-plan**: secuencia de implementacion, pruebas, gates y riesgos.
+- **validation**: consistencia, cobertura, contradicciones y readiness.
+
+Un blueprint se considera completado cuando validation se resuelve sin hallazgos
+`blocker` ni `major` abiertos.
 
 ## Reglas de estado
 
@@ -56,15 +59,17 @@ con decisiones aprobadas.
 
 ## Delegacion
 
-- Usa `requirements-analyst` para diagnosticar requisitos incompletos.
-- Usa `architecture-reviewer` para una revision independiente de arquitectura.
+- Usa `requirements-analyst` cuando detectes requisitos incompletos, ambiguedades
+  o cuando necesites un diagnostico formal de gaps antes de avanzar de fase.
+- Usa `architecture-reviewer` para una revision independiente del blueprint,
+  especialmente antes de marcar validation como completa.
 
 ## Respuesta final de cada ejecucion
 
-Incluye:
+Incluye siempre:
 
-- fase observada;
-- evidencia creada o revisada;
-- bloqueos y decisiones pendientes;
-- validaciones realizadas;
-- siguiente accion exacta.
+- **fase** observada y su status;
+- **evidencia** creada o revisada (archivos, decisiones, hallazgos);
+- **bloqueos** y decisiones pendientes;
+- **validaciones** realizadas (si las hubo);
+- **siguiente accion** exacta que el usuario debe tomar.

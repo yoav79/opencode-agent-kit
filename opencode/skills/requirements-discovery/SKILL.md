@@ -17,13 +17,28 @@ proyecto puede avanzar a requisitos.
 
 ## Procedimiento
 
-1. Reune hechos confirmados sobre problema, actores y comprador.
-2. Describe el proceso actual con entradas, salidas, responsables y excepciones.
-3. Distingue dolor, causa, sintoma y solucion propuesta.
-4. Define resultados medibles y horizonte de evaluacion.
-5. Identifica restricciones legales, tecnicas, operativas, economicas y de tiempo.
-6. Delimita explicitamente lo que queda fuera.
-7. Formula solo preguntas que cambien alcance, arquitectura o criterio de exito.
+1. **Hechos confirmados** — Reune informacion verificada sobre el problema, los
+   actores involucrados y el responsable de la decision (stakeholder o
+   comprador). Distingue lo confirmado de lo inferido.
+2. **Proceso actual** — Describe como funciona hoy: entradas, salidas,
+   responsables, excepciones y herramientas involucradas.
+3. **Dolor vs. solucion** — Distingue el dolor original, su causa, los sintomas
+   visibles y la solucion propuesta. Evita confundir sintoma con causa.
+4. **Resultados medibles** — Define que exito significa en terminos cuantificables
+   y cual es el horizonte de evaluacion (semanas, meses,metricas).
+5. **Restricciones** — Identifica limitaciones legales, tecnicas, operativas,
+   economicas y de tiempo que el diseno debe respetar.
+6. **Alcance y exclusiones** — Delimita explicitamente que esta fuera del alcance
+   de este proyecto.
+7. **Preguntas estrategicas** — Formula solo las preguntes que cambien alcance,
+   arquitectura o criterio de exito. Las preguntas que no cumplen este umbral se
+   anotan pero no se presentan al usuario.
+
+## Como se recolecta informacion
+
+- Through conversacion directa con el usuario.
+- Leyendo documentacion existente en el repositorio (README, issues, codigo).
+- Inspeccionando la estructura del proyecto y su historial de git.
 
 ## Criterios de salida
 
@@ -35,4 +50,7 @@ Discovery puede cerrarse solamente cuando existen:
 - criterio de exito medible;
 - restricciones materiales registradas;
 - alcance inicial y exclusiones;
-- decisiones pendientes sin ocultar.
+- decisiones pendientes visibles (no ocultas).
+
+Si solo algunos criterios estan cumplidos, discovery permanece abierto. El agente
+debe reportar exactamente cuales faltan.

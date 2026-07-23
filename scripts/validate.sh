@@ -15,13 +15,28 @@ errors = []
 
 required_paths = [
     "README.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "Makefile",
+    "opencode/AGENTS.md",
     "opencode/agents/software-architect.md",
     "opencode/agents/requirements-analyst.md",
     "opencode/agents/architecture-reviewer.md",
     "opencode/commands/new-blueprint.md",
     "opencode/commands/continue-blueprint.md",
     "opencode/commands/validate-blueprint.md",
+    "opencode/skills/requirements-discovery/SKILL.md",
+    "opencode/skills/software-blueprint/SKILL.md",
+    "opencode/skills/architecture-review/SKILL.md",
+    "opencode/rules/general.md",
+    "opencode/rules/git-policy.md",
+    "opencode/rules/documentation-policy.md",
     "templates/software-design-project/software-design/project-state.json",
+    "scripts/install.sh",
+    "scripts/uninstall.sh",
+    "scripts/create-project.sh",
+    "scripts/validate.sh",
 ]
 
 for relative in required_paths:
@@ -87,6 +102,8 @@ for path in sorted((root / "opencode/commands").glob("*.md")):
     frontmatter = match.group(1)
     if not re.search(r"^description:\s*\S", frontmatter, re.MULTILINE):
         errors.append(f"Missing command description: {path.relative_to(root)}")
+    if not re.search(r"^agent:\s*\S", frontmatter, re.MULTILINE):
+        errors.append(f"Missing command agent: {path.relative_to(root)}")
 
 state_path = root / "templates/software-design-project/software-design/project-state.json"
 if state_path.exists():
