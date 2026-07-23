@@ -1,0 +1,26 @@
+{
+  "directory": "task-planning",
+  "files": [
+    "project-state.json",
+    "workflow.md",
+    "decisions.json",
+    "semantic-contract.json",
+    "requirements.json",
+    "capability-map.json",
+    "epic-plan.json",
+    "readiness.json",
+    "task-plan.json",
+    "task-template.md"
+  ],
+  "dirs": [
+    "epics",
+    "tasks",
+    "tools"
+  ],
+  "toolFiles": [
+    "tools/validate-plan.mjs",
+    "tools/update-timestamps.mjs",
+    "tools/build-epic-graph.mjs"
+  ],
+  "command": "/init-task-planner"
+}

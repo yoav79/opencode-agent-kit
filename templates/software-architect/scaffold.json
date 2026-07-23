@@ -1,0 +1,15 @@
+{
+  "directory": "software-design",
+  "files": [
+    "project-state.json",
+    "workflow.md"
+  ],
+  "dirs": [
+    "drafts",
+    "docs",
+    "decisions",
+    "archive"
+  ],
+  "command": "/init-software-architect",
+  "agentsMd": "# Instrucciones del proyecto\n\n## Alcance de los agentes de diseno\n\n- Los artefactos de diseno viven en `software-design/`.\n- No modificar codigo de producto durante discovery o arquitectura salvo\n  autorizacion explicita.\n- Leer `software-design/project-state.json` antes de continuar un flujo.\n- No declarar una fase terminada sin cumplir sus criterios de salida.\n- Registrar decisiones materiales en `software-design/decisions/`.\n- Mantener borradores y versiones reemplazadas; no borrarlos.\n"
+}

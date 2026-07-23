@@ -29,8 +29,10 @@ required_paths = [
     "opencode/rules/documentation-policy.md",
     "templates/software-architect/project-state.json",
     "templates/software-architect/workflow.md",
+    "templates/software-architect/scaffold.json",
     "templates/task-planner/project-state.json",
     "templates/task-planner/workflow.md",
+    "templates/task-planner/scaffold.json",
     "templates/task-planner/semantic-contract.json",
     "templates/task-planner/requirements.json",
     "templates/task-planner/capability-map.json",
@@ -109,6 +111,22 @@ if tp_state.exists():
             errors.append(f"task-planner validatorVersion = {planner.get('validatorVersion')}, expected 3.5")
     except Exception as exc:
         errors.append(f"Error reading task-planner state: {exc}")
+
+for agent_dir in sorted(root.glob("templates/*/")):
+    scaffold_file = agent_dir / "scaffold.json"
+    if not scaffold_file.exists():
+        continue
+    try:
+        scaffold = json.loads(scaffold_file.read_text(encoding="utf-8"))
+        if "directory" not in scaffold:
+            errors.append(f"scaffold.json missing 'directory': {scaffold_file.relative_to(root)}")
+        if "files" not in scaffold:
+            errors.append(f"scaffold.json missing 'files': {scaffold_file.relative_to(root)}")
+        for f in scaffold.get("files", []):
+            if not (agent_dir / f).exists():
+                errors.append(f"scaffold.json references missing file {f}: {scaffold_file.relative_to(root)}")
+    except Exception as exc:
+        errors.append(f"Error reading {scaffold_file.relative_to(root)}: {exc}")
 
 if errors:
     print("Validation failed:")

@@ -22,7 +22,7 @@ echo "=== Testing install ==="
 echo "Install: OK"
 
 echo "=== Testing create-project ==="
-"$REPO_ROOT/scripts/create-project.sh" "$PROJECT_DIR"
+"$REPO_ROOT/scripts/create-project.sh" software-architect "$PROJECT_DIR"
 
 [ -f "$PROJECT_DIR/AGENTS.md" ] || { echo "FAIL: AGENTS.md not created"; exit 1; }
 [ -f "$PROJECT_DIR/software-design/project-state.json" ] || { echo "FAIL: project-state.json not created"; exit 1; }
