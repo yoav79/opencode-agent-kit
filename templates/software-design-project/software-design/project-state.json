@@ -1,0 +1,40 @@
+{
+  "$schemaVersion": "1.0",
+  "project": {
+    "name": "REPLACE_ME",
+    "repository": null
+  },
+  "workflow": {
+    "currentPhase": "discovery",
+    "status": "in_progress",
+    "phases": {
+      "discovery": {
+        "status": "in_progress",
+        "evidence": [],
+        "openDecisions": []
+      },
+      "requirements": {
+        "status": "not_started",
+        "evidence": [],
+        "openDecisions": []
+      },
+      "architecture": {
+        "status": "not_started",
+        "evidence": [],
+        "openDecisions": []
+      },
+      "delivery-plan": {
+        "status": "not_started",
+        "evidence": [],
+        "openDecisions": []
+      },
+      "validation": {
+        "status": "not_started",
+        "evidence": [],
+        "openDecisions": []
+      }
+    }
+  },
+  "blockers": [],
+  "lastUpdated": null
+}
