@@ -1,6 +1,6 @@
 ---
 description: Prepara el contexto ejecutable y el prompt de una tarea ya seleccionada, sin elegir otra tarea ni modificar el plan o el estado de ejecución.
-mode: subagent
+mode: primary
 temperature: 0.1
 steps: 80
 permission:

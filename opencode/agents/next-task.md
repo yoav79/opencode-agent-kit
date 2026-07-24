@@ -18,6 +18,8 @@ permission:
   edit:
     "*": deny
     ".devflow/execution/selection.json": allow
+    ".devflow/execution/execution-state.json": allow
+    ".devflow/execution/runs/*/attempt-*/selection.json": allow
   glob: deny
   grep: deny
   bash:
@@ -25,6 +27,7 @@ permission:
     "cp *": ask
     "mkdir *": ask
     "mkdir -p .devflow/execution .devflow/execution/runs .devflow/execution/tools": allow
+    "mkdir -p .devflow/execution/runs/TASK-*/attempt-*": allow
     "cp -n $HOME/.config/opencode/templates/next-task/execution-state.json .devflow/execution/execution-state.json": allow
     "cp -n $HOME/.config/opencode/templates/next-task/execution-state.schema.json .devflow/execution/execution-state.schema.json": allow
     "cp -n $HOME/.config/opencode/templates/next-task/task-selection.schema.json .devflow/execution/task-selection.schema.json": allow
