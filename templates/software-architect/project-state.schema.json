@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devflow.local/schemas/software-architect/project-state.schema.json",
+  "title": "DevFlow Software Blueprint State",
+  "description": "Estado canónico del Software Blueprint, consumido por software-architect y consistency-reviewer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "project",
+    "phases",
+    "documents",
+    "changeLog"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "project": {
+      "$ref": "#/$defs/project"
+    },
+    "phases": {
+      "$ref": "#/$defs/phases"
+    },
+    "confirmed": {
+      "$ref": "#/$defs/confirmed"
+    },
+    "actors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/actor" }
+    },
+    "processes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/process" }
+    },
+    "modules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/module" }
+    },
+    "functionalRequirements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/functionalRequirement" }
+    },
+    "entities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entity" }
+    },
+    "integrations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/integration" }
+    },
+    "architecture": {
+      "$ref": "#/$defs/architecture"
+    },
+    "technologyStack": {
+      "$ref": "#/$defs/technologyStack"
+    },
+    "backendContract": {
+      "$ref": "#/$defs/backendContract"
+    },
+    "approvedDecisions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assumption" }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/risk" }
+    },
+    "openQuestions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "pendingApprovals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pendingApproval" }
+    },
+    "documents": {
+      "$ref": "#/$defs/documents"
+    },
+    "changeLog": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/changeLogEntry" }
+    }
+  },
+  "$defs": {
+    "nullableDateTime": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    },
+    "nullableString": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "workingTitle",
+        "description",
+        "status",
+        "currentPhase",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/nullableString" },
+        "workingTitle": { "$ref": "#/$defs/nullableString" },
+        "description": { "$ref": "#/$defs/nullableString" },
+        "status": {
+          "enum": ["in_progress", "completed", "blocked", null]
+        },
+        "currentPhase": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "createdAt": { "$ref": "#/$defs/nullableDateTime" },
+        "updatedAt": { "$ref": "#/$defs/nullableDateTime" }
+      }
+    },
+    "phases": {
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "enum": [
+          "1_discovery",
+          "2_executive_definition",
+          "3_users_and_processes",
+          "4_module_catalog",
+          "5_functional_requirements",
+          "6_data_and_integrations",
+          "7_architecture",
+          "8_technology_stack",
+          "9_security_and_nfr",
+          "10_delivery_roadmap",
+          "11_consistency_review",
+          "12_final_document"
+        ]
+      },
+      "patternProperties": {
+        "^[0-9]+_": {
+          "enum": [
+            "pending",
+            "in_progress",
+            "waiting_for_user",
+            "needs_revision",
+            "approved",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "confirmed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "problem": { "$ref": "#/$defs/nullableString" },
+        "currentOperation": { "$ref": "#/$defs/nullableString" },
+        "targetUsers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "buyer": { "$ref": "#/$defs/nullableString" },
+        "beneficiaries": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "objectives": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "successCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "scope": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "outOfScope": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "actors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "objective": { "type": "string" },
+        "users": { "type": "string" },
+        "responsibilities": { "type": "string" },
+        "functions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "permissions": { "type": "string" },
+        "priority": { "type": "string" }
+      }
+    },
+    "functionalRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "module": { "type": "string" },
+        "priority": { "type": "string" },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "attributes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "relations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "system": { "type": "string" },
+        "type": { "type": "string" },
+        "protocol": { "type": "string" },
+        "frequency": { "type": "string" },
+        "volume": { "type": "string" }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": ["pending", "in_progress", "approved", null]
+        },
+        "style": { "$ref": "#/$defs/nullableString" },
+        "description": { "$ref": "#/$defs/nullableString" },
+        "layers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "principles": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "technologyStack": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": ["pending", "in_progress", "approved", null]
+        },
+        "approvedStack": {
+          "type": "object"
+        }
+      }
+    },
+    "backendContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": { "$ref": "#/$defs/nullableString" },
+        "operations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assumption": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "risk": { "type": "string" },
+        "impact": { "type": "string" },
+        "mitigation": { "type": "string" }
+      }
+    },
+    "pendingApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": { "type": "string" },
+        "requestedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "status": { "type": "string" }
+      }
+    },
+    "documentEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status"],
+      "properties": {
+        "path": { "type": "string" },
+        "status": {
+          "enum": ["pending", "approved"]
+        },
+        "approvedAt": { "$ref": "#/$defs/nullableDateTime" }
+      }
+    },
+    "documents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "01_discovery",
+        "02_executive_definition",
+        "03_users_and_processes",
+        "04_module_catalog",
+        "05_functional_requirements",
+        "06_data_and_integrations",
+        "07_solution_architecture",
+        "08_technology_stack",
+        "09_security_and_nfr",
+        "10_delivery_roadmap",
+        "11_consistency_review",
+        "12_final_document"
+      ],
+      "properties": {
+        "01_discovery": { "$ref": "#/$defs/documentEntry" },
+        "02_executive_definition": { "$ref": "#/$defs/documentEntry" },
+        "03_users_and_processes": { "$ref": "#/$defs/documentEntry" },
+        "04_module_catalog": { "$ref": "#/$defs/documentEntry" },
+        "05_functional_requirements": { "$ref": "#/$defs/documentEntry" },
+        "06_data_and_integrations": { "$ref": "#/$defs/documentEntry" },
+        "07_solution_architecture": { "$ref": "#/$defs/documentEntry" },
+        "08_technology_stack": { "$ref": "#/$defs/documentEntry" },
+        "09_security_and_nfr": { "$ref": "#/$defs/documentEntry" },
+        "10_delivery_roadmap": { "$ref": "#/$defs/documentEntry" },
+        "11_consistency_review": { "$ref": "#/$defs/documentEntry" },
+        "12_final_document": { "$ref": "#/$defs/documentEntry" }
+      }
+    },
+    "changeLogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "date": { "$ref": "#/$defs/nullableDateTime" },
+        "action": { "type": "string" },
+        "details": { "type": "string" }
+      }
+    }
+  }
+}

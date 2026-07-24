@@ -26,26 +26,20 @@ Creado `templates/software-architect/tools/validate-blueprint.mjs`.
 Verifica: existencia de 12 docs, headings vs templates, consistencia
 estado/fase, puertas de aprobación, ADRs, orphan docs, IDs únicos REQ-*.
 
+- Implementado en: `282402a`
+
+### Project-state.schema.json (software-architect)
+
+Creado `templates/software-architect/project-state.schema.json`.
+Schema JSON Schema draft 2020-12 para validar project-state.json.
+Cubre: project, phases, confirmed, documents, architecture, modules,
+integrations, entities, risks, assumptions y más.
+
 - Implementado en: pendiente de commit
 
 ---
 
 ## software-architect
-
-### Project-state.schema.json
-
-Schema JSON para validar programáticamente `project-state.json`, similar
-a `execution-state.schema.json` del dominio de ejecución. (El validador
-ya hace validación estructural inline, un schema aparte es opcional.)
-
-- **P:** baja | **E:** S | **A:** template
-
-### Project-state.schema.json
-
-Schema JSON para validar programáticamente `project-state.json`, similar
-a `execution-state.schema.json` del dominio de ejecución.
-
-- **P:** media | **E:** S | **A:** template
 
 ### Workflow: rutas relativas vs absolutas
 

@@ -38,6 +38,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 - **`/build-next-task-context`** — Comando que construye contexto para la última tarea seleccionada en un solo paso.
 - **`templates/software-architect/`** — Plantillas del agente de diseno: `project-state.json` (12 fases), `workflow.md`, y `doc-templates/` con templates para cada fase.
 - **`templates/software-architect/tools/validate-blueprint.mjs`** — Validador determinista del Software Blueprint: verifica estructura, documentos, secciones, consistencia de aprobaciones y referencias.
+- **`templates/software-architect/project-state.schema.json`** — Schema JSON formal para `project-state.json`, alineado con los schemas del dominio de ejecución.
 - **`templates/task-planner/`** — Plantillas del agente de planificacion: 9 archivos JSON, `task-template.md`, workflow, y herramientas deterministas (`validate-plan.mjs`, `update-timestamps.mjs`, `build-epic-graph.mjs`).
 - **`templates/next-task/`** — Contratos de ejecución: `execution-state.json`, `selection.json`, schemas, y `validate-next-task.mjs`.
 - **`templates/context-builder/`** — Contratos de contexto: `context-build-request.schema.json`, `execution-context.schema.json`, templates, README.

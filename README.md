@@ -48,6 +48,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │                      Proyecto Destino                            │
 │  .devflow/software-architect/                                    │
 │  ├── project-state.json  (maquina de estados)                   │
+│  ├── project-state.schema.json  (contrato JSON)                 │
 │  ├── workflow.md         (criterios de salida por fase)         │
 │  ├── decisions/         (Architecture Decision Records)         │
 │  ├── docs/              (documentos aprobados)                  │
