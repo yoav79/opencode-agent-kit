@@ -12,7 +12,7 @@ permission:
   bash:
     "*": deny
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
-  task: deny
+  task: allow
   webfetch: ask
   websearch: ask
   external_directory: deny
@@ -73,7 +73,11 @@ como estructura base. No omitas secciones obligatorias. Las secciones en
 
 ## Método de entrevista
 
-En cada fase:
+Antes de iniciar la entrevista de cualquier fase: si la fase actual es
+`11_consistency_review`, ejecuta el procedimiento especial de la
+**Fase 11** descrito abajo y salta el resto de este método.
+
+En cada fase (excepto fase 11):
 
 1. Identifica la información faltante.
 2. Explica brevemente por qué es necesaria.
@@ -97,6 +101,38 @@ En cada fase:
     `approved`.
 13. Marca la fase como approved en project-state.json.
 14. Solo entonces avanza a la siguiente fase.
+
+## Fase 11 — Revisión de consistencia
+
+La fase 11 es diferente a las demás. No determines tú mismo las
+contradicciones ni escribas el documento directamente. En su lugar:
+
+1. Lee la plantilla de la fase 11 desde:
+   `$HOME/.config/opencode/templates/software-architect/doc-templates/11-consistency-review.md`
+
+2. Invoca al agente `consistency-reviewer` mediante la tarea
+   `review-consistency`. La respuesta del task contiene el veredicto.
+
+3. Lee `.devflow/software-architect/review/review-report.md` para
+   obtener los detalles de los hallazgos.
+
+4. Si el veredicto es `BLOCKED`:
+   - Marca la fase 11 como `needs_revision` en project-state.json.
+   - Informa al usuario los issues bloqueantes y que no se puede avanzar.
+   - No escribas `docs/11-consistency-review.md`.
+   - No avances a la fase 12.
+
+5. Si el veredicto es `MINOR_ISSUES`:
+   - Corrige los hallazgos marcados como WARNING en los documentos
+     correspondientes.
+   - Vuelve a invocar a `consistency-reviewer` para confirmar.
+   - Si ahora es APPROVED, continúa al paso 6.
+
+6. Si el veredicto es `APPROVED`:
+   - Crea `.devflow/software-architect/docs/11-consistency-review.md`
+     con un resumen de la revisión (hallazgos resueltos, veredicto final).
+   - Marca la fase 11 como `approved` en project-state.json.
+   - Avanza a la fase 12.
 
 ## Módulos
 

@@ -134,11 +134,17 @@ Requiere aprobación explícita.
 
 Objetivo:
 
-Detectar contradicciones, omisiones y elementos sin trazabilidad.
+Detectar contradicciones, omisiones y elementos sin trazabilidad mediante
+un revisor externo e independiente.
 
 Entregable:
 
 `.devflow/software-architect/docs/11-consistency-review.md`
+
+Condición de salida:
+- El revisor externo (`consistency-reviewer`) debe devolver veredicto
+  `APPROVED` o `MINOR_ISSUES` resueltos.
+- Si el veredicto es `BLOCKED`, la fase permanece abierta.
 
 ### 12. Documento final
 

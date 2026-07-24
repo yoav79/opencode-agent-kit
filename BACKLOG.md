@@ -68,21 +68,22 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 </div>
 
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Integración de consistency-reviewer con fase 11 (software-architect)
+
+`software-architect` ahora invoca automáticamente al `consistency-reviewer`
+al llegar a la fase 11. Si el veredicto es `BLOCKED`, no avanza a la fase 12.
+Se agregó `task: allow` y un procedimiento especial para la fase 11 en el
+agente, más condición de salida en `workflow.md`.
+
+- Implementado en: pendiente de commit
+
+</div>
+
 ---
 
 ## software-architect
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### Integración de consistency-reviewer con fase 11
-
-El `software-architect` debe invocar automáticamente al
-`consistency-reviewer` al llegar a la fase 11 y no avanzar si el
-veredicto es `BLOCKED`.
-
-- **P:** alta | **E:** M | **A:** agente
-
-</div>
 
 ---
 
