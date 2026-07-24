@@ -16,17 +16,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 - `install.sh` ahora tambien instala templates via symlinks.
 - `validate.sh` actualizado para la nueva estructura de archivos.
 - `test-scripts.sh` actualizado para verificar los nuevos agentes y comandos.
+- Directorios de trabajo cambiados de `software-design/` y `task-planning/` a `.devflow/software-architect/` y `.devflow/task-planner/`.
+- `next-task` cambiado de `mode: subagent` a `mode: primary`.
 - README reescrito para reflejar la nueva arquitectura.
 
 ### Added
 
-- **`next-task`** — Subagente determinista de selección de tareas, con contratos de estado/selección y validador independiente `validate-next-task.mjs`.
-
+- **`context-builder`** — Subagente que prepara el contexto ejecutable de una tarea ya seleccionada: lee plan, artefactos, predecesores y repo; produce `execution-context.json` y `execution-prompt.md`.
+- **`next-task`** — Agente determinista de selección de tareas, con contratos de estado/selección y validador `validate-next-task.mjs`. Comandos `/init-next-task`, `/select-next-task`, `/prepare-task-run`.
 - **`task-planner`** — Agente de planificacion que transforma un blueprint aprobado en un plan completo de tareas para DevFlow. Workflow de 10 fases con validacion determinista.
 - **`/init-software-architect`** — Comando que inicializa o continua el diseno de arquitectura con workflow de 12 fases y aprobaciones en puertas criticas.
 - **`/init-task-planner`** — Comando que inicializa o continua la planificacion de tareas con contrato de version e integridad.
+- **`/init-next-task`** — Comando que inicializa el espacio de ejecución (`.devflow/execution/`).
+- **`/select-next-task`** — Comando que ejecuta la selección determinista de la siguiente tarea.
+- **`/prepare-task-run`** — Comando que crea el directorio del run y registra la tarea en el estado de ejecución.
+- **`/build-task-context`** — Comando que construye contexto para una tarea e intento explicitos.
+- **`/build-next-task-context`** — Comando que construye contexto para la última tarea seleccionada en un solo paso.
 - **`templates/software-architect/`** — Plantillas del agente de diseno: `project-state.json` (12 fases) y `workflow.md`.
 - **`templates/task-planner/`** — Plantillas del agente de planificacion: 9 archivos JSON, `task-template.md`, workflow, y herramientas deterministas (`validate-plan.mjs`, `update-timestamps.mjs`, `build-epic-graph.mjs`).
+- **`templates/next-task/`** — Contratos de ejecución: `execution-state.json`, `selection.json`, schemas, y `validate-next-task.mjs`.
+- **`templates/context-builder/`** — Contratos de contexto: `context-build-request.schema.json`, `execution-context.schema.json`, templates, README.
 - **`.gitignore`** — Archivos ignorados para builds, dependencias, IDE y entorno.
 
 ### Removed

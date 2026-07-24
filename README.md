@@ -26,7 +26,8 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  │                      │       │                       │        │
 │  │  software-architect  │◄──────│  init-software-       │        │
 │  │  task-planner        │◄──────│  init-task-planner    │        │
-│  │  next-task           │       │  invocado por flujo   │        │
+│  │  next-task           │◄──────│  select-next-task     │        │
+│  │  context-builder     │◄──────│  build-task-context   │        │
 │  └──────────────────────┘       └──────────────────────┘        │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -36,7 +37,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │                     Templates                             │   │
-│  │   software-architect/ | task-planner/ | next-task/         │   │
+│  │   software-architect/ | task-planner/ | next-task/ | context-builder/ │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -67,9 +68,14 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  .devflow/execution/                                             │
 │  ├── execution-state.json  (estado mutable del orquestador)     │
 │  ├── selection.json        (salida de Next Task Agent)          │
-│  ├── *.schema.json         (contratos de ejecución)             │
+│  ├── execution-context.schema.json  (contrato de contexto)      │
+│  ├── context-build-request.schema.json                          │
 │  ├── tools/validate-next-task.mjs                               │
 │  └── runs/                 (evidencia creada por orquestador)    │
+│      └── TASK-XXX/attempt-NN/                                   │
+│          ├── selection.json    (evidencia de la reserva)        │
+│          ├── execution-context.json                             │
+│          └── execution-prompt.md                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -119,15 +125,34 @@ Transforma un Software Blueprint aprobado en un plan completo de tareas para Dev
 
 ### `next-task` — Selector de Siguiente Tarea
 
-Consume el plan aprobado y el estado de ejecución para seleccionar exactamente una tarea mediante reglas deterministas. Es un subagente temporal que podrá ser reemplazado por un scheduler sin cambiar los contratos.
+Consume el plan aprobado y el estado de ejecución para seleccionar exactamente
+una tarea mediante reglas deterministas. Puede ser reemplazado por un scheduler
+sin cambiar los contratos.
 
-- **Modo:** subagent
+- **Modo:** primary
 - **Temperatura:** 0
 - **Entrada:** `.devflow/task-planner/*.json` y `.devflow/execution/execution-state.json`
 - **Salida:** `.devflow/execution/selection.json`
 - **Gate:** `.devflow/execution/tools/validate-next-task.mjs`
 
-**Permisos:** Solo lectura sobre planificación y estado; solo puede reemplazar `selection.json`. No ejecuta código ni modifica estados.
+Permisos: Solo lectura sobre planificación y estado de ejecución. Escribe
+`selection.json` y `execution-state.json`.
+
+### `context-builder` — Constructor de Contexto de Ejecución
+
+Toma una tarea ya seleccionada y prepara el contexto ejecutable para un
+intento. Lee el plan, los artefactos, los predecesores y el repositorio, y
+produce un JSON estructurado más un prompt Markdown listo para el ejecutor.
+
+- **Modo:** subagent
+- **Temperatura:** 0.1
+- **Entrada:** `taskId` + `attempt` via argumento; lee plan, estado y repo
+- **Salida:** `execution-context.json` + `execution-prompt.md` en el directorio
+  del intento
+
+Permisos: Solo lectura sobre planificación, ejecución y repo. Escribe
+únicamente en el directorio del intento. No selecciona tareas ni ejecuta
+código.
 
 ## Comandos
 
@@ -135,6 +160,11 @@ Consume el plan aprobado y el estado de ejecución para seleccionar exactamente 
 |---------|--------|-------------|
 | `/init-software-architect` | software-architect | Inicializa o continua el diseno de arquitectura del proyecto |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
+| `/init-next-task` | next-task | Inicializa el espacio de ejecucion (`.devflow/execution/`) |
+| `/select-next-task` | next-task | Selecciona la siguiente tarea disponible |
+| `/prepare-task-run` | next-task | Crea el directorio del run y registra la tarea en el estado |
+| `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
+| `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
 
 ## Estructura del Repositorio
 
@@ -144,10 +174,16 @@ opencode-agent-kit/
 │   ├── agents/                    # Definiciones de agentes (.md + frontmatter YAML)
 │   │   ├── software-architect.md
 │   │   ├── task-planner.md
-│   │   └── next-task.md
+│   │   ├── next-task.md
+│   │   └── context-builder.md
 │   ├── commands/                  # Comandos slash (.md)
 │   │   ├── init-software-architect.md
-│   │   └── init-task-planner.md
+│   │   ├── init-task-planner.md
+│   │   ├── init-next-task.md
+│   │   ├── select-next-task.md
+│   │   ├── prepare-task-run.md
+│   │   ├── build-task-context.md
+│   │   └── build-next-task-context.md
 │   ├── rules/                     # Reglas compartidas (.md)
 │   │   ├── general.md
 │   │   ├── git-policy.md
@@ -168,11 +204,18 @@ opencode-agent-kit/
 │   │   ├── task-plan.json
 │   │   ├── task-template.md
 │   │   └── tools/                 # Validador y actualizador determinista
-│   └── next-task/                 # Contratos y gate de selección
-│       ├── execution-state.json
-│       ├── selection.json
-│       ├── *.schema.json
-│       └── tools/validate-next-task.mjs
+│   ├── next-task/                 # Contratos y gate de selección
+│   │   ├── execution-state.json
+│   │   ├── selection.json
+│   │   ├── *.schema.json
+│   │   └── tools/validate-next-task.mjs
+│   └── context-builder/           # Contratos de contexto de ejecución
+│       ├── README.md
+│       ├── context-build-request.schema.json
+│       ├── execution-context.schema.json
+│       ├── execution-context.template.json
+│       ├── execution-prompt.template.md
+│       └── scaffold.json
 ├── scripts/
 │   ├── install.sh                 # Instalacion global via symlinks
 │   ├── uninstall.sh               # Desinstalacion segura
@@ -266,6 +309,35 @@ El agente:
 - Analiza el blueprint y resuelve decisiones pendientes
 - Genera capacidades, epicas y tareas con validacion determinista
 - Produce un plan validado listo para DevFlow
+
+#### 3. Execution (Task Selection & Context)
+
+Una vez que el plan está publicado, inicializa el espacio de ejecución y
+selecciona la primera tarea:
+
+```
+/init-next-task
+/select-next-task
+/prepare-task-run {"taskId":"TASK-006","attempt":1}
+/build-task-context {"taskId":"TASK-006","attempt":1}
+```
+
+O en un solo paso:
+
+```
+/select-next-task
+/build-next-task-context
+```
+
+El flujo completo:
+
+1. `/init-next-task` — Crea `.devflow/execution/` con estado y contratos
+2. `/select-next-task` — Evalúa el plan y selecciona una tarea
+3. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
+   registra la tarea en el estado de ejecución
+4. `/build-task-context` — Construye `execution-context.json` y
+   `execution-prompt.md` con el alcance, criterios, predecesores y contexto
+   técnico del repositorio
 
 ### Validacion del Repositorio
 
