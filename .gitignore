@@ -9,10 +9,6 @@ dist/
 node_modules/
 vendor/
 .target/
-.opencode/node_modules/
-.opencode/package.json
-.opencode/package-lock.json
-.opencode/bun.lock
 
 # Python
 __pycache__/
