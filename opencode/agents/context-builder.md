@@ -9,7 +9,7 @@ permission:
     "*": allow
     "*.env": deny
     "*.env.*": deny
-    ".devflow/**": allow
+    ".devflow/execution/runs/*/attempt-*/selection.json": allow
     "$HOME/.config/opencode/templates/context-builder/*": allow
   edit:
     "*": deny
@@ -17,10 +17,8 @@ permission:
     ".devflow/execution/runs/TASK-*/attempt-*/execution-prompt.md": allow
   glob: allow
   grep: allow
-  lsp: allow
   bash:
     "*": deny
-    "mkdir -p .devflow/execution/runs/TASK-*/attempt-*": allow
     "git status --short": allow
     "git status --short *": allow
     "git rev-parse HEAD": allow
@@ -114,14 +112,20 @@ El directorio de salida es:
 .devflow/execution/runs/<TASK-ID-CANONICO>/attempt-<NN>/
 ```
 
-Solo puedes crear o reemplazar:
+Ese directorio debe existir antes de ejecutar este agente. Lo crea y administra
+el orquestador. No puedes crear `runs/`, el directorio de la tarea ni el
+directorio del intento.
+
+Dentro de un intento existente solo puedes crear o reemplazar:
 
 ```text
 execution-context.json
 execution-prompt.md
 ```
 
-No escribas ningún otro archivo.
+El mismo directorio debe contener `selection.json` copiado por el orquestador
+como evidencia inmutable de la reserva. Si el directorio o esa selección no
+existen, detente sin escribir archivos y reporta `RUN_NOT_PREPARED`.
 
 # Inicio obligatorio
 
@@ -129,51 +133,65 @@ Ejecuta esta secuencia antes de derivar contenido:
 
 1. Lee `AGENTS.md` del proyecto si existe.
 2. Valida la entrada.
-3. Localiza la selección.
-4. Lee `.devflow/execution/execution-state.json`.
-5. Lee `.devflow/task-planner/project-state.json`.
-6. Confirma que el plan está aprobado, validado y publicado según el estado.
-7. Lee `.devflow/task-planner/task-plan.json`.
-8. Resuelve exactamente una tarea por equivalencia numérica de `taskId`.
-9. Conserva el ID exacto declarado por el plan como ID canónico.
-10. Lee el archivo Markdown indicado por `task.file`.
-11. Lee la épica indicada por `task.epicId` en `epic-plan.json`.
-12. Lee el archivo de épica indicado por `epic.file` cuando exista.
-13. Lee requirements, contrato semántico, capacidades y decisiones.
-14. Lee el blueprint resuelto registrado por el Task Planner.
-15. Verifica predecesores y sus resultados persistidos.
-16. Lee únicamente memoria verificada y relevante.
-17. Inspecciona el repositorio actual de forma selectiva.
-18. Clasifica el contexto.
-19. Escribe primero `execution-context.json`.
-20. Vuelve a leerlo y comprueba su consistencia.
-21. Escribe `execution-prompt.md` como proyección del JSON.
-22. Vuelve a leer ambos archivos y verifica que representan la misma tarea,
+3. Lee `.devflow/task-planner/task-plan.json`.
+4. Resuelve exactamente una tarea por equivalencia numérica de `taskId`.
+5. Conserva el ID exacto declarado por el plan como ID canónico.
+6. Construye la ruta del intento usando ese ID canónico.
+7. Confirma que el directorio del intento ya existe.
+8. Lee exclusivamente el `selection.json` persistido dentro de ese intento.
+9. Lee `.devflow/execution/execution-state.json`.
+10. Confirma que el orquestador reservó o activó esa tarea y ese intento.
+11. Lee `.devflow/task-planner/project-state.json`.
+12. Confirma que el plan está aprobado, validado y publicado según el estado.
+13. Lee el archivo Markdown indicado por `task.file`.
+14. Lee la épica indicada por `task.epicId` en `epic-plan.json`.
+15. Lee el archivo de épica indicado por `epic.file` cuando exista.
+16. Lee requirements, contrato semántico, capacidades y decisiones.
+17. Lee el blueprint resuelto registrado por el Task Planner.
+18. Verifica predecesores y sus resultados persistidos.
+19. Lee únicamente memoria verificada y relevante.
+20. Inspecciona el repositorio actual de forma selectiva.
+21. Clasifica el contexto.
+22. Escribe primero `execution-context.json`.
+23. Vuelve a leerlo y comprueba su consistencia.
+24. Escribe `execution-prompt.md` como proyección del JSON.
+25. Vuelve a leer ambos archivos y verifica que representan la misma tarea,
     intento, alcance y clasificación.
 
 # Resolución de la selección
 
-Busca en este orden:
+La única selección válida para Context Builder es:
 
-1. `.devflow/execution/runs/<ID-DE-ENTRADA>/attempt-<NN>/selection.json`;
-2. una ruta equivalente usando el ID canónico, cuando ya haya sido resuelto;
-3. `.devflow/execution/selection.json`.
+```text
+.devflow/execution/runs/<TASK-ID-CANONICO>/attempt-<NN>/selection.json
+```
 
-La selección es válida únicamente si:
+No leas `.devflow/execution/selection.json` como fallback. Ese archivo es una
+salida global y reemplazable de Next Task; puede cambiar después de que el
+orquestador haya reservado este run. Usarlo introduciría una carrera y podría
+construir el contexto de otra tarea.
+
+La selección del run es válida únicamente si:
 
 - `classification = TASK_SELECTED`;
-- contiene exactamente una tarea seleccionada;
 - `selectedTaskId` equivale numéricamente al `taskId` recibido;
+- conserva el ID canónico de la tarea del plan;
 - `epicId` coincide con la tarea del plan;
 - `sourceSnapshot` está presente;
-- sus hashes coinciden con los artefactos actuales cuando ambos existen;
-- `executionStateRevision` coincide con la revisión actual.
+- sus hashes de plan coinciden con los artefactos actuales;
+- existe una entrada de la tarea en `execution-state.json`;
+- su estado es `reserved`, `running`, `waiting_human` o `waiting_external`;
+- existe `activeRunId` o una `reservation` persistida;
+- cuando `reservation.stateRevision` exista, coincide con
+  `selection.sourceSnapshot.executionStateRevision`.
 
-Si la selección apunta a otra tarea, clasifica `PLAN_DEFECT`. No cambies la
-entrada ni prepares el contexto de la tarea seleccionada por el archivo.
+No exijas que la revisión de la selección sea igual a la revisión raíz actual
+de `execution-state.json`: el orquestador incrementa la revisión al reservar.
+Registra ambas revisiones por separado en `sourceSnapshot`.
 
-Si la revisión o los hashes cambiaron, clasifica `PLAN_DEFECT` con código
-`STALE_SELECTION`. No reconstruyas la selección.
+Si la selección apunta a otra tarea, clasifica `PLAN_DEFECT` con
+`SELECTION_TASK_MISMATCH`. Si el run no fue reservado o su evidencia no existe,
+no intentes reservarlo ni reconstruir la selección.
 
 # Fuente de verdad y precedencia
 
@@ -353,8 +371,13 @@ clasifica `HUMAN_REQUIRED`.
 Copia de la selección:
 
 - `planningVersion`;
-- `executionStateRevision`;
+- `selectionExecutionStateRevision`;
 - hashes de task plan, epic plan y capability map.
+
+Copia del estado actual:
+
+- `currentExecutionStateRevision`;
+- `reservationStateRevision`, cuando exista.
 
 Copia de cada artefacto actual su `timestamps.contentHash` para:
 
@@ -431,9 +454,12 @@ El JSON debe:
 `issues` debe usar códigos estables en mayúsculas, por ejemplo:
 
 - `INVALID_REQUEST`;
+- `RUN_NOT_PREPARED`;
 - `SELECTION_NOT_FOUND`;
 - `SELECTION_TASK_MISMATCH`;
 - `STALE_SELECTION`;
+- `RUN_NOT_RESERVED`;
+- `RESERVATION_REVISION_MISMATCH`;
 - `TASK_NOT_FOUND`;
 - `AMBIGUOUS_TASK_ID`;
 - `EPIC_NOT_FOUND`;
@@ -499,6 +525,8 @@ Si detectas una discrepancia, corrige las salidas antes de finalizar.
 No puedes:
 
 - seleccionar otra tarea;
+- crear o reservar un run;
+- leer `.devflow/execution/selection.json` como fallback;
 - modificar `selection.json`;
 - modificar `execution-state.json`;
 - modificar `.devflow/task-planner/`;

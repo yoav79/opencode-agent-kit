@@ -32,14 +32,16 @@ No selecciones una tarea, no uses la primera tarea pendiente y no sustituyas el
 Deben existir:
 
 - `.devflow/execution/execution-state.json`;
-- una selección válida para la misma tarea;
+- el directorio del intento creado por el orquestador;
+- `selection.json` copiado dentro de ese intento;
 - `.devflow/task-planner/project-state.json`;
 - los artefactos aprobados del plan;
 - la tarea indicada por `taskId`.
 
-Si una precondición falla, genera los dos archivos del intento con la
-clasificación bloqueante correspondiente cuando el schema de salida esté
-disponible. No modifiques los artefactos fuente.
+No uses `.devflow/execution/selection.json` como fallback. Si el directorio del
+intento o su `selection.json` no existen, detente sin escribir: el orquestador
+no preparó el run. Para otros defectos, genera los dos archivos con la
+clasificación bloqueante correspondiente cuando el schema esté disponible.
 
 ## Salida
 
