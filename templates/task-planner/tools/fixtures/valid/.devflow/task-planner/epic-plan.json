@@ -5,7 +5,7 @@
     {
       "id": "EPIC-DOM-001",
       "title": "Gestión de Dominios",
-      "file": "task-planning/epics/EPIC-DOM-001.md",
+      "file": ".devflow/task-planner/epics/EPIC-DOM-001.md",
       "incrementId": "INC-DOM-001",
       "dependencyIds": [],
       "capabilityIds": [

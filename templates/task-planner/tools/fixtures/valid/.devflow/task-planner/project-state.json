@@ -74,67 +74,67 @@
   },
   "artifacts": {
     "workflow": {
-      "path": "task-planning/workflow.md",
+      "path": ".devflow/task-planner/workflow.md",
       "status": "available"
     },
     "decisions": {
-      "path": "task-planning/decisions.json",
+      "path": ".devflow/task-planner/decisions.json",
       "status": "initialized"
     },
     "semanticContract": {
-      "path": "task-planning/semantic-contract.json",
+      "path": ".devflow/task-planner/semantic-contract.json",
       "status": "approved"
     },
     "requirements": {
-      "path": "task-planning/requirements.json",
+      "path": ".devflow/task-planner/requirements.json",
       "status": "validated"
     },
     "resolvedBlueprint": {
-      "path": "task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md",
+      "path": ".devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md",
       "status": "generated"
     },
     "constructionStrategy": {
-      "path": "task-planning/construction-strategy.md",
+      "path": ".devflow/task-planner/construction-strategy.md",
       "status": "generated"
     },
     "capabilityMap": {
-      "path": "task-planning/capability-map.json",
+      "path": ".devflow/task-planner/capability-map.json",
       "status": "validated"
     },
     "epicPlan": {
-      "path": "task-planning/epic-plan.json",
+      "path": ".devflow/task-planner/epic-plan.json",
       "status": "validated"
     },
     "epicsDirectory": {
-      "path": "task-planning/epics",
+      "path": ".devflow/task-planner/epics",
       "status": "populated"
     },
     "readiness": {
-      "path": "task-planning/readiness.json",
+      "path": ".devflow/task-planner/readiness.json",
       "status": "passed"
     },
     "validationReport": {
-      "path": "task-planning/validation-report.md",
+      "path": ".devflow/task-planner/validation-report.md",
       "status": "generated"
     },
     "planValidator": {
-      "path": "task-planning/tools/validate-plan.mjs",
+      "path": ".devflow/task-planner/tools/validate-plan.mjs",
       "status": "available"
     },
     "taskPlan": {
-      "path": "task-planning/task-plan.json",
+      "path": ".devflow/task-planner/task-plan.json",
       "status": "validated"
     },
     "tasksDirectory": {
-      "path": "task-planning/tasks",
+      "path": ".devflow/task-planner/tasks",
       "status": "populated"
     },
     "timestampUpdater": {
-      "path": "task-planning/tools/update-timestamps.mjs",
+      "path": ".devflow/task-planner/tools/update-timestamps.mjs",
       "status": "available"
     },
     "epicGraphBuilder": {
-      "path": "task-planning/tools/build-epic-graph.mjs",
+      "path": ".devflow/task-planner/tools/build-epic-graph.mjs",
       "status": "available"
     }
   },

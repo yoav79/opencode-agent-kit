@@ -33,20 +33,20 @@ archivo falta.
 
 2. Define estas rutas conceptuales:
 
-   - Directorio destino: `software-design/`
-   - Estado destino: `software-design/project-state.json`
-   - Workflow destino: `software-design/workflow.md`
+   - Directorio destino: `.devflow/software-architect/`
+   - Estado destino: `.devflow/software-architect/project-state.json`
+   - Workflow destino: `.devflow/software-architect/workflow.md`
    - Plantilla de estado:
      `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.json`
    - Plantilla de workflow:
      `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/workflow.md`
 
-3. Revisa si existe el directorio `software-design/`.
+3. Revisa si existe el directorio `.devflow/software-architect/`.
 
 4. Si no existe, crea únicamente esta estructura:
 
    ```text
-   software-design/
+   .devflow/software-architect/
    ├── project-state.json
    ├── workflow.md
    ├── drafts/
@@ -55,15 +55,15 @@ archivo falta.
 
 5. Para inicializar archivos faltantes:
 
-   - Crea `software-design/drafts/` si no existe.
-   - Crea `software-design/docs/` si no existe.
-   - Si `software-design/project-state.json` no existe, cópialo desde la
+   - Crea `.devflow/software-architect/drafts/` si no existe.
+   - Crea `.devflow/software-architect/docs/` si no existe.
+   - Si `.devflow/software-architect/project-state.json` no existe, cópialo desde la
      plantilla global.
-   - Si `software-design/workflow.md` no existe, cópialo desde la plantilla
+   - Si `.devflow/software-architect/workflow.md` no existe, cópialo desde la plantilla
      global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
-6. Cuando se cree `software-design/project-state.json` por primera vez:
+6. Cuando se cree `.devflow/software-architect/project-state.json` por primera vez:
 
    - Sustituye `project.createdAt` y `project.updatedAt` por la fecha actual en
      formato ISO 8601.
@@ -71,12 +71,12 @@ archivo falta.
    - Conserva el resto de la estructura sin modificaciones.
    - Verifica que el resultado siga siendo JSON válido.
 
-7. Si `software-design/` ya existe:
+7. Si `.devflow/software-architect/` ya existe:
 
-   - Lee `software-design/project-state.json`.
-   - Lee `software-design/workflow.md`.
-   - Revisa los documentos existentes en `software-design/docs/`.
-   - Revisa los borradores existentes en `software-design/drafts/` solo cuando
+   - Lee `.devflow/software-architect/project-state.json`.
+   - Lee `.devflow/software-architect/workflow.md`.
+   - Revisa los documentos existentes en `.devflow/software-architect/docs/`.
+   - Revisa los borradores existentes en `.devflow/software-architect/drafts/` solo cuando
      sean relevantes para la fase actual.
    - Identifica la última fase completada.
    - Continúa desde la fase pendiente.
@@ -93,7 +93,7 @@ archivo falta.
    - No inventes respuestas.
    - Identifica la información faltante.
    - Formula únicamente las preguntas necesarias para completar
-     `software-design/docs/01-discovery.md`.
+     `.devflow/software-architect/docs/01-discovery.md`.
    - Agrupa las preguntas por contexto, usuarios, operación, alcance,
      restricciones y criterios de éxito.
    - No avances todavía a arquitectura, stack tecnológico ni plan de
@@ -114,8 +114,8 @@ archivo falta.
 
 13. No borres el contenido de:
 
-    - `software-design/drafts/`
-    - `software-design/docs/`
+    - `.devflow/software-architect/drafts/`
+    - `.devflow/software-architect/docs/`
 
 14. Antes de terminar esta ejecución, informa:
 

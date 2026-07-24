@@ -6,7 +6,7 @@ The validator does not interpret natural language. It verifies that one approved
 
 ## Source of truth
 
-`task-planning/semantic-contract.json` is the machine-readable semantic source approved together with the resolved blueprint.
+`.devflow/task-planner/semantic-contract.json` is the machine-readable semantic source approved together with the resolved blueprint.
 
 Each `contracts[]` record must contain:
 

@@ -31,10 +31,10 @@
 
 ## Advertencias
 
-- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-004 depende de TASK-002, que pertenece a otra épica. _(task-planning/task-plan.json · TASK-004)_
-- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-005 depende de TASK-002, que pertenece a otra épica. _(task-planning/task-plan.json · TASK-005)_
-- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-006 depende de TASK-002, que pertenece a otra épica. _(task-planning/task-plan.json · TASK-006)_
-- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-007 depende de TASK-002, que pertenece a otra épica. _(task-planning/task-plan.json · TASK-007)_
+- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-004 depende de TASK-002, que pertenece a otra épica. _(.devflow/task-planner/task-plan.json · TASK-004)_
+- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-005 depende de TASK-002, que pertenece a otra épica. _(.devflow/task-planner/task-plan.json · TASK-005)_
+- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-006 depende de TASK-002, que pertenece a otra épica. _(.devflow/task-planner/task-plan.json · TASK-006)_
+- **TASK_CROSS_EPIC_DEPENDENCY** — TASK-007 depende de TASK-002, que pertenece a otra épica. _(.devflow/task-planner/task-plan.json · TASK-007)_
 
 ## Resultado
 

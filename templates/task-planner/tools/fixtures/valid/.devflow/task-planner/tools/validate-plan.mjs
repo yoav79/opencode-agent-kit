@@ -8,7 +8,7 @@ import process from 'node:process';
 const VALIDATOR_VERSION = '3.5';
 
 const ROOT = process.cwd();
-const TP = path.join(ROOT, 'task-planning');
+const TP = path.join(ROOT, '.devflow', 'task-planner');
 
 const P = {
   state: path.join(TP, 'project-state.json'),
@@ -3263,7 +3263,7 @@ async function main() {
   validateIndexFiles({
     records: epics,
     actualFiles: epicMarkdownFiles,
-    expectedDirectory: 'task-planning/epics',
+    expectedDirectory: '.devflow/task-planner/epics',
     label: 'epic-plan.json',
     filePath: P.epics,
   });
@@ -3271,7 +3271,7 @@ async function main() {
   validateIndexFiles({
     records: tasks,
     actualFiles: taskMarkdownFiles,
-    expectedDirectory: 'task-planning/tasks',
+    expectedDirectory: '.devflow/task-planner/tasks',
     label: 'task-plan.json',
     filePath: P.tasks,
   });
@@ -3362,12 +3362,12 @@ async function main() {
         );
       } else if (
         !normalized.startsWith(
-          'task-planning/tasks/',
+          '.devflow/task-planner/tasks/',
         )
       ) {
         addError(
           'TASK_FILE_OUTSIDE_DIRECTORY',
-          `${task.id} apunta fuera de task-planning/tasks/: ${normalized}.`,
+          `${task.id} apunta fuera de .devflow/task-planner/tasks/: ${normalized}.`,
           rel(P.tasks),
           task.id,
         );

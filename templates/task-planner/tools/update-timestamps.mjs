@@ -7,26 +7,26 @@ import process from 'node:process';
 
 const TOOL_VERSION = '1.0';
 const ROOT = process.cwd();
-const TP = path.join(ROOT, 'task-planning');
+const TP = path.join(ROOT, '.devflow', 'task-planner');
 const STATE = path.join(TP, 'project-state.json');
 
 const MANAGED = new Set([
-  'task-planning/project-state.json',
-  'task-planning/decisions.json',
-  'task-planning/semantic-contract.json',
-  'task-planning/requirements.json',
-  'task-planning/capability-map.json',
-  'task-planning/epic-plan.json',
-  'task-planning/task-plan.json',
+  '.devflow/task-planner/project-state.json',
+  '.devflow/task-planner/decisions.json',
+  '.devflow/task-planner/semantic-contract.json',
+  '.devflow/task-planner/requirements.json',
+  '.devflow/task-planner/capability-map.json',
+  '.devflow/task-planner/epic-plan.json',
+  '.devflow/task-planner/task-plan.json',
 ]);
 
 function usage() {
   console.error(`Uso:
-  node task-planning/tools/update-timestamps.mjs bootstrap
-  node task-planning/tools/update-timestamps.mjs touch <archivo.json> [archivo.json...]
-  node task-planning/tools/update-timestamps.mjs approval-requested <resolvedBlueprint|finalPlan>
-  node task-planning/tools/update-timestamps.mjs approval-resolved <resolvedBlueprint|finalPlan> <approved|rejected> <user>
-  node task-planning/tools/update-timestamps.mjs complete`);
+  node .devflow/task-planner/tools/update-timestamps.mjs bootstrap
+  node .devflow/task-planner/tools/update-timestamps.mjs touch <archivo.json> [archivo.json...]
+  node .devflow/task-planner/tools/update-timestamps.mjs approval-requested <resolvedBlueprint|finalPlan>
+  node .devflow/task-planner/tools/update-timestamps.mjs approval-resolved <resolvedBlueprint|finalPlan> <approved|rejected> <user>
+  node .devflow/task-planner/tools/update-timestamps.mjs complete`);
 }
 
 function nowIso() {
@@ -108,7 +108,7 @@ async function saveState(state, at) {
 }
 
 async function bootstrap(at) {
-  if (!(await exists(STATE))) throw new Error('Falta task-planning/project-state.json.');
+  if (!(await exists(STATE))) throw new Error('Falta .devflow/task-planner/project-state.json.');
   const state = await readJson(STATE);
   for (const relative of MANAGED) {
     const file = path.join(ROOT, relative);

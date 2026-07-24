@@ -43,7 +43,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Proyecto Destino                            │
-│  software-design/                                                │
+│  .devflow/software-architect/                                    │
 │  ├── project-state.json  (maquina de estados)                   │
 │  ├── workflow.md         (criterios de salida por fase)         │
 │  ├── decisions/         (Architecture Decision Records)         │
@@ -51,7 +51,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  ├── drafts/            (borradores en progreso)                │
 │  └── archive/           (documentos reemplazados)               │
 │                                                                  │
-│  task-planning/                                                  │
+│  .devflow/task-planner/                                          │
 │  ├── project-state.json  (estado del plan de tareas)            │
 │  ├── workflow.md         (fases de planificacion)               │
 │  ├── semantic-contract.json                                     │
@@ -87,7 +87,7 @@ Convierte una idea incompleta en un blueprint coherente, trazable y listo para e
   11. Consistency Review — Contradicciones, omisiones
   12. Final Document — Blueprint consolidado
 
-**Permisos:** Puede editar archivos en `software-design/`. **No puede** hacer `git commit` ni `git push`.
+**Permisos:** Puede editar archivos en `.devflow/software-architect/`. **No puede** hacer `git commit` ni `git push`.
 
 ### `task-planner` — Agente de Planificacion
 
@@ -107,7 +107,7 @@ Transforma un Software Blueprint aprobado en un plan completo de tareas para Dev
   9. Plan Validation — Ejecuta validador determinista
   10. Plan Approval — Solicita aprobacion humana del plan final
 
-**Permisos:** Puede editar archivos en `task-planning/`. **No puede** ejecutar codigo, hacer commits, ni modificar el producto.
+**Permisos:** Puede editar archivos en `.devflow/task-planner/`. **No puede** ejecutar codigo, hacer commits, ni modificar el producto.
 
 ## Comandos
 
@@ -223,7 +223,7 @@ Inicializa el proceso de diseno para el proyecto:
 ```
 
 El agente:
-- Verifica o crea `software-design/` con `project-state.json` y `workflow.md`
+- Verifica o crea `.devflow/software-architect/` con `project-state.json` y `workflow.md`
 - Lee el estado actual y continua desde la fase pendiente
 - Genera documentos por fase con aprobacion en puertas criticas
 
@@ -236,7 +236,7 @@ Una vez aprobado el blueprint, inicializa la planificacion:
 ```
 
 El agente:
-- Verifica o crea `task-planning/` con todos los archivos iniciales
+- Verifica o crea `.devflow/task-planner/` con todos los archivos iniciales
 - Analiza el blueprint y resuelve decisiones pendientes
 - Genera capacidades, epicas y tareas con validacion determinista
 - Produce un plan validado listo para DevFlow
@@ -266,7 +266,7 @@ make test
 
 1. **Los agentes definen roles y autoridad.** Cada agente tiene un alcance claro y permisos minimos.
 2. **Los comandos inician flujos repetibles.** Cada comando tiene un agente asignado y un proposito definido.
-3. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene su propio `software-design/` y `task-planning/`.
+3. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene su propio `.devflow/software-architect/` y `.devflow/task-planner/`.
 4. **Ningun agente puede hacer `git commit` o `git push`** sin cambiar explicitamente su politica.
 5. **Los borradores nunca se eliminan.** Se promueven a docs o se mueven a archive.
 6. **`project-state.json` es la unica fuente de verdad** para el progreso del workflow.

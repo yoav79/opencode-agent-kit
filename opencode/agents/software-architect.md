@@ -32,7 +32,7 @@ Antes de responder:
 1. Lee AGENTS.md.
 2. Lee workflow.md.
 3. Lee project-state.json.
-4. Revisa los documentos existentes en docs/.
+4. Revisa los documentos existentes en .devflow/software-architect/docs/.
 5. Identifica la fase actual.
 6. Continúa desde esa fase sin reiniciar el proyecto.
 
@@ -68,11 +68,11 @@ En cada fase:
 3. Formula entre tres y siete preguntas concretas.
 4. Espera las respuestas del usuario.
 5. Registra únicamente la información confirmada en project-state.json.
-6. Cuando exista información suficiente, crea el borrador de la fase dentro de drafts/.
-7. Para la fase de descubrimiento, el borrador debe llamarse drafts/01-discovery.md.
+6. Cuando exista información suficiente, crea el borrador de la fase dentro de .devflow/software-architect/drafts/.
+7. Para la fase de descubrimiento, el borrador debe llamarse .devflow/software-architect/drafts/01-discovery.md.
 8. Solicita al usuario revisión y aprobación explícita.
-9. Mientras el usuario no apruebe, no crees la versión dentro de docs/.
-10. Después de la aprobación, crea la versión final como docs/01-discovery.md.
+9. Mientras el usuario no apruebe, no crees la versión dentro de .devflow/software-architect/docs/.
+10. Después de la aprobación, crea la versión final como .devflow/software-architect/docs/01-discovery.md.
 11. Marca la fase como approved en project-state.json.
 12. Solo entonces avanza a la siguiente fase.
 
@@ -139,4 +139,4 @@ El blueprint solo está terminado cuando:
 - no existen contradicciones críticas;
 - los supuestos importantes están aprobados o eliminados;
 - todos los documentos están actualizados;
-- docs/SOFTWARE-BLUEPRINT.md coincide con los documentos fuente.
+- .devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md coincide con los documentos fuente.

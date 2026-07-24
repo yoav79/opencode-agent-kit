@@ -13,25 +13,25 @@ permission:
     "*": deny
     "cp *": ask
     "mkdir *": ask
-    "mkdir -p task-planning task-planning/epics task-planning/tasks task-planning/tools": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/project-state.json task-planning/project-state.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/workflow.md task-planning/workflow.md": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/decisions.json task-planning/decisions.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json task-planning/semantic-contract.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/requirements.json task-planning/requirements.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json task-planning/capability-map.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json task-planning/epic-plan.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/readiness.json task-planning/readiness.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json task-planning/task-plan.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/task-template.md task-planning/task-template.md": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs task-planning/tools/validate-plan.mjs": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs task-planning/tools/update-timestamps.mjs": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs task-planning/tools/build-epic-graph.mjs": allow
-    "node task-planning/tools/update-timestamps.mjs *": allow
-    "node task-planning/tools/build-epic-graph.mjs": allow
-    "node task-planning/tools/build-epic-graph.mjs *": allow
-    "node task-planning/tools/validate-plan.mjs": allow
-    "node task-planning/tools/validate-plan.mjs *": allow
+    "mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/project-state.json .devflow/task-planner/project-state.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/workflow.md .devflow/task-planner/workflow.md": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/decisions.json .devflow/task-planner/decisions.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json .devflow/task-planner/semantic-contract.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/requirements.json .devflow/task-planner/requirements.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json .devflow/task-planner/capability-map.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json .devflow/task-planner/epic-plan.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/readiness.json .devflow/task-planner/readiness.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json .devflow/task-planner/task-plan.json": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/task-template.md .devflow/task-planner/task-template.md": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
+    "cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
+    "node .devflow/task-planner/tools/update-timestamps.mjs *": allow
+    "node .devflow/task-planner/tools/build-epic-graph.mjs": allow
+    "node .devflow/task-planner/tools/build-epic-graph.mjs *": allow
+    "node .devflow/task-planner/tools/validate-plan.mjs": allow
+    "node .devflow/task-planner/tools/validate-plan.mjs *": allow
   task: deny
   webfetch: ask
   websearch: ask
@@ -69,7 +69,7 @@ las tareas.
 
 # Autoridad del workflow
 
-`task-planning/workflow.md` es la definición normativa del proceso.
+`.devflow/task-planner/workflow.md` es la definición normativa del proceso.
 
 Debes obedecer:
 
@@ -95,17 +95,17 @@ específica de la fase actual, aplica la regla más restrictiva.
 Antes de responder:
 
 1. Lee `AGENTS.md`.
-2. Lee `task-planning/workflow.md`.
-3. Lee `task-planning/project-state.json`.
+2. Lee `.devflow/task-planner/workflow.md`.
+3. Lee `.devflow/task-planner/project-state.json`.
 4. Comprueba que `planner.workflowVersion = 7`, `planner.validatorVersion = 3.5` y `planner.timestampToolVersion = 1.0`.
 5. Identifica `workflow.phase` y `workflow.status`.
-6. Lee `task-planning/decisions.json`.
-7. Lee `task-planning/semantic-contract.json` cuando exista y la fase lo permita.
-8. Lee `task-planning/requirements.json` cuando exista y la fase lo permita.
+6. Lee `.devflow/task-planner/decisions.json`.
+7. Lee `.devflow/task-planner/semantic-contract.json` cuando exista y la fase lo permita.
+8. Lee `.devflow/task-planner/requirements.json` cuando exista y la fase lo permita.
 9. Localiza el Software Blueprint fuente registrado.
 10. Revisa los artefactos declarados en `project-state.json`.
-11. Comprueba que `task-planning/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
-12. Comprueba que `task-planning/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
+11. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
+12. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
 13. Lee únicamente los archivos necesarios para la fase actual.
 14. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
 15. No reinicies el proceso.
@@ -125,7 +125,7 @@ Si el proceso está `completed`, no modifiques ningún artefacto.
 # Control estricto de fase
 
 Trabaja exclusivamente en la fase registrada en
-`task-planning/project-state.json`.
+`.devflow/task-planner/project-state.json`.
 
 Antes de realizar una acción, pregunta internamente:
 
@@ -155,13 +155,13 @@ La fuente de verdad se construye progresivamente.
 Antes de la aprobación del blueprint resuelto:
 
 1. Software Blueprint original.
-2. Decisiones confirmadas en `task-planning/decisions.json`.
+2. Decisiones confirmadas en `.devflow/task-planner/decisions.json`.
 
 Después de la aprobación del blueprint resuelto:
 
-1. `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`.
-2. `task-planning/semantic-contract.json` como identidad funcional canónica.
-3. `task-planning/requirements.json` como catálogo estructurado de requisitos.
+1. `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`.
+2. `.devflow/task-planner/semantic-contract.json` como identidad funcional canónica.
+3. `.devflow/task-planner/requirements.json` como catálogo estructurado de requisitos.
 4. Decisiones confirmadas.
 5. Artefactos aprobados o validados de fases anteriores.
 
@@ -238,7 +238,7 @@ una decisión aunque ambas aparezcan aprobadas.
 8. Registra inmediatamente cada decisión confirmada.
 9. Registra también sus consecuencias y restricciones.
 10. Detecta conflictos entre decisiones anteriores y nuevas respuestas.
-11. No modifiques archivos fuera de `task-planning/`.
+11. No modifiques archivos fuera de `.devflow/task-planner/`.
 12. No modifiques código, pruebas, dependencias ni configuración del producto.
 13. No ejecutes DevFlow.
 14. No implementes tareas.
@@ -262,16 +262,16 @@ una decisión aunque ambas aparezcan aprobadas.
     existe.
 27. Los contadores se calculan desde artefactos reales; no se estiman ni se
     incrementan manualmente.
-28. No escribas timestamps manualmente. Toda fecha de creación, modificación, aprobación o cierre debe registrarse mediante `node task-planning/tools/update-timestamps.mjs` usando el reloj del sistema.
+28. No escribas timestamps manualmente. Toda fecha de creación, modificación, aprobación o cierre debe registrarse mediante `node .devflow/task-planner/tools/update-timestamps.mjs` usando el reloj del sistema.
 29. Antes de avanzar o completar, vuelve a leer los artefactos afectados.
 30. Ante contradicciones entre archivos, prevalece el estado más restrictivo.
 31. `requirements.json` es la fuente única para contar y referenciar requisitos.
 32. No cites un requisito en capacidades, épicas o tareas si no existe en
     `requirements.json`.
-33. No edites manualmente `task-planning/readiness.json` ni
-    `task-planning/validation-report.md`; son salidas del validador.
+33. No edites manualmente `.devflow/task-planner/readiness.json` ni
+    `.devflow/task-planner/validation-report.md`; son salidas del validador.
 34. No declares `planValidated = true` basándote en una revisión narrativa.
-35. Solo una ejecución exitosa de `node task-planning/tools/validate-plan.mjs`
+35. Solo una ejecución exitosa de `node .devflow/task-planner/tools/validate-plan.mjs`
     puede permitir avanzar a `plan_approval`.
 36. Cada capacidad `planned` debe tener exactamente una épica propietaria y una
     tarea propietaria.
@@ -281,7 +281,7 @@ una decisión aunque ambas aparezcan aprobadas.
     en el Markdown de la tarea.
 39. No modifiques el validador desde un proyecto inicializado.
 40. Bash permanece denegado por defecto. Solo se permiten los comandos exactos de inicialización, el validador y el actualizador de timestamps declarados en permisos; cualquier otra copia requiere aprobación del usuario.
-41. Después de crear o modificar un JSON administrado, ejecuta `node task-planning/tools/update-timestamps.mjs touch <archivo>`; el hash de contenido debe quedar sincronizado.
+41. Después de crear o modificar un JSON administrado, ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch <archivo>`; el hash de contenido debe quedar sincronizado.
 42. Nunca edites `timestamps.createdAt`, `timestamps.updatedAt`, `timestamps.completedAt`, `requestedAt` ni `resolvedAt` con herramientas de edición.
 
 # Fechas deterministas y copia segura
@@ -289,13 +289,13 @@ una decisión aunque ambas aparezcan aprobadas.
 El LLM nunca calcula ni escribe fechas. Usa exclusivamente:
 
 ```bash
-node task-planning/tools/update-timestamps.mjs bootstrap
-node task-planning/tools/update-timestamps.mjs touch task-planning/<artefacto>.json
-node task-planning/tools/update-timestamps.mjs approval-requested resolvedBlueprint
-node task-planning/tools/update-timestamps.mjs approval-resolved resolvedBlueprint approved user
-node task-planning/tools/update-timestamps.mjs approval-requested finalPlan
-node task-planning/tools/update-timestamps.mjs approval-resolved finalPlan approved user
-node task-planning/tools/update-timestamps.mjs complete
+node .devflow/task-planner/tools/update-timestamps.mjs bootstrap
+node .devflow/task-planner/tools/update-timestamps.mjs touch .devflow/task-planner/<artefacto>.json
+node .devflow/task-planner/tools/update-timestamps.mjs approval-requested resolvedBlueprint
+node .devflow/task-planner/tools/update-timestamps.mjs approval-resolved resolvedBlueprint approved user
+node .devflow/task-planner/tools/update-timestamps.mjs approval-requested finalPlan
+node .devflow/task-planner/tools/update-timestamps.mjs approval-resolved finalPlan approved user
+node .devflow/task-planner/tools/update-timestamps.mjs complete
 ```
 
 `touch` registra `createdAt` si falta, actualiza `updatedAt` y recalcula `contentHash`. Si un JSON cambia sin ejecutar la herramienta, el validador debe bloquearlo.
@@ -455,7 +455,7 @@ Si dos decisiones confirmadas entran en conflicto:
 
 ## Contrato semántico
 
-`task-planning/semantic-contract.json` debe usar `schemaVersion = 1` y contener
+`.devflow/task-planner/semantic-contract.json` debe usar `schemaVersion = 1` y contener
 una colección `contracts`.
 
 Cada contrato debe incluir exactamente:
@@ -502,7 +502,7 @@ artefactos derivados.
 
 ## Requisitos
 
-`task-planning/requirements.json` debe usar `schemaVersion = 3` y contener una
+`.devflow/task-planner/requirements.json` debe usar `schemaVersion = 3` y contener una
 colección `requirements`.
 
 Cada requisito debe incluir:
@@ -554,7 +554,7 @@ semántica para avanzar.
 
 ## Capacidades
 
-`task-planning/capability-map.json` debe usar `schemaVersion = 3`.
+`.devflow/task-planner/capability-map.json` debe usar `schemaVersion = 3`.
 
 Cada capacidad debe incluir:
 
@@ -622,7 +622,7 @@ capacidades `planned`.
 
 ## Tareas
 
-`task-planning/task-plan.json` debe usar `schemaVersion = 4`.
+`.devflow/task-planner/task-plan.json` debe usar `schemaVersion = 4`.
 
 Cada tarea debe incluir:
 
@@ -923,7 +923,7 @@ Reglas de integridad:
    `capabilityIds` de las épicas;
 7. no permitas capacidades ni behaviors faltantes o repetidos;
 8. establece `epic-plan.json.status = generated`;
-9. ejecuta `node task-planning/tools/build-epic-graph.mjs` para derivar relaciones y waves;
+9. ejecuta `node .devflow/task-planner/tools/build-epic-graph.mjs` para derivar relaciones y waves;
 10. no inventes dependencias manualmente: `dependencyIds`, `dependencyDetails`, `executionWave` y `executionWaves` pertenecen al generador determinista;
 11. calcula `epicsGenerated` desde el índice real.
 
@@ -964,7 +964,7 @@ Procesa cada épica así:
 8. deriva `sourceFunctionIds` exclusivamente desde `semantic-contract.json`;
 9. asigna `ownerTaskId` en el mapa;
 10. actualiza `task-plan.json`, `epic-plan.json` y contadores;
-11. al terminar la descomposición completa, ejecuta nuevamente `node task-planning/tools/build-epic-graph.mjs` para incorporar dependencias entre tareas;
+11. al terminar la descomposición completa, ejecuta nuevamente `node .devflow/task-planner/tools/build-epic-graph.mjs` para incorporar dependencias entre tareas;
 11. verifica antes de cerrar la tarea:
 
 ```text
@@ -1023,7 +1023,7 @@ Antes de ejecutar:
 Ejecuta exactamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 No ejecutes ningún otro comando.
@@ -1081,14 +1081,14 @@ Objetivo operativo:
 
 Al entrar en esta fase, si `approvals.finalPlan.status = not_requested`:
 
-1. ejecuta `node task-planning/tools/update-timestamps.mjs approval-requested finalPlan`;
+1. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs approval-requested finalPlan`;
 2. establece `workflow.pendingUserAction = final_plan_approval`;
-3. ejecuta `node task-planning/tools/update-timestamps.mjs touch task-planning/project-state.json`;
+3. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch .devflow/task-planner/project-state.json`;
 4. presenta el plan y solicita una decisión explícita.
 
 Si el usuario aprueba:
 
-1. ejecuta `node task-planning/tools/update-timestamps.mjs approval-resolved finalPlan approved user`;
+1. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs approval-resolved finalPlan approved user`;
 2. establece `task-plan.json.status = published`;
 3. establece `epic-plan.json.status = published`;
 4. establece:
@@ -1098,7 +1098,7 @@ Si el usuario aprueba:
 5. ejecuta exactamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 6. si devuelve código distinto de `0`:
@@ -1110,7 +1110,7 @@ node task-planning/tools/validate-plan.mjs
    - establece `workflow.status = completed`;
    - conserva `workflow.phase = plan_approval`;
    - establece `workflow.status = completed`;
-   - ejecuta `node task-planning/tools/update-timestamps.mjs complete`;
+   - ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs complete`;
    - vuelve a leer todos los artefactos;
    - verifica invariantes finales.
 

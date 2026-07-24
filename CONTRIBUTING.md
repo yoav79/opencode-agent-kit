@@ -4,7 +4,7 @@ Gracias por tu interes en contribuir. Este documento explica como participar de 
 
 ## Principios Fundamentales
 
-1. **Separar configuracion de artefactos.** Los agentes, comandos y plantillas van en `opencode/` y `templates/`. Los resultados de cada proyecto van en su propio `software-design/` o `task-planning/`.
+1. **Separar configuracion de artefactos.** Los agentes, comandos y plantillas van en `opencode/` y `templates/`. Los resultados de cada proyecto van en su propio `.devflow/software-architect/` o `.devflow/task-planner/`.
 2. **Minimo privilegio.** Cada agente solo debe tener los permisos estrictamente necesarios para su rol.
 3. **No inventar.** Nunca agregar requisitos, features o decisiones que no esten respaldadas por evidencia.
 4. **Trazabilidad.** Cada cambio debe poder justificarse con un problema concreto o una mejora verificable.

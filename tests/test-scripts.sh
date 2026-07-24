@@ -25,14 +25,14 @@ echo "=== Testing create-project ==="
 "$REPO_ROOT/scripts/create-project.sh" software-architect "$PROJECT_DIR"
 
 [ -f "$PROJECT_DIR/AGENTS.md" ] || { echo "FAIL: AGENTS.md not created"; exit 1; }
-[ -f "$PROJECT_DIR/software-design/project-state.json" ] || { echo "FAIL: project-state.json not created"; exit 1; }
-[ -d "$PROJECT_DIR/software-design/decisions" ] || { echo "FAIL: decisions/ not created"; exit 1; }
-[ -d "$PROJECT_DIR/software-design/docs" ] || { echo "FAIL: docs/ not created"; exit 1; }
-[ -d "$PROJECT_DIR/software-design/drafts" ] || { echo "FAIL: drafts/ not created"; exit 1; }
-[ -d "$PROJECT_DIR/software-design/archive" ] || { echo "FAIL: archive/ not created"; exit 1; }
-[ -f "$PROJECT_DIR/software-design/workflow.md" ] || { echo "FAIL: workflow.md not created"; exit 1; }
+[ -f "$PROJECT_DIR/.devflow/software-architect/project-state.json" ] || { echo "FAIL: project-state.json not created"; exit 1; }
+[ -d "$PROJECT_DIR/.devflow/software-architect/decisions" ] || { echo "FAIL: decisions/ not created"; exit 1; }
+[ -d "$PROJECT_DIR/.devflow/software-architect/docs" ] || { echo "FAIL: docs/ not created"; exit 1; }
+[ -d "$PROJECT_DIR/.devflow/software-architect/drafts" ] || { echo "FAIL: drafts/ not created"; exit 1; }
+[ -d "$PROJECT_DIR/.devflow/software-architect/archive" ] || { echo "FAIL: archive/ not created"; exit 1; }
+[ -f "$PROJECT_DIR/.devflow/software-architect/workflow.md" ] || { echo "FAIL: workflow.md not created"; exit 1; }
 
-python3 - "$PROJECT_DIR/software-design/project-state.json" <<'PY'
+python3 - "$PROJECT_DIR/.devflow/software-architect/project-state.json" <<'PY'
 import json
 import sys
 from pathlib import Path

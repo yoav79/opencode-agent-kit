@@ -7,7 +7,7 @@ import process from 'node:process';
 
 const GRAPH_BUILDER_VERSION = '1.0';
 const ROOT = process.cwd();
-const TP = path.join(ROOT, 'task-planning');
+const TP = path.join(ROOT, '.devflow', 'task-planner');
 const EPIC_FILE = path.join(TP, 'epic-plan.json');
 const CAPABILITY_FILE = path.join(TP, 'capability-map.json');
 const TASK_FILE = path.join(TP, 'task-plan.json');
@@ -258,17 +258,17 @@ async function main() {
     state.progress.parallelEpicCandidates = epicPlan.graph.parallelCandidateCount;
     state.progress.epicGraphValidated = true;
     state.artifacts.epicGraphBuilder = {
-      path: 'task-planning/tools/build-epic-graph.mjs',
+      path: '.devflow/task-planner/tools/build-epic-graph.mjs',
       status: 'available',
     };
     await writeJson(STATE_FILE, state);
   }
 
   if (await exists(TIMESTAMP_TOOL)) {
-    const files = ['task-planning/epic-plan.json'];
-    if (state) files.push('task-planning/project-state.json');
+    const files = ['.devflow/task-planner/epic-plan.json'];
+    if (state) files.push('.devflow/task-planner/project-state.json');
     const result = spawnSync('node', [
-      'task-planning/tools/update-timestamps.mjs',
+      '.devflow/task-planner/tools/update-timestamps.mjs',
       'touch',
       ...files,
     ], {

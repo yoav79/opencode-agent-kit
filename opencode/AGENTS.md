@@ -22,5 +22,5 @@ proyecto deben vivir en el `AGENTS.md` de ese proyecto.
 
 ## Decisiones
 
-- Registra decisiones arquitectonicas relevantes en `software-design/decisions/`
+- Registra decisiones arquitectonicas relevantes en `.devflow/software-architect/decisions/`
   del proyecto, no en este repositorio global.

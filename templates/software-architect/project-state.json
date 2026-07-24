@@ -63,62 +63,62 @@
   "pendingApprovals": [],
   "documents": {
     "01_discovery": {
-      "path": "software-design/docs/01-discovery.md",
+      "path": ".devflow/software-architect/docs/01-discovery.md",
       "status": "pending",
       "approvedAt": null
     },
     "02_executive_definition": {
-      "path": "software-design/docs/02-executive-definition.md",
+      "path": ".devflow/software-architect/docs/02-executive-definition.md",
       "status": "pending",
       "approvedAt": null
     },
     "03_users_and_processes": {
-      "path": "software-design/docs/03-users-and-processes.md",
+      "path": ".devflow/software-architect/docs/03-users-and-processes.md",
       "status": "pending",
       "approvedAt": null
     },
     "04_module_catalog": {
-      "path": "software-design/docs/04-module-catalog.md",
+      "path": ".devflow/software-architect/docs/04-module-catalog.md",
       "status": "pending",
       "approvedAt": null
     },
     "05_functional_requirements": {
-      "path": "software-design/docs/05-functional-requirements.md",
+      "path": ".devflow/software-architect/docs/05-functional-requirements.md",
       "status": "pending",
       "approvedAt": null
     },
     "06_data_and_integrations": {
-      "path": "software-design/docs/06-data-and-integrations.md",
+      "path": ".devflow/software-architect/docs/06-data-and-integrations.md",
       "status": "pending",
       "approvedAt": null
     },
     "07_solution_architecture": {
-      "path": "software-design/docs/07-solution-architecture.md",
+      "path": ".devflow/software-architect/docs/07-solution-architecture.md",
       "status": "pending",
       "approvedAt": null
     },
     "08_technology_stack": {
-      "path": "software-design/docs/08-technology-stack.md",
+      "path": ".devflow/software-architect/docs/08-technology-stack.md",
       "status": "pending",
       "approvedAt": null
     },
     "09_security_and_nfr": {
-      "path": "software-design/docs/09-security-and-nfr.md",
+      "path": ".devflow/software-architect/docs/09-security-and-nfr.md",
       "status": "pending",
       "approvedAt": null
     },
     "10_delivery_roadmap": {
-      "path": "software-design/docs/10-delivery-roadmap.md",
+      "path": ".devflow/software-architect/docs/10-delivery-roadmap.md",
       "status": "pending",
       "approvedAt": null
     },
     "11_consistency_review": {
-      "path": "software-design/docs/11-consistency-review.md",
+      "path": ".devflow/software-architect/docs/11-consistency-review.md",
       "status": "pending",
       "approvedAt": null
     },
     "12_final_document": {
-      "path": "software-design/docs/SOFTWARE-BLUEPRINT.md",
+      "path": ".devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md",
       "status": "pending",
       "approvedAt": null
     }

@@ -94,7 +94,7 @@ def find_command():
     return ""
 
 def infer_directory():
-    scaffolds = {"software-architect": "software-design", "task-planner": "task-planning"}
+    scaffolds = {"software-architect": ".devflow/software-architect", "task-planner": ".devflow/task-planner"}
     if agent_name in scaffolds:
         return scaffolds[agent_name]
     return agent_name.replace("-", "_")

@@ -59,14 +59,14 @@ ni avanzar cuando no se cumplen sus condiciones de salida.
 17. No se permite una tarea general cuando existen incrementos verificables
     independientes.
 18. Los modelos y migraciones se introducen incrementalmente.
-19. Las relaciones entre épicas y las execution waves se derivan mediante `task-planning/tools/build-epic-graph.mjs`.
-20. La validación determinista se realiza mediante `task-planning/tools/validate-plan.mjs`.
-21. Las fechas y hashes de JSON se registran exclusivamente mediante `task-planning/tools/update-timestamps.mjs`; el LLM no escribe fechas.
+19. Las relaciones entre épicas y las execution waves se derivan mediante `.devflow/task-planner/tools/build-epic-graph.mjs`.
+20. La validación determinista se realiza mediante `.devflow/task-planner/tools/validate-plan.mjs`.
+21. Las fechas y hashes de JSON se registran exclusivamente mediante `.devflow/task-planner/tools/update-timestamps.mjs`; el LLM no escribe fechas.
 22. Task Planner no puede declarar manualmente que el plan pasó la validación.
 23. `readiness.json` y `validation-report.md` son salidas del validador.
 24. El proceso termina únicamente después de validar y aprobar el plan final.
 25. Esta versión no incluye ejecución, seguimiento ni replanificación.
-26. Todo archivo generado permanece dentro de `task-planning/`.
+26. Todo archivo generado permanece dentro de `.devflow/task-planner/`.
 27. Los artefactos y `project-state.json` permanecen sincronizados.
 28. Ningún estado `completed`, `passed` o `published` se registra como intención
     provisional.
@@ -86,7 +86,7 @@ respetar.
 
 Documento original aprobado que describe el sistema.
 
-La ubicación exacta debe registrarse en `task-planning/project-state.json`.
+La ubicación exacta debe registrarse en `.devflow/task-planner/project-state.json`.
 
 El blueprint fuente es inmutable.
 
@@ -94,7 +94,7 @@ El blueprint fuente es inmutable.
 
 ## Archivos de estado
 
-### `task-planning/project-state.json`
+### `.devflow/task-planner/project-state.json`
 
 Registra:
 
@@ -110,7 +110,7 @@ Registra:
 - épica actual durante la descomposición;
 - fechas de actualización.
 
-### `task-planning/decisions.json`
+### `.devflow/task-planner/decisions.json`
 
 Registra:
 
@@ -124,7 +124,7 @@ Registra:
 - restricciones resultantes;
 - requisitos y secciones afectadas.
 
-### `task-planning/semantic-contract.json`
+### `.devflow/task-planner/semantic-contract.json`
 
 Contiene la identidad semántica canónica de cada función atómica confirmada:
 
@@ -141,7 +141,7 @@ Contiene la identidad semántica canónica de cada función atómica confirmada:
 Se genera en `blueprint_consolidation`, se aprueba junto con el blueprint y no
 puede reinterpretarse en fases posteriores.
 
-### `task-planning/requirements.json`
+### `.devflow/task-planner/requirements.json`
 
 Contiene el catálogo estructurado de requisitos.
 
@@ -154,13 +154,13 @@ Es la fuente única para:
 - inventario de behaviors atómicos;
 - funciones agregadas o ambiguas pendientes de resolución.
 
-### `task-planning/readiness.json`
+### `.devflow/task-planner/readiness.json`
 
 Registra el resultado de la última ejecución del validador determinista.
 
 Task Planner no puede establecer manualmente su estado en `passed`.
 
-### `task-planning/capability-map.json`
+### `.devflow/task-planner/capability-map.json`
 
 Contiene:
 
@@ -172,7 +172,7 @@ Contiene:
 - capacidades requeridas;
 - consumidores.
 
-### `task-planning/epic-plan.json`
+### `.devflow/task-planner/epic-plan.json`
 
 Contiene:
 
@@ -183,7 +183,7 @@ Contiene:
 - tareas derivadas;
 - estado de descomposición.
 
-### `task-planning/task-plan.json`
+### `.devflow/task-planner/task-plan.json`
 
 Contiene:
 
@@ -195,20 +195,20 @@ Contiene:
 - cobertura estructurada de requisitos.
 
 
-### `task-planning/tools/update-timestamps.mjs`
+### `.devflow/task-planner/tools/update-timestamps.mjs`
 
 Herramienta determinista de reloj y huella de contenido. Registra fechas ISO UTC obtenidas del sistema, preserva `createdAt`, actualiza `updatedAt`, registra aprobaciones y cierre, y calcula `contentHash`.
 
 Debe ejecutarse después de crear o modificar cualquier JSON administrado.
 
-### `task-planning/tools/validate-plan.mjs`
+### `.devflow/task-planner/tools/validate-plan.mjs`
 
 Validador determinista del plan.
 
 Solo puede escribir:
 
-- `task-planning/readiness.json`;
-- `task-planning/validation-report.md`.
+- `.devflow/task-planner/readiness.json`;
+- `.devflow/task-planner/validation-report.md`.
 
 Debe devolver:
 
@@ -219,28 +219,28 @@ Debe devolver:
 
 ## Documentos generados
 
-### `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`
+### `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`
 
 Versión consolidada del blueprint original con las decisiones confirmadas.
 
 No reemplaza ni modifica el blueprint fuente.
 
-### `task-planning/construction-strategy.md`
+### `.devflow/task-planner/construction-strategy.md`
 
 Describe cómo se construirá, integrará y validará progresivamente el sistema.
 
-### `task-planning/epics/*.md`
+### `.devflow/task-planner/epics/*.md`
 
 Una épica por archivo.
 
 Las épicas representan resultados amplios y descomponibles. No son solicitudes
 ejecutables por DevFlow.
 
-### `task-planning/tasks/*.md`
+### `.devflow/task-planner/tasks/*.md`
 
 Una solicitud de tarea ejecutable por DevFlow por archivo.
 
-### `task-planning/validation-report.md`
+### `.devflow/task-planner/validation-report.md`
 
 Registra los controles realizados durante la validación final, los errores
 detectados y las correcciones aplicadas antes de la publicación.
@@ -323,15 +323,15 @@ suficiente y consistente para iniciar la planificación.
 
 - `AGENTS.md`;
 - blueprint fuente;
-- `task-planning/project-state.json`;
-- `task-planning/decisions.json`;
+- `.devflow/task-planner/project-state.json`;
+- `.devflow/task-planner/decisions.json`;
 - artefactos existentes de una sesión anterior.
 
 ## Acciones obligatorias
 
 1. Leer `AGENTS.md`.
-2. Leer `task-planning/project-state.json`.
-3. Leer `task-planning/decisions.json`.
+2. Leer `.devflow/task-planner/project-state.json`.
+3. Leer `.devflow/task-planner/decisions.json`.
 4. Localizar el blueprint fuente registrado.
 5. Leer el blueprint completo.
 6. Auditar independientemente:
@@ -389,8 +389,8 @@ suficiente y consistente para iniciar la planificación.
 
 Actualizar:
 
-- `task-planning/project-state.json`;
-- `task-planning/decisions.json`.
+- `.devflow/task-planner/project-state.json`;
+- `.devflow/task-planner/decisions.json`.
 
 ## Condición de salida A
 
@@ -434,8 +434,8 @@ alcance, los datos, las integraciones, la seguridad o la planificación.
 ## Entradas permitidas
 
 - blueprint fuente;
-- `task-planning/decisions.json`;
-- `task-planning/project-state.json`;
+- `.devflow/task-planner/decisions.json`;
+- `.devflow/task-planner/project-state.json`;
 - respuestas explícitas del usuario.
 
 ## Acciones obligatorias
@@ -484,8 +484,8 @@ alcance, los datos, las integraciones, la seguridad o la planificación.
 
 Actualizar:
 
-- `task-planning/decisions.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/decisions.json`;
+- `.devflow/task-planner/project-state.json`.
 
 ## Condición de permanencia
 
@@ -533,8 +533,8 @@ funcional el contrato semántico canónico y el catálogo de requisitos.
 ## Entradas permitidas
 
 - blueprint fuente;
-- `task-planning/decisions.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/decisions.json`;
+- `.devflow/task-planner/project-state.json`.
 
 ## Acciones obligatorias
 
@@ -555,8 +555,8 @@ funcional el contrato semántico canónico y el catálogo de requisitos.
    - `scope`.
 6. Incorporar `Function ID`, operación y resultado observable en el blueprint
    resuelto.
-7. Generar `task-planning/semantic-contract.json` con `schemaVersion = 1`.
-8. Generar `task-planning/requirements.json` con `schemaVersion = 3`.
+7. Generar `.devflow/task-planner/semantic-contract.json` con `schemaVersion = 1`.
+8. Generar `.devflow/task-planner/requirements.json` con `schemaVersion = 3`.
 9. Copiar los campos semánticos de cada contrato al behavior correspondiente sin
    modificaciones.
 10. Confirmar igualdad exacta de contratos y behaviors.
@@ -580,10 +580,10 @@ funcional el contrato semántico canónico y el catálogo de requisitos.
 
 ## Entregables
 
-- `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
+- `.devflow/task-planner/project-state.json`.
 
 Al terminar:
 
@@ -682,8 +682,8 @@ Deben cumplirse todas:
 ## Entradas permitidas
 
 - blueprint resuelto;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
 - decisiones confirmadas;
 - reglas generales del proyecto;
 - información explícita sobre el estado inicial del repositorio.
@@ -709,7 +709,7 @@ Deben cumplirse todas:
 
 11. Definir qué prueba o evidencia demuestra cada incremento.
 12. Identificar los prerrequisitos de cada incremento.
-13. Generar `task-planning/construction-strategy.md`.
+13. Generar `.devflow/task-planner/construction-strategy.md`.
 14. Actualizar el estado del proyecto.
 
 ## Reglas obligatorias
@@ -738,8 +738,8 @@ Deben cumplirse todas:
 
 Crear o actualizar:
 
-- `task-planning/construction-strategy.md`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/construction-strategy.md`;
+- `.devflow/task-planner/project-state.json`.
 
 ## Condición de salida
 
@@ -825,8 +825,8 @@ contrato semántico.
 
 ## Entregables
 
-- `task-planning/capability-map.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/project-state.json`.
 
 ## Condición de salida
 
@@ -852,8 +852,8 @@ Agrupar capacidades planificadas en incrementos funcionales coherentes, usando
 ## Entradas permitidas
 
 - blueprint resuelto;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
 - decisiones confirmadas;
 - estrategia de construcción;
 - mapa de capacidades.
@@ -918,8 +918,8 @@ Tipos permitidos:
     `capabilityIds` de todas las épicas.
 12. Definir dependencias únicamente entre incrementos reales.
 13. Confirmar que no existen ciclos.
-14. Crear un archivo por épica dentro de `task-planning/epics/`.
-15. Generar `task-planning/epic-plan.json`.
+14. Crear un archivo por épica dentro de `.devflow/task-planner/epics/`.
+15. Generar `.devflow/task-planner/epic-plan.json`.
 16. Actualizar el estado del proyecto desde los artefactos reales.
 
 ## División excepcional de requisitos
@@ -951,7 +951,7 @@ Sin esas condiciones, dividir un requisito es un error bloqueante.
 - crear una épica por cada behavior por defecto;
 - dividir un requisito sin una decisión humana confirmada;
 - inventar un `splitReason` después de generar la división;
-- crear archivos dentro de `task-planning/tasks/`;
+- crear archivos dentro de `.devflow/task-planner/tasks/`;
 - asignar `ownerTaskId`;
 - marcar una épica como descompuesta;
 - declarar que una épica es indivisible;
@@ -962,10 +962,10 @@ Sin esas condiciones, dividir un requisito es un error bloqueante.
 
 Crear o actualizar:
 
-- `task-planning/epics/*.md`;
-- `task-planning/epic-plan.json`;
-- `task-planning/capability-map.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/epics/*.md`;
+- `.devflow/task-planner/epic-plan.json`;
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/project-state.json`.
 
 Al terminar correctamente:
 
@@ -1061,11 +1061,11 @@ Supervisor a inventar reglas.
 
 ## Entregables
 
-- `task-planning/tasks/*.md`;
-- `task-planning/task-plan.json`;
-- `task-planning/epic-plan.json`;
-- `task-planning/capability-map.json`;
-- `task-planning/project-state.json`.
+- `.devflow/task-planner/tasks/*.md`;
+- `.devflow/task-planner/task-plan.json`;
+- `.devflow/task-planner/epic-plan.json`;
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/project-state.json`.
 
 ## Condición de salida
 
@@ -1079,19 +1079,19 @@ contrato semántico = behavior = capacidad = tarea = cobertura = Markdown
 
 # Regla transversal — Sincronización de artefactos
 
-Los artefactos y `task-planning/project-state.json` deben permanecer sincronizados. Después de cada modificación JSON debe ejecutarse el actualizador de timestamps y hash.
+Los artefactos y `.devflow/task-planner/project-state.json` deben permanecer sincronizados. Después de cada modificación JSON debe ejecutarse el actualizador de timestamps y hash.
 
 Después de crear o modificar cualquiera de estos artefactos:
 
-- `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
-- `task-planning/construction-strategy.md`;
-- `task-planning/capability-map.json`;
-- `task-planning/epic-plan.json`;
-- `task-planning/epics/*.md`;
-- `task-planning/task-plan.json`;
-- `task-planning/tasks/*.md`;
+- `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
+- `.devflow/task-planner/construction-strategy.md`;
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/epic-plan.json`;
+- `.devflow/task-planner/epics/*.md`;
+- `.devflow/task-planner/task-plan.json`;
+- `.devflow/task-planner/tasks/*.md`;
 
 Task Planner debe actualizar inmediatamente su estado correspondiente dentro de
 `project-state.json`.
@@ -1159,18 +1159,18 @@ capacidades, épicas y tareas forman un plan consistente.
 
 Antes de ejecutar el validador, volver a leer:
 
-1. `task-planning/project-state.json`;
-2. `task-planning/decisions.json`;
-3. `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`;
-4. `task-planning/semantic-contract.json`;
-5. `task-planning/requirements.json`;
-6. `task-planning/construction-strategy.md`;
-7. `task-planning/capability-map.json`;
-8. `task-planning/epic-plan.json`;
-9. todos los archivos dentro de `task-planning/epics/`;
-10. `task-planning/task-plan.json`;
-11. todos los archivos dentro de `task-planning/tasks/`;
-12. `task-planning/tools/validate-plan.mjs`.
+1. `.devflow/task-planner/project-state.json`;
+2. `.devflow/task-planner/decisions.json`;
+3. `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`;
+4. `.devflow/task-planner/semantic-contract.json`;
+5. `.devflow/task-planner/requirements.json`;
+6. `.devflow/task-planner/construction-strategy.md`;
+7. `.devflow/task-planner/capability-map.json`;
+8. `.devflow/task-planner/epic-plan.json`;
+9. todos los archivos dentro de `.devflow/task-planner/epics/`;
+10. `.devflow/task-planner/task-plan.json`;
+11. todos los archivos dentro de `.devflow/task-planner/tasks/`;
+12. `.devflow/task-planner/tools/validate-plan.mjs`.
 
 La validación debe tratar el plan como producido por un tercero.
 
@@ -1194,7 +1194,7 @@ Antes de ejecutar el validador:
 Ejecutar exactamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 No se permite sustituir este comando por una evaluación narrativa.
@@ -1203,8 +1203,8 @@ El comando:
 
 - devuelve código `0` si pasa;
 - devuelve código distinto de `0` si falla;
-- escribe `task-planning/readiness.json`;
-- escribe `task-planning/validation-report.md`.
+- escribe `.devflow/task-planner/readiness.json`;
+- escribe `.devflow/task-planner/validation-report.md`.
 
 Task Planner no puede editar manualmente esos dos archivos para cambiar el
 resultado.
@@ -1407,7 +1407,7 @@ Solicitar:
 
 Antes de solicitar por primera vez:
 
-1. ejecutar `node task-planning/tools/update-timestamps.mjs approval-requested finalPlan`;
+1. ejecutar `node .devflow/task-planner/tools/update-timestamps.mjs approval-requested finalPlan`;
 2. establecer `workflow.pendingUserAction = final_plan_approval`;
 3. actualizar `project-state.json` mediante `update-timestamps.mjs touch`;
 4. no volver a registrar `requestedAt` en reanudaciones posteriores.
@@ -1418,7 +1418,7 @@ Actualizar, en este orden:
 
 1. `task-plan.json.status = published`.
 2. `epic-plan.json.status = published`.
-3. Ejecutar `node task-planning/tools/update-timestamps.mjs approval-resolved finalPlan approved user`.
+3. Ejecutar `node .devflow/task-planner/tools/update-timestamps.mjs approval-resolved finalPlan approved user`.
 4. Establecer:
    - `progress.planPublished = true`;
    - `progress.finalPlanApproved = true`;
@@ -1430,7 +1430,7 @@ Actualizar, en este orden:
 6. Ejecutar nuevamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 7. Si devuelve código distinto de `0`:
@@ -1580,7 +1580,7 @@ No se permiten otras transiciones.
 
 Al iniciar una nueva sesión:
 
-1. Leer `task-planning/project-state.json`.
+1. Leer `.devflow/task-planner/project-state.json`.
 2. Confirmar versión del workflow, fase y estado.
 3. Verificar que los artefactos declarados existan.
 4. Leer únicamente los archivos necesarios para la fase actual.

@@ -29,8 +29,8 @@ test('bash queda deny por defecto y cp genérico requiere aprobación', async ()
 
 test('solo las copias cp -n de plantillas conocidas quedan permitidas', async () => {
   const text = await agentText();
-  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/project-state\.json task-planning\/project-state\.json": allow/);
-  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/tools\/update-timestamps\.mjs task-planning\/tools\/update-timestamps\.mjs": allow/);
-  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/tools\/build-epic-graph\.mjs task-planning\/tools\/build-epic-graph\.mjs": allow/);
-  assert.match(text, /node task-planning\/tools\/build-epic-graph\.mjs": allow/);
+  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/project-state\.json \.devflow\/task-planner\/project-state\.json": allow/);
+  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/tools\/update-timestamps\.mjs \.devflow\/task-planner\/tools\/update-timestamps\.mjs": allow/);
+  assert.match(text, /cp -n \/home\/yoab\/\.config\/opencode\/task-planner\/templates\/tools\/build-epic-graph\.mjs \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow/);
 });

@@ -2,14 +2,14 @@
 
 ## Ubicacion de archivos
 
-- **`software-design/docs/`** — documentos vigentes y aprobados. Solo un
+- **`.devflow/software-architect/docs/`** — documentos vigentes y aprobados. Solo un
   documento activo por topic.
-- **`software-design/drafts/`** — trabajo incompleto o pendiente de aprobacion.
+- **`.devflow/software-architect/drafts/`** — trabajo incompleto o pendiente de aprobacion.
   Los borradores nunca se eliminan; se promueven a `docs/` o se mueven a
   `archive/`.
-- **`software-design/decisions/`** — decisiones arquitectonicas registradas como
+- **`.devflow/software-architect/decisions/`** — decisiones arquitectonicas registradas como
   ADRs (Architecture Decision Records).
-- **`software-design/archive/`** — versiones reemplazadas que deben conservarse
+- **`.devflow/software-architect/archive/`** — versiones reemplazadas que deben conservarse
   por trazabilidad. No se eliminan.
 
 ## Convenciones de nombres

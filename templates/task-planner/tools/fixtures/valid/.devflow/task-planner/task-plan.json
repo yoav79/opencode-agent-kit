@@ -5,7 +5,7 @@
     {
       "id": "TASK-001",
       "title": "Scaffolding de la aplicación Next.js",
-      "file": "task-planning/tasks/TASK-001.md",
+      "file": ".devflow/task-planner/tasks/TASK-001.md",
       "epicId": "EPIC-DOM-001",
       "type": "enabling",
       "dependencyIds": [],
@@ -20,7 +20,7 @@
     {
       "id": "TASK-002",
       "title": "Capa de API routes de Next.js",
-      "file": "task-planning/tasks/TASK-002.md",
+      "file": ".devflow/task-planner/tasks/TASK-002.md",
       "epicId": "EPIC-DOM-001",
       "type": "enabling",
       "dependencyIds": [
@@ -39,7 +39,7 @@
     {
       "id": "TASK-003",
       "title": "Crear dominio de correo",
-      "file": "task-planning/tasks/TASK-003.md",
+      "file": ".devflow/task-planner/tasks/TASK-003.md",
       "epicId": "EPIC-DOM-001",
       "type": "functional",
       "dependencyIds": [
@@ -76,7 +76,7 @@
     {
       "id": "TASK-004",
       "title": "Habilitar dominio de correo",
-      "file": "task-planning/tasks/TASK-004.md",
+      "file": ".devflow/task-planner/tasks/TASK-004.md",
       "epicId": "EPIC-DOM-001",
       "type": "functional",
       "dependencyIds": [
@@ -113,7 +113,7 @@
     {
       "id": "TASK-005",
       "title": "Deshabilitar dominio de correo",
-      "file": "task-planning/tasks/TASK-005.md",
+      "file": ".devflow/task-planner/tasks/TASK-005.md",
       "epicId": "EPIC-DOM-001",
       "type": "functional",
       "dependencyIds": [
@@ -150,7 +150,7 @@
     {
       "id": "TASK-006",
       "title": "Eliminar dominio de correo",
-      "file": "task-planning/tasks/TASK-006.md",
+      "file": ".devflow/task-planner/tasks/TASK-006.md",
       "epicId": "EPIC-DOM-001",
       "type": "functional",
       "dependencyIds": [
@@ -187,7 +187,7 @@
     {
       "id": "TASK-007",
       "title": "Validar configuración de correo",
-      "file": "task-planning/tasks/TASK-007.md",
+      "file": ".devflow/task-planner/tasks/TASK-007.md",
       "epicId": "EPIC-DOM-001",
       "type": "functional",
       "dependencyIds": [

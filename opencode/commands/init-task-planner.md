@@ -93,7 +93,7 @@ versiones incompatibles y sin crear artefactos derivados antes de tiempo.
 La estructura inicial válida es:
 
 ```text
-task-planning/
+.devflow/task-planner/
 ├── project-state.json
 ├── workflow.md
 ├── decisions.json
@@ -114,9 +114,9 @@ task-planning/
 No crees durante la inicialización:
 
 ```text
-task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md
-task-planning/construction-strategy.md
-task-planning/validation-report.md
+.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md
+.devflow/task-planner/construction-strategy.md
+.devflow/task-planner/validation-report.md
 ```
 
 Esos archivos son artefactos derivados y deben generarse únicamente en la fase
@@ -128,21 +128,21 @@ que les corresponde.
 Para un proyecto nuevo usa exactamente:
 
 ```bash
-mkdir -p task-planning task-planning/epics task-planning/tasks task-planning/tools
-cp -n $HOME/.config/opencode/task-planner/templates/project-state.json task-planning/project-state.json
-cp -n $HOME/.config/opencode/task-planner/templates/workflow.md task-planning/workflow.md
-cp -n $HOME/.config/opencode/task-planner/templates/decisions.json task-planning/decisions.json
-cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json task-planning/semantic-contract.json
-cp -n $HOME/.config/opencode/task-planner/templates/requirements.json task-planning/requirements.json
-cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json task-planning/capability-map.json
-cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json task-planning/epic-plan.json
-cp -n $HOME/.config/opencode/task-planner/templates/readiness.json task-planning/readiness.json
-cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json task-planning/task-plan.json
-cp -n $HOME/.config/opencode/task-planner/templates/task-template.md task-planning/task-template.md
-cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs task-planning/tools/validate-plan.mjs
-cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs task-planning/tools/update-timestamps.mjs
-cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs task-planning/tools/build-epic-graph.mjs
-node task-planning/tools/update-timestamps.mjs bootstrap
+mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools
+cp -n $HOME/.config/opencode/task-planner/templates/project-state.json .devflow/task-planner/project-state.json
+cp -n $HOME/.config/opencode/task-planner/templates/workflow.md .devflow/task-planner/workflow.md
+cp -n $HOME/.config/opencode/task-planner/templates/decisions.json .devflow/task-planner/decisions.json
+cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json .devflow/task-planner/semantic-contract.json
+cp -n $HOME/.config/opencode/task-planner/templates/requirements.json .devflow/task-planner/requirements.json
+cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json .devflow/task-planner/capability-map.json
+cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json .devflow/task-planner/epic-plan.json
+cp -n $HOME/.config/opencode/task-planner/templates/readiness.json .devflow/task-planner/readiness.json
+cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json .devflow/task-planner/task-plan.json
+cp -n $HOME/.config/opencode/task-planner/templates/task-template.md .devflow/task-planner/task-template.md
+cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
+cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
+cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
+node .devflow/task-planner/tools/update-timestamps.mjs bootstrap
 ```
 
 No retires `-n`. Cualquier copia distinta debe solicitar aprobación.
@@ -155,7 +155,7 @@ Confirma que estás trabajando en la raíz del proyecto actual.
 
 No inicialices dentro de:
 
-- `task-planning/`;
+- `.devflow/task-planner/`;
 - un subdirectorio del proyecto;
 - el directorio global de plantillas;
 - un repositorio distinto al solicitado.
@@ -186,30 +186,30 @@ Antes de crear o modificar cualquier archivo del proyecto:
 
 ### 3. Determinar si es inicialización o reanudación
 
-Revisa si existe `task-planning/`.
+Revisa si existe `.devflow/task-planner/`.
 
-#### Caso A — `task-planning/` no existe
+#### Caso A — `.devflow/task-planner/` no existe
 
 Inicializa un proyecto nuevo:
 
-1. crea `task-planning/`;
-2. crea `task-planning/epics/`;
-3. crea `task-planning/tasks/`;
-4. crea `task-planning/tools/`;
+1. crea `.devflow/task-planner/`;
+2. crea `.devflow/task-planner/epics/`;
+3. crea `.devflow/task-planner/tasks/`;
+4. crea `.devflow/task-planner/tools/`;
 5. crea cada archivo inicial usando exactamente su plantilla oficial;
-6. copia el validador oficial como `task-planning/tools/validate-plan.mjs`;
-7. copia el actualizador oficial como `task-planning/tools/update-timestamps.mjs`;
-8. ejecuta `node task-planning/tools/update-timestamps.mjs bootstrap`;
+6. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
+7. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
+8. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
 9. no agregues registros de ejemplo;
 10. no ejecutes el validador.
 
-#### Caso B — `task-planning/` ya existe
+#### Caso B — `.devflow/task-planner/` ya existe
 
 No crees ni reemplaces ningún archivo todavía.
 
 Primero:
 
-1. comprueba si existe `task-planning/project-state.json`;
+1. comprueba si existe `.devflow/task-planner/project-state.json`;
 2. si no existe y el directorio contiene cualquier artefacto o archivo previo:
    - no crees un estado nuevo;
    - marca la situación como recuperación o migración requerida;
@@ -237,29 +237,29 @@ Primero:
    - detén el proceso;
 8. comprueba que las rutas de `artifacts` sean compatibles con las plantillas
    oficiales;
-9. lee `task-planning/workflow.md`, si existe, y confirma que corresponde al
+9. lee `.devflow/task-planner/workflow.md`, si existe, y confirma que corresponde al
    workflow versión `7`;
 10. solo después de completar estas comprobaciones, crea los archivos iniciales
     faltantes permitidos.
-11. por cada JSON faltante creado, ejecuta `node task-planning/tools/update-timestamps.mjs touch <archivo>`; nunca uses `bootstrap` sobre una reanudación con artefactos existentes.
+11. por cada JSON faltante creado, ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch <archivo>`; nunca uses `bootstrap` sobre una reanudación con artefactos existentes.
 
 ### 4. Archivos iniciales permitidos
 
 En un proyecto nuevo o en una reanudación compatible, pueden crearse cuando
 falten:
 
-- `task-planning/project-state.json`;
-- `task-planning/workflow.md`;
-- `task-planning/decisions.json`;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
-- `task-planning/capability-map.json`;
-- `task-planning/epic-plan.json`;
-- `task-planning/readiness.json`;
-- `task-planning/task-plan.json`;
-- `task-planning/task-template.md`;
-- `task-planning/tools/validate-plan.mjs`;
-- `task-planning/tools/update-timestamps.mjs`.
+- `.devflow/task-planner/project-state.json`;
+- `.devflow/task-planner/workflow.md`;
+- `.devflow/task-planner/decisions.json`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/epic-plan.json`;
+- `.devflow/task-planner/readiness.json`;
+- `.devflow/task-planner/task-plan.json`;
+- `.devflow/task-planner/task-template.md`;
+- `.devflow/task-planner/tools/validate-plan.mjs`;
+- `.devflow/task-planner/tools/update-timestamps.mjs`.
 
 Cada archivo faltante debe crearse exclusivamente desde su plantilla oficial.
 
@@ -290,20 +290,20 @@ Durante una reanudación compatible:
 
 No borres ni sobrescribas contenido de:
 
-- `task-planning/decisions.json`;
-- `task-planning/semantic-contract.json`;
-- `task-planning/requirements.json`;
-- `task-planning/capability-map.json`;
-- `task-planning/epic-plan.json`;
-- `task-planning/task-plan.json`;
-- `task-planning/epics/`;
-- `task-planning/tasks/`.
+- `.devflow/task-planner/decisions.json`;
+- `.devflow/task-planner/semantic-contract.json`;
+- `.devflow/task-planner/requirements.json`;
+- `.devflow/task-planner/capability-map.json`;
+- `.devflow/task-planner/epic-plan.json`;
+- `.devflow/task-planner/task-plan.json`;
+- `.devflow/task-planner/epics/`;
+- `.devflow/task-planner/tasks/`.
 
 ### 6. Verificación posterior a la copia
 
 Después de crear archivos iniciales:
 
-1. vuelve a leer `task-planning/project-state.json`;
+1. vuelve a leer `.devflow/task-planner/project-state.json`;
 2. confirma que conserva:
    - `schemaVersion = 3`;
    - `planner.workflowVersion = 7`;
@@ -373,7 +373,7 @@ aprobación.
 No ejecutes:
 
 ```text
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 durante la inicialización ni antes de `plan_validation`.

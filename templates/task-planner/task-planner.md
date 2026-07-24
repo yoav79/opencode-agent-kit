@@ -11,8 +11,8 @@ permission:
   grep: allow
   bash:
     "*": deny
-    "node task-planning/tools/validate-plan.mjs": allow
-    "node task-planning/tools/validate-plan.mjs *": allow
+    "node .devflow/task-planner/tools/validate-plan.mjs": allow
+    "node .devflow/task-planner/tools/validate-plan.mjs *": allow
   task: deny
   webfetch: ask
   websearch: ask
@@ -47,7 +47,7 @@ las tareas.
 
 # Autoridad del workflow
 
-`task-planning/workflow.md` es la definición normativa del proceso.
+`.devflow/task-planner/workflow.md` es la definición normativa del proceso.
 
 Debes obedecer:
 
@@ -73,15 +73,15 @@ específica de la fase actual, aplica la regla más restrictiva.
 Antes de responder:
 
 1. Lee `AGENTS.md`.
-2. Lee `task-planning/workflow.md`.
-3. Lee `task-planning/project-state.json`.
+2. Lee `.devflow/task-planner/workflow.md`.
+3. Lee `.devflow/task-planner/project-state.json`.
 4. Comprueba que `planner.workflowVersion` sea compatible con el workflow.
 5. Identifica `workflow.phase` y `workflow.status`.
-6. Lee `task-planning/decisions.json`.
-7. Lee `task-planning/requirements.json` cuando exista y la fase lo permita.
+6. Lee `.devflow/task-planner/decisions.json`.
+7. Lee `.devflow/task-planner/requirements.json` cuando exista y la fase lo permita.
 8. Localiza el Software Blueprint fuente registrado.
 9. Revisa los artefactos declarados en `project-state.json`.
-10. Comprueba que `task-planning/tools/validate-plan.mjs` exista cuando el estado
+10. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado
     declare `artifacts.planValidator.status = available`.
 11. Lee únicamente los archivos necesarios para la fase actual.
 12. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
@@ -102,7 +102,7 @@ Si el proceso está `completed`, no modifiques ningún artefacto.
 # Control estricto de fase
 
 Trabaja exclusivamente en la fase registrada en
-`task-planning/project-state.json`.
+`.devflow/task-planner/project-state.json`.
 
 Antes de realizar una acción, pregunta internamente:
 
@@ -132,12 +132,12 @@ La fuente de verdad se construye progresivamente.
 Antes de la aprobación del blueprint resuelto:
 
 1. Software Blueprint original.
-2. Decisiones confirmadas en `task-planning/decisions.json`.
+2. Decisiones confirmadas en `.devflow/task-planner/decisions.json`.
 
 Después de la aprobación del blueprint resuelto:
 
-1. `task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md`.
-2. `task-planning/requirements.json` como catálogo estructurado de requisitos.
+1. `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md`.
+2. `.devflow/task-planner/requirements.json` como catálogo estructurado de requisitos.
 3. Decisiones confirmadas.
 4. Artefactos aprobados o validados de fases anteriores.
 
@@ -210,7 +210,7 @@ una decisión aunque ambas aparezcan aprobadas.
 8. Registra inmediatamente cada decisión confirmada.
 9. Registra también sus consecuencias y restricciones.
 10. Detecta conflictos entre decisiones anteriores y nuevas respuestas.
-11. No modifiques archivos fuera de `task-planning/`.
+11. No modifiques archivos fuera de `.devflow/task-planner/`.
 12. No modifiques código, pruebas, dependencias ni configuración del producto.
 13. No ejecutes DevFlow.
 14. No implementes tareas.
@@ -241,10 +241,10 @@ una decisión aunque ambas aparezcan aprobadas.
 31. `requirements.json` es la fuente única para contar y referenciar requisitos.
 32. No cites un requisito en capacidades, épicas o tareas si no existe en
     `requirements.json`.
-33. No edites manualmente `task-planning/readiness.json` ni
-    `task-planning/validation-report.md`; son salidas del validador.
+33. No edites manualmente `.devflow/task-planner/readiness.json` ni
+    `.devflow/task-planner/validation-report.md`; son salidas del validador.
 34. No declares `planValidated = true` basándote en una revisión narrativa.
-35. Solo una ejecución exitosa de `node task-planning/tools/validate-plan.mjs`
+35. Solo una ejecución exitosa de `node .devflow/task-planner/tools/validate-plan.mjs`
     puede permitir avanzar a `plan_approval`.
 36. Cada capacidad `planned` debe tener exactamente una épica propietaria y una
     tarea propietaria.
@@ -408,7 +408,7 @@ Si dos decisiones confirmadas entran en conflicto:
 
 ## Requisitos
 
-`task-planning/requirements.json` debe contener una colección `requirements`.
+`.devflow/task-planner/requirements.json` debe contener una colección `requirements`.
 
 Cada requisito debe incluir:
 
@@ -764,7 +764,7 @@ Antes de ejecutar:
 Ejecuta exactamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 No ejecutes ningún otro comando.
@@ -830,7 +830,7 @@ Si el usuario aprueba:
 5. ejecuta exactamente:
 
 ```bash
-node task-planning/tools/validate-plan.mjs
+node .devflow/task-planner/tools/validate-plan.mjs
 ```
 
 6. si devuelve código distinto de `0`:

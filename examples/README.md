@@ -12,7 +12,7 @@ uso del workflow de software design.
 
 ## Como crear un ejemplo
 
-1. Copia un `software-design/` real (o crea uno ficticio).
+1. Copia un `.devflow/software-architect/` real (o crea uno ficticio).
 2. Reemplaza todos los nombres propios con valores genericos (Empresa X, Usuario
    Y, etc.).
 3. Elimina URLs, IPs, tokens y cualquier dato que pueda ser sensible.

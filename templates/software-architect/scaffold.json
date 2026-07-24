@@ -1,5 +1,5 @@
 {
-  "directory": "software-design",
+  "directory": ".devflow/software-architect",
   "files": [
     "project-state.json",
     "workflow.md"
@@ -30,5 +30,5 @@
     "mode": "primary",
     "temperature": "0.2"
   },
-  "agentsMd": "# Instrucciones del proyecto\n\n## Alcance de los agentes de diseno\n\n- Los artefactos de diseno viven en `software-design/`.\n- No modificar codigo de producto durante discovery o arquitectura salvo\n  autorizacion explicita.\n- Leer `software-design/project-state.json` antes de continuar un flujo.\n- No declarar una fase terminada sin cumplir sus criterios de salida.\n- Registrar decisiones materiales en `software-design/decisions/`.\n- Mantener borradores y versiones reemplazadas; no borrarlos.\n"
+  "agentsMd": "# Instrucciones del proyecto\n\n## Alcance de los agentes de diseno\n\n- Los artefactos de diseno viven en `.devflow/software-architect/`.\n- No modificar codigo de producto durante discovery o arquitectura salvo\n  autorizacion explicita.\n- Leer `.devflow/software-architect/project-state.json` antes de continuar un flujo.\n- No declarar una fase terminada sin cumplir sus criterios de salida.\n- Registrar decisiones materiales en `.devflow/software-architect/decisions/`.\n- Mantener borradores y versiones reemplazadas; no borrarlos.\n"
 }

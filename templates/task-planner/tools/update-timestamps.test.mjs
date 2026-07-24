@@ -16,15 +16,15 @@ async function json(file) { return JSON.parse(await readFile(file, 'utf8')); }
 
 async function fixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'task-planner-time-'));
-  await mkdir(path.join(root, 'task-planning', 'tools'), { recursive: true });
-  await cp(TOOL, path.join(root, 'task-planning', 'tools', 'update-timestamps.mjs'));
-  await cp(STATE_TEMPLATE, path.join(root, 'task-planning', 'project-state.json'));
-  await writeFile(path.join(root, 'task-planning', 'decisions.json'), '{"schemaVersion":1,"decisions":[]}\n');
+  await mkdir(path.join(root, '.devflow', 'task-planner', 'tools'), { recursive: true });
+  await cp(TOOL, path.join(root, '.devflow', 'task-planner', 'tools', 'update-timestamps.mjs'));
+  await cp(STATE_TEMPLATE, path.join(root, '.devflow', 'task-planner', 'project-state.json'));
+  await writeFile(path.join(root, '.devflow', 'task-planner', 'decisions.json'), '{"schemaVersion":1,"decisions":[]}\n');
   return root;
 }
 
 function run(root, args, at = '2026-07-23T12:00:00.000Z') {
-  return spawnSync('node', ['task-planning/tools/update-timestamps.mjs', ...args], {
+  return spawnSync('node', ['.devflow/task-planner/tools/update-timestamps.mjs', ...args], {
     cwd: root,
     encoding: 'utf8',
     env: { ...process.env, NODE_ENV: 'test', TASK_PLANNER_TEST_NOW: at },
@@ -36,8 +36,8 @@ test('bootstrap registra fechas reales y hash', async () => {
   try {
     const result = run(root, ['bootstrap']);
     assert.equal(result.status, 0, result.stderr);
-    const state = await json(path.join(root, 'task-planning', 'project-state.json'));
-    const decisions = await json(path.join(root, 'task-planning', 'decisions.json'));
+    const state = await json(path.join(root, '.devflow', 'task-planner', 'project-state.json'));
+    const decisions = await json(path.join(root, '.devflow', 'task-planner', 'decisions.json'));
     assert.equal(state.timestamps.createdAt, '2026-07-23T12:00:00.000Z');
     assert.equal(state.timestamps.updatedAt, '2026-07-23T12:00:00.000Z');
     assert.match(state.timestamps.contentHash, /^sha256:[a-f0-9]{64}$/);
@@ -50,11 +50,11 @@ test('touch conserva createdAt y cambia updatedAt', async () => {
   const root = await fixture();
   try {
     assert.equal(run(root, ['bootstrap']).status, 0);
-    const file = path.join(root, 'task-planning', 'decisions.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'decisions.json');
     const data = await json(file);
     data.decisions.push({ id: 'DEC-1' });
     await writeFile(file, `${JSON.stringify(data, null, 2)}\n`);
-    const result = run(root, ['touch', 'task-planning/decisions.json'], '2026-07-23T12:05:00.000Z');
+    const result = run(root, ['touch', '.devflow/task-planner/decisions.json'], '2026-07-23T12:05:00.000Z');
     assert.equal(result.status, 0, result.stderr);
     const changed = await json(file);
     assert.equal(changed.timestamps.createdAt, '2026-07-23T12:00:00.000Z');
@@ -78,7 +78,7 @@ test('approval-requested y approval-resolved usan el reloj', async () => {
     assert.equal(run(root, ['bootstrap']).status, 0);
     assert.equal(run(root, ['approval-requested', 'resolvedBlueprint'], '2026-07-23T12:10:00.000Z').status, 0);
     assert.equal(run(root, ['approval-resolved', 'resolvedBlueprint', 'approved', 'user'], '2026-07-23T12:11:00.000Z').status, 0);
-    const state = await json(path.join(root, 'task-planning', 'project-state.json'));
+    const state = await json(path.join(root, '.devflow', 'task-planner', 'project-state.json'));
     assert.equal(state.approvals.resolvedBlueprint.requestedAt, '2026-07-23T12:10:00.000Z');
     assert.equal(state.approvals.resolvedBlueprint.resolvedAt, '2026-07-23T12:11:00.000Z');
     assert.equal(state.approvals.resolvedBlueprint.resolvedBy, 'user');

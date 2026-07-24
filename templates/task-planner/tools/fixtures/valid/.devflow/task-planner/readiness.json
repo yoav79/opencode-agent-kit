@@ -26,25 +26,25 @@
     {
       "code": "TASK_CROSS_EPIC_DEPENDENCY",
       "message": "TASK-004 depende de TASK-002, que pertenece a otra épica.",
-      "file": "task-planning/task-plan.json",
+      "file": ".devflow/task-planner/task-plan.json",
       "reference": "TASK-004"
     },
     {
       "code": "TASK_CROSS_EPIC_DEPENDENCY",
       "message": "TASK-005 depende de TASK-002, que pertenece a otra épica.",
-      "file": "task-planning/task-plan.json",
+      "file": ".devflow/task-planner/task-plan.json",
       "reference": "TASK-005"
     },
     {
       "code": "TASK_CROSS_EPIC_DEPENDENCY",
       "message": "TASK-006 depende de TASK-002, que pertenece a otra épica.",
-      "file": "task-planning/task-plan.json",
+      "file": ".devflow/task-planner/task-plan.json",
       "reference": "TASK-006"
     },
     {
       "code": "TASK_CROSS_EPIC_DEPENDENCY",
       "message": "TASK-007 depende de TASK-002, que pertenece a otra épica.",
-      "file": "task-planning/task-plan.json",
+      "file": ".devflow/task-planner/task-plan.json",
       "reference": "TASK-007"
     }
   ]

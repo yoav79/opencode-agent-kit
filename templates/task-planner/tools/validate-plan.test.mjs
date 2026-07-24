@@ -25,16 +25,16 @@ async function writeJson(file, value) {
 async function withFixture(mutate) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'task-planner-v35-'));
   await cp(FIXTURE_ROOT, root, { recursive: true });
-  await cp(VALIDATOR_SOURCE, path.join(root, 'task-planning', 'tools', 'validate-plan.mjs'));
-  await cp(TIMESTAMP_SOURCE, path.join(root, 'task-planning', 'tools', 'update-timestamps.mjs'));
-  await cp(GRAPH_SOURCE, path.join(root, 'task-planning', 'tools', 'build-epic-graph.mjs'));
+  await cp(VALIDATOR_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'validate-plan.mjs'));
+  await cp(TIMESTAMP_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'update-timestamps.mjs'));
+  await cp(GRAPH_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'build-epic-graph.mjs'));
   try {
     if (mutate) await mutate(root);
-    const run = spawnSync('node', ['task-planning/tools/validate-plan.mjs'], {
+    const run = spawnSync('node', ['.devflow/task-planner/tools/validate-plan.mjs'], {
       cwd: root,
       encoding: 'utf8',
     });
-    const readiness = await json(path.join(root, 'task-planning', 'readiness.json'));
+    const readiness = await json(path.join(root, '.devflow', 'task-planner', 'readiness.json'));
     return { ...run, readiness };
   } finally {
     await rm(root, { recursive: true, force: true });
@@ -54,7 +54,7 @@ test('acepta una cadena semántica v3.5 consistente y agrupada', async () => {
 
 test('rechaza tarea sin bloque semántico', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'tasks', 'TASK-003.md');
+    const file = path.join(root, '.devflow', 'task-planner', 'tasks', 'TASK-003.md');
     const text = await readFile(file, 'utf8');
     await writeFile(file, text.replace(/\n## Contrato semántico[\s\S]*$/, '\n'), 'utf8');
   });
@@ -65,7 +65,7 @@ test('rechaza tarea sin bloque semántico', async () => {
 
 test('rechaza backend binding de otro behavior en la tarea', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'tasks', 'TASK-003.md');
+    const file = path.join(root, '.devflow', 'task-planner', 'tasks', 'TASK-003.md');
     const text = await readFile(file, 'utf8');
     await writeFile(file, text.replaceAll('mailctl domain create', 'mailctl domain delete'), 'utf8');
   });
@@ -76,7 +76,7 @@ test('rechaza backend binding de otro behavior en la tarea', async () => {
 
 test('rechaza outcome de capacidad distinto al contrato', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'capability-map.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'capability-map.json');
     const data = await json(file);
     data.capabilities.find((item) => item.id === 'CAP-DOM-CREATE').result = 'El dominio fue eliminado.';
     await writeJson(file, data);
@@ -88,7 +88,7 @@ test('rechaza outcome de capacidad distinto al contrato', async () => {
 test('rechaza sourceFunctionId inexistente aunque se repita en los JSON', async () => {
   const result = await withFixture(async (root) => {
     for (const name of ['semantic-contract.json', 'requirements.json']) {
-      const file = path.join(root, 'task-planning', name);
+      const file = path.join(root, '.devflow', 'task-planner', name);
       const data = await json(file);
       const records = name === 'semantic-contract.json'
         ? data.contracts
@@ -110,12 +110,12 @@ test('rechaza semanticKey arbitrario aunque todos los JSON coincidan', async () 
       ['task-plan.json', (data) => { data.tasks.find((item) => item.id === 'TASK-003').semanticKeys = ['arbitrary.wrong']; }],
     ];
     for (const [name, mutate] of replacements) {
-      const file = path.join(root, 'task-planning', name);
+      const file = path.join(root, '.devflow', 'task-planner', name);
       const data = await json(file);
       mutate(data);
       await writeJson(file, data);
     }
-    const taskFile = path.join(root, 'task-planning', 'tasks', 'TASK-003.md');
+    const taskFile = path.join(root, '.devflow', 'task-planner', 'tasks', 'TASK-003.md');
     await writeFile(taskFile, (await readFile(taskFile, 'utf8')).replaceAll('dom.create', 'arbitrary.wrong'), 'utf8');
   });
   assert.equal(result.status, 1);
@@ -124,11 +124,11 @@ test('rechaza semanticKey arbitrario aunque todos los JSON coincidan', async () 
 
 test('rechaza operation alterada frente al blueprint', async () => {
   const result = await withFixture(async (root) => {
-    const semanticFile = path.join(root, 'task-planning', 'semantic-contract.json');
+    const semanticFile = path.join(root, '.devflow', 'task-planner', 'semantic-contract.json');
     const semantic = await json(semanticFile);
     semantic.contracts[0].operation = 'delete_domain';
     await writeJson(semanticFile, semantic);
-    const requirementsFile = path.join(root, 'task-planning', 'requirements.json');
+    const requirementsFile = path.join(root, '.devflow', 'task-planner', 'requirements.json');
     const requirements = await json(requirementsFile);
     requirements.requirements[0].behaviors[0].operation = 'delete_domain';
     await writeJson(requirementsFile, requirements);
@@ -139,7 +139,7 @@ test('rechaza operation alterada frente al blueprint', async () => {
 
 test('rechaza el campo executionMode heredado de 3.3', async () => {
   const result = await withFixture(async (root) => {
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.project.executionMode = 'semantic_pilot';
     await writeJson(stateFile, state);
@@ -150,7 +150,7 @@ test('rechaza el campo executionMode heredado de 3.3', async () => {
 
 test('acepta aprobación, publicación y cierre por el ciclo normal', async () => {
   const result = await withFixture(async (root) => {
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.approvals.finalPlan = {
       status: 'approved',
@@ -168,18 +168,18 @@ test('acepta aprobación, publicación y cierre por el ciclo normal', async () =
     await writeJson(stateFile, state);
 
     for (const name of ['epic-plan.json', 'task-plan.json']) {
-      const file = path.join(root, 'task-planning', name);
+      const file = path.join(root, '.devflow', 'task-planner', name);
       const data = await json(file);
       data.status = 'published';
       await writeJson(file, data);
     }
 
     const touch = spawnSync('node', [
-      'task-planning/tools/update-timestamps.mjs',
+      '.devflow/task-planner/tools/update-timestamps.mjs',
       'touch',
-      'task-planning/epic-plan.json',
-      'task-planning/task-plan.json',
-      'task-planning/project-state.json',
+      '.devflow/task-planner/epic-plan.json',
+      '.devflow/task-planner/task-plan.json',
+      '.devflow/task-planner/project-state.json',
     ], {
       cwd: root,
       encoding: 'utf8',
@@ -188,7 +188,7 @@ test('acepta aprobación, publicación y cierre por el ciclo normal', async () =
     assert.equal(touch.status, 0, touch.stderr);
 
     const complete = spawnSync('node', [
-      'task-planning/tools/update-timestamps.mjs',
+      '.devflow/task-planner/tools/update-timestamps.mjs',
       'complete',
     ], {
       cwd: root,
@@ -203,7 +203,7 @@ test('acepta aprobación, publicación y cierre por el ciclo normal', async () =
 
 test('rechaza estado de artefacto distinto al documento', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'project-state.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const data = await json(file);
     data.artifacts.semanticContract.status = 'validated';
     await writeJson(file, data);
@@ -222,7 +222,7 @@ test('fixture válido agrupa un requisito y cinco behaviors en una épica', asyn
 
 test('rechaza fragmentar un requisito sin splitReason', async () => {
   const result = await withFixture(async (root) => {
-    const epicFile = path.join(root, 'task-planning', 'epic-plan.json');
+    const epicFile = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const epicPlan = await json(epicFile);
     const original = epicPlan.epics[0];
     const secondBehavior = original.behaviorIds.pop();
@@ -232,7 +232,7 @@ test('rechaza fragmentar un requisito sin splitReason', async () => {
     epicPlan.epics.push({
       id: 'EPIC-DOM-002',
       title: 'Validación de dominios separada',
-      file: 'task-planning/epics/EPIC-DOM-002.md',
+      file: '.devflow/task-planner/epics/EPIC-DOM-002.md',
       incrementId: 'INC-DOM-002',
       dependencyIds: ['EPIC-DOM-001'],
       capabilityIds: [secondCapability],
@@ -245,23 +245,23 @@ test('rechaza fragmentar un requisito sin splitReason', async () => {
     });
     await writeJson(epicFile, epicPlan);
 
-    const capFile = path.join(root, 'task-planning', 'capability-map.json');
+    const capFile = path.join(root, '.devflow', 'task-planner', 'capability-map.json');
     const caps = await json(capFile);
     caps.capabilities.find((item) => item.id === secondCapability).ownerEpicId = 'EPIC-DOM-002';
     await writeJson(capFile, caps);
 
-    const taskFile = path.join(root, 'task-planning', 'task-plan.json');
+    const taskFile = path.join(root, '.devflow', 'task-planner', 'task-plan.json');
     const tasks = await json(taskFile);
     tasks.tasks.find((item) => item.id === 'TASK-007').epicId = 'EPIC-DOM-002';
     await writeJson(taskFile, tasks);
 
     await writeFile(
-      path.join(root, 'task-planning', 'epics', 'EPIC-DOM-002.md'),
+      path.join(root, '.devflow', 'task-planner', 'epics', 'EPIC-DOM-002.md'),
       '# EPIC-DOM-002: Validación de dominios separada\n',
       'utf8',
     );
 
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.progress.epicsGenerated = 2;
     state.progress.epicsDecomposed = 2;
@@ -273,12 +273,12 @@ test('rechaza fragmentar un requisito sin splitReason', async () => {
 
 test('rechaza behavior duplicado entre épicas', async () => {
   const result = await withFixture(async (root) => {
-    const epicFile = path.join(root, 'task-planning', 'epic-plan.json');
+    const epicFile = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const epicPlan = await json(epicFile);
     epicPlan.epics.push({
       id: 'EPIC-DUPLICATE',
       title: 'Duplicada',
-      file: 'task-planning/epics/EPIC-DUPLICATE.md',
+      file: '.devflow/task-planner/epics/EPIC-DUPLICATE.md',
       incrementId: 'INC-DUP',
       dependencyIds: [],
       capabilityIds: [],
@@ -290,8 +290,8 @@ test('rechaza behavior duplicado entre épicas', async () => {
       decomposed: true,
     });
     await writeJson(epicFile, epicPlan);
-    await writeFile(path.join(root, 'task-planning', 'epics', 'EPIC-DUPLICATE.md'), '# EPIC-DUPLICATE\n', 'utf8');
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    await writeFile(path.join(root, '.devflow', 'task-planner', 'epics', 'EPIC-DUPLICATE.md'), '# EPIC-DUPLICATE\n', 'utf8');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.progress.epicsGenerated = 2;
     state.progress.epicsDecomposed = 2;
@@ -304,12 +304,12 @@ test('rechaza behavior duplicado entre épicas', async () => {
 
 test('acepta fragmentación respaldada por decisión y splitReason', async () => {
   const result = await withFixture(async (root) => {
-    const decisionsFile = path.join(root, 'task-planning', 'decisions.json');
+    const decisionsFile = path.join(root, '.devflow', 'task-planner', 'decisions.json');
     const decisions = await json(decisionsFile);
     decisions.decisions.push({ id: 'DEC-EPIC-SPLIT', status: 'resolved', resolution: 'approved' });
     await writeJson(decisionsFile, decisions);
 
-    const epicFile = path.join(root, 'task-planning', 'epic-plan.json');
+    const epicFile = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const epicPlan = await json(epicFile);
     const original = epicPlan.epics[0];
     const secondBehavior = original.behaviorIds.pop();
@@ -325,7 +325,7 @@ test('acepta fragmentación respaldada por decisión y splitReason', async () =>
     epicPlan.epics.push({
       id: 'EPIC-DOM-002',
       title: 'Validación de dominios',
-      file: 'task-planning/epics/EPIC-DOM-002.md',
+      file: '.devflow/task-planner/epics/EPIC-DOM-002.md',
       incrementId: 'INC-DOM-002',
       dependencyIds: ['EPIC-DOM-001'],
       capabilityIds: [secondCapability],
@@ -342,19 +342,19 @@ test('acepta fragmentación respaldada por decisión y splitReason', async () =>
     });
     await writeJson(epicFile, epicPlan);
 
-    const capFile = path.join(root, 'task-planning', 'capability-map.json');
+    const capFile = path.join(root, '.devflow', 'task-planner', 'capability-map.json');
     const caps = await json(capFile);
     caps.capabilities.find((item) => item.id === secondCapability).ownerEpicId = 'EPIC-DOM-002';
     await writeJson(capFile, caps);
 
-    const taskFile = path.join(root, 'task-planning', 'task-plan.json');
+    const taskFile = path.join(root, '.devflow', 'task-planner', 'task-plan.json');
     const tasks = await json(taskFile);
     tasks.tasks.find((item) => item.id === 'TASK-007').epicId = 'EPIC-DOM-002';
     await writeJson(taskFile, tasks);
 
-    await writeFile(path.join(root, 'task-planning', 'epics', 'EPIC-DOM-002.md'), '# EPIC-DOM-002: Validación de dominios\n', 'utf8');
+    await writeFile(path.join(root, '.devflow', 'task-planner', 'epics', 'EPIC-DOM-002.md'), '# EPIC-DOM-002: Validación de dominios\n', 'utf8');
 
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.progress.decisionsDetected = 1;
     state.progress.decisionsResolved = 1;
@@ -362,14 +362,14 @@ test('acepta fragmentación respaldada por decisión y splitReason', async () =>
     state.progress.epicsDecomposed = 2;
     await writeJson(stateFile, state);
 
-    const graph = spawnSync('node', ['task-planning/tools/build-epic-graph.mjs'], {
+    const graph = spawnSync('node', ['.devflow/task-planner/tools/build-epic-graph.mjs'], {
       cwd: root,
       encoding: 'utf8',
       env: { ...process.env, NODE_ENV: 'test', TASK_PLANNER_TEST_NOW: '2026-07-23T07:09:00.000Z' },
     });
     assert.equal(graph.status, 0, graph.stderr);
 
-    const retimestamp = spawnSync('node', ['task-planning/tools/update-timestamps.mjs', 'touch', 'task-planning/decisions.json', 'task-planning/epic-plan.json', 'task-planning/capability-map.json', 'task-planning/task-plan.json', 'task-planning/project-state.json'], {
+    const retimestamp = spawnSync('node', ['.devflow/task-planner/tools/update-timestamps.mjs', 'touch', '.devflow/task-planner/decisions.json', '.devflow/task-planner/epic-plan.json', '.devflow/task-planner/capability-map.json', '.devflow/task-planner/task-plan.json', '.devflow/task-planner/project-state.json'], {
       cwd: root,
       encoding: 'utf8',
       env: { ...process.env, NODE_ENV: 'test', TASK_PLANNER_TEST_NOW: '2026-07-23T07:10:00.000Z' },
@@ -383,7 +383,7 @@ test('acepta fragmentación respaldada por decisión y splitReason', async () =>
 
 test('rechaza JSON modificado sin actualizar timestamp y hash', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'requirements.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'requirements.json');
     const data = await json(file);
     data.requirements[0].description += ' cambio sin touch';
     await writeJson(file, data);
@@ -403,7 +403,7 @@ test('fixture válido declara una execution wave sin dependencias', async () => 
 
 test('rechaza una dependencia de épica no derivada', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'epic-plan.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const data = await json(file);
     data.epics[0].dependencyIds = ['EPIC-FAKE'];
     data.epics[0].dependencyDetails = [{
@@ -422,7 +422,7 @@ test('rechaza una dependencia de épica no derivada', async () => {
 
 test('rechaza executionWaves obsoletas', async () => {
   const result = await withFixture(async (root) => {
-    const file = path.join(root, 'task-planning', 'epic-plan.json');
+    const file = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const data = await json(file);
     data.executionWaves = [{ wave: 2, epicIds: ['EPIC-DOM-001'] }];
     data.epics[0].executionWave = 2;
@@ -435,12 +435,12 @@ test('rechaza executionWaves obsoletas', async () => {
 
 test('build-epic-graph agrupa épicas independientes en la misma wave', async () => {
   const result = await withFixture(async (root) => {
-    const epicFile = path.join(root, 'task-planning', 'epic-plan.json');
+    const epicFile = path.join(root, '.devflow', 'task-planner', 'epic-plan.json');
     const plan = await json(epicFile);
     plan.epics.push({
       id: 'EPIC-INDEPENDENT-001',
       title: 'Módulo independiente',
-      file: 'task-planning/epics/EPIC-INDEPENDENT-001.md',
+      file: '.devflow/task-planner/epics/EPIC-INDEPENDENT-001.md',
       incrementId: 'INC-INDEPENDENT-001',
       dependencyIds: [],
       dependencyDetails: [],
@@ -454,15 +454,15 @@ test('build-epic-graph agrupa épicas independientes en la misma wave', async ()
       decomposed: true,
     });
     await writeJson(epicFile, plan);
-    await writeFile(path.join(root, 'task-planning', 'epics', 'EPIC-INDEPENDENT-001.md'), '# EPIC-INDEPENDENT-001\n', 'utf8');
+    await writeFile(path.join(root, '.devflow', 'task-planner', 'epics', 'EPIC-INDEPENDENT-001.md'), '# EPIC-INDEPENDENT-001\n', 'utf8');
 
-    const stateFile = path.join(root, 'task-planning', 'project-state.json');
+    const stateFile = path.join(root, '.devflow', 'task-planner', 'project-state.json');
     const state = await json(stateFile);
     state.progress.epicsGenerated = 2;
     state.progress.epicsDecomposed = 2;
     await writeJson(stateFile, state);
 
-    const graph = spawnSync('node', ['task-planning/tools/build-epic-graph.mjs'], {
+    const graph = spawnSync('node', ['.devflow/task-planner/tools/build-epic-graph.mjs'], {
       cwd: root,
       encoding: 'utf8',
       env: { ...process.env, NODE_ENV: 'test', TASK_PLANNER_TEST_NOW: '2026-07-23T08:00:00.000Z' },

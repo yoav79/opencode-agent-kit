@@ -1,5 +1,5 @@
 {
-  "directory": "task-planning",
+  "directory": ".devflow/task-planner",
   "files": [
     "SEMANTIC-CONTRACT.md",
     "capability-map.json",
