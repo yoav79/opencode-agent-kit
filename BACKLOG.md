@@ -217,6 +217,31 @@ Evaluar si es necesario o si se puede eliminar del scaffold.
 
 </div>
 
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Falta task: allow en task-planner
+
+Actualmente `task: deny`. Si vamos a crear subagentes para fases 3 y 8,
+necesita `task: allow`. También permitiría invocar al consistency-reviewer
+u otros validadores externos.
+
+- **P:** media | **E:** S | **A:** agente
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Init command con versiones hardcodeadas
+
+`init-task-planner.md` tiene un contrato de 10 versiones (schemaVersion,
+workflowVersion, validatorVersion, epicGraphVersion, timestampToolVersion,
+etc.) que debe coincidir manualmente con los templates. No hay verificación
+automática de que las versiones del comando coincidan con las plantillas.
+
+- **P:** media | **E:** S | **A:** comando, tool
+
+</div>
+
 ---
 
 ## next-task
