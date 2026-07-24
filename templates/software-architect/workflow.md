@@ -22,7 +22,7 @@ criterios de éxito.
 
 Entregable:
 
-`docs/01-discovery.md`
+`.devflow/software-architect/docs/01-discovery.md`
 
 ### 2. Definición ejecutiva
 
@@ -33,7 +33,7 @@ exclusiones.
 
 Entregable:
 
-`docs/02-executive-definition.md`
+`.devflow/software-architect/docs/02-executive-definition.md`
 
 Requiere aprobación explícita.
 
@@ -46,7 +46,7 @@ puntos de control.
 
 Entregable:
 
-`docs/03-users-and-processes.md`
+`.devflow/software-architect/docs/03-users-and-processes.md`
 
 ### 4. Catálogo de módulos
 
@@ -57,7 +57,7 @@ funciones, permisos y prioridad.
 
 Entregable:
 
-`docs/04-module-catalog.md`
+`.devflow/software-architect/docs/04-module-catalog.md`
 
 Requiere aprobación explícita.
 
@@ -70,7 +70,7 @@ de aceptación.
 
 Entregable:
 
-`docs/05-functional-requirements.md`
+`.devflow/software-architect/docs/05-functional-requirements.md`
 
 ### 6. Información e integraciones
 
@@ -81,7 +81,7 @@ e intercambios de información.
 
 Entregable:
 
-`docs/06-data-and-integrations.md`
+`.devflow/software-architect/docs/06-data-and-integrations.md`
 
 ### 7. Arquitectura
 
@@ -92,7 +92,7 @@ seguridad, presupuesto, infraestructura y equipo.
 
 Entregable:
 
-`docs/07-solution-architecture.md`
+`.devflow/software-architect/docs/07-solution-architecture.md`
 
 Requiere aprobación explícita.
 
@@ -104,7 +104,7 @@ Seleccionar tecnologías y justificar cada decisión.
 
 Entregable:
 
-`docs/08-technology-stack.md`
+`.devflow/software-architect/docs/08-technology-stack.md`
 
 ### 9. Seguridad y requisitos no funcionales
 
@@ -115,7 +115,7 @@ recuperación, privacidad y mantenibilidad.
 
 Entregable:
 
-`docs/09-security-and-nfr.md`
+`.devflow/software-architect/docs/09-security-and-nfr.md`
 
 ### 10. Plan de construcción
 
@@ -126,7 +126,7 @@ operación.
 
 Entregable:
 
-`docs/10-delivery-roadmap.md`
+`.devflow/software-architect/docs/10-delivery-roadmap.md`
 
 Requiere aprobación explícita.
 
@@ -138,7 +138,7 @@ Detectar contradicciones, omisiones y elementos sin trazabilidad.
 
 Entregable:
 
-`docs/11-consistency-review.md`
+`.devflow/software-architect/docs/11-consistency-review.md`
 
 ### 12. Documento final
 
@@ -148,7 +148,7 @@ Consolidar toda la documentación aprobada.
 
 Entregable:
 
-`docs/SOFTWARE-BLUEPRINT.md`
+`.devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md`
 
 ## Regla de avance
 

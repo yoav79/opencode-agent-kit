@@ -17,6 +17,29 @@ const PHASE_KEYS = [
   '10_delivery_roadmap', '11_consistency_review', '12_final_document',
 ];
 
+const DOC_KEY_TO_FILENAME = {
+  '01_discovery': '01-discovery.md',
+  '02_executive_definition': '02-executive-definition.md',
+  '03_users_and_processes': '03-users-and-processes.md',
+  '04_module_catalog': '04-module-catalog.md',
+  '05_functional_requirements': '05-functional-requirements.md',
+  '06_data_and_integrations': '06-data-and-integrations.md',
+  '07_solution_architecture': '07-solution-architecture.md',
+  '08_technology_stack': '08-technology-stack.md',
+  '09_security_and_nfr': '09-security-and-nfr.md',
+  '10_delivery_roadmap': '10-delivery-roadmap.md',
+  '11_consistency_review': '11-consistency-review.md',
+  '12_final_document': 'SOFTWARE-BLUEPRINT.md',
+};
+
+const DOCS_DIR = '.devflow/software-architect/docs';
+
+function docFile(root, docKey) {
+  const filename = DOC_KEY_TO_FILENAME[docKey];
+  if (!filename) return null;
+  return path.join(root, DOCS_DIR, filename);
+}
+
 const DOC_TEMPLATE_MAP = {
   '01-discovery.md': '01-discovery.md',
   '02-executive-definition.md': '02-executive-definition.md',
@@ -218,14 +241,13 @@ function validateProjectState(state, statePath, root) {
 function validateDocExistence(state, root) {
   if (!isObject(state?.documents)) return;
 
-  for (const [key, doc] of Object.entries(state.documents)) {
-    if (!isObject(doc) || typeof doc.path !== 'string') continue;
-    const fullPath = path.resolve(root, doc.path);
-    const exists = fileExists(fullPath);
+  for (const key of Object.keys(state.documents)) {
+    const filePath = docFile(root, key);
+    if (!filePath) continue;
 
-    exists.then((ok) => {
+    fileExists(filePath).then((ok) => {
       if (!ok) {
-        addError('DOCUMENT_MISSING', `Falta ${doc.path}.`, doc.path, key);
+        addError('DOCUMENT_MISSING', `Falta ${rel(filePath, root)}.`, rel(filePath, root), key);
       }
     });
   }
@@ -234,11 +256,11 @@ function validateDocExistence(state, root) {
 async function validateDocHeadings(state, root, templatesDir) {
   if (!isObject(state?.documents)) return;
 
-  const docsDir = path.resolve(root, '.devflow/software-architect/docs');
-
-  for (const [docFile, templateFile] of Object.entries(DOC_TEMPLATE_MAP)) {
-    const docPath = path.join(docsDir, docFile);
-    const templatePath = path.join(templatesDir, templateFile);
+  for (const [docKey, filename] of Object.entries(DOC_KEY_TO_FILENAME)) {
+    const docPath = path.join(root, DOCS_DIR, filename);
+    const templateFilename = DOC_TEMPLATE_MAP[filename];
+    if (!templateFilename) continue;
+    const templatePath = path.join(templatesDir, templateFilename);
 
     const docExists = await fileExists(docPath);
     if (!docExists) continue;
@@ -268,32 +290,24 @@ async function validateDocHeadings(state, root, templatesDir) {
 async function validatePhaseConsistency(state, root) {
   if (!isObject(state?.phases) || !isObject(state?.documents)) return;
 
-  const docsDir = path.resolve(root, '.devflow/software-architect/docs');
-
   for (const [key, doc] of Object.entries(state.documents)) {
-    if (!isObject(doc) || typeof doc.path !== 'string') continue;
+    if (!isObject(doc)) continue;
 
-    const phaseKey = key.replace('_final_document', '12_final_document').replace('_discovery', '1_discovery')
-      .replace('_executive_definition', '2_executive_definition')
-      .replace('_users_and_processes', '3_users_and_processes')
-      .replace('_module_catalog', '4_module_catalog')
-      .replace('_functional_requirements', '5_functional_requirements')
-      .replace('_data_and_integrations', '6_data_and_integrations')
-      .replace('_solution_architecture', '7_architecture')
-      .replace('_technology_stack', '8_technology_stack')
-      .replace('_security_and_nfr', '9_security_and_nfr')
-      .replace('_delivery_roadmap', '10_delivery_roadmap')
-      .replace('_consistency_review', '11_consistency_review');
+    const filePath = docFile(root, key);
+    if (!filePath) continue;
+    const relPath = rel(filePath, root);
+
+    const phaseKey = key;
 
     const phaseStatus = state.phases[phaseKey];
-    const docExists = await fileExists(path.resolve(root, doc.path));
+    const docExists = await fileExists(filePath);
 
     if (phaseStatus === 'approved' && !docExists) {
-      addError('PHASE_APPROVED_DOC_MISSING', `La fase ${phaseKey} está approved pero falta ${doc.path}.`, doc.path, phaseKey);
+      addError('PHASE_APPROVED_DOC_MISSING', `La fase ${phaseKey} está approved pero falta ${relPath}.`, relPath, phaseKey);
     }
 
     if (docExists && doc.status === 'pending' && phaseStatus === 'approved') {
-      addWarning('DOC_STATUS_STALE', `${doc.path} existe pero su estado sigue pending en documents.`, doc.path, `${key}.status`);
+      addWarning('DOC_STATUS_STALE', `${relPath} existe pero su estado sigue pending en documents.`, relPath, `${key}.status`);
     }
   }
 }
@@ -347,15 +361,14 @@ async function validateADRs(state, root) {
 async function validateNoOrphanDocs(state, root) {
   if (!isObject(state?.documents)) return;
 
-  const docsDir = path.resolve(root, '.devflow/software-architect/docs');
+  const docsDir = path.resolve(root, DOCS_DIR);
   const docsExist = await fileExists(docsDir);
   if (!docsExist) return;
 
   const registeredPaths = new Set();
-  for (const doc of Object.values(state.documents)) {
-    if (isObject(doc) && typeof doc.path === 'string') {
-      registeredPaths.add(path.resolve(root, doc.path));
-    }
+  for (const key of Object.keys(state.documents)) {
+    const filePath = docFile(root, key);
+    if (filePath) registeredPaths.add(filePath);
   }
 
   let actualFiles = [];
@@ -366,7 +379,7 @@ async function validateNoOrphanDocs(state, root) {
   for (const file of actualFiles) {
     const filePath = path.resolve(docsDir, file);
     if (!registeredPaths.has(filePath)) {
-      addWarning('ORPHAN_DOC', `${file} existe en docs/ pero no está registrado en project-state.json.documents.`, `.devflow/software-architect/docs/${file}`);
+      addWarning('ORPHAN_DOC', `${file} existe en docs/ pero no está registrado en project-state.json.documents.`, `${DOCS_DIR}/${file}`);
     }
   }
 }
@@ -374,10 +387,9 @@ async function validateNoOrphanDocs(state, root) {
 async function validateUniqueReqIds(state, root) {
   if (!isObject(state?.documents)) return;
 
-  const reqDoc = state.documents['05_functional_requirements'];
-  if (!isObject(reqDoc) || typeof reqDoc.path !== 'string') return;
+  const reqPath = docFile(root, '05_functional_requirements');
+  if (!reqPath) return;
 
-  const reqPath = path.resolve(root, reqDoc.path);
   const reqExists = await fileExists(reqPath);
   if (!reqExists) return;
 
@@ -388,7 +400,7 @@ async function validateUniqueReqIds(state, root) {
   const seen = new Set();
   for (const id of ids) {
     if (seen.has(id)) {
-      addError('REQUIREMENT_ID_DUPLICATED', `ID ${id} aparece más de una vez en 05-functional-requirements.md.`, reqDoc.path, id);
+      addError('REQUIREMENT_ID_DUPLICATED', `ID ${id} aparece más de una vez en 05-functional-requirements.md.`, rel(reqPath, root), id);
     }
     seen.add(id);
   }

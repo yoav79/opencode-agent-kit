@@ -35,26 +35,24 @@ Schema JSON Schema draft 2020-12 para validar project-state.json.
 Cubre: project, phases, confirmed, documents, architecture, modules,
 integrations, entities, risks, assumptions y más.
 
+- Implementado en: `3241aa7`
+
+### Workflow paths relativas → absolutas (software-architect)
+
+`workflow.md` cambiado de `docs/XX.md` a `.devflow/software-architect/docs/XX.md`.
+
+### Document.path eliminado (software-architect)
+
+Eliminado `path` de cada entrada en `project-state.json.documents`.
+Actualizado schema y validador para computar rutas desde un mapping fijo.
+
 - Implementado en: pendiente de commit
 
 ---
 
 ## software-architect
 
-### Workflow: rutas relativas vs absolutas
 
-`workflow.md` usa `docs/01-discovery.md` (rutas relativas) pero el agente
-usa `.devflow/software-architect/docs/...` (rutas completas). Unificar.
-
-- **P:** baja | **E:** S | **A:** template
-
-### Document.path no utilizado
-
-El campo `path` en cada documento de `project-state.json` se define pero
-nunca se usa para determinar la ruta de escritura. Decidir si se elimina
-o se usa realmente.
-
-- **P:** baja | **E:** S | **A:** template
 
 ---
 

@@ -19,6 +19,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 - Directorios de trabajo cambiados de `software-design/` y `task-planning/` a `.devflow/software-architect/` y `.devflow/task-planner/`.
 - `next-task` cambiado de `mode: subagent` a `mode: primary`.
 - README reescrito para reflejar la nueva arquitectura.
+- `workflow.md` paths cambiados de relativos (`docs/`) a absolutos (`.devflow/software-architect/docs/`).
+- Eliminado `path` redundante de `project-state.json.documents`; se computa desde un mapping fijo.
 
 ### Added
 

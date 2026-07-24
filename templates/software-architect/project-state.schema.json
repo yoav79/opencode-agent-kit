@@ -357,9 +357,8 @@
     "documentEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "status"],
+      "required": ["status"],
       "properties": {
-        "path": { "type": "string" },
         "status": {
           "enum": ["pending", "approved"]
         },
