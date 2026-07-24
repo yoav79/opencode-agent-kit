@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "classification": "PLAN_DEFECT",
+  "taskId": null,
+  "epicId": null,
+  "attempt": null,
+  "sourceSnapshot": null,
+  "authorizedScope": "",
+  "outOfScope": "",
+  "acceptanceCriteria": [],
+  "requirementIds": [],
+  "behaviorIds": [],
+  "capabilitiesCreated": [],
+  "capabilitiesRequired": [],
+  "predecessorTaskIds": [],
+  "predecessors": [],
+  "decisions": [],
+  "memoryEntries": [],
+  "repositoryContext": null,
+  "taskFile": null,
+  "epicFile": null,
+  "issues": []
+}

@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devflow.local/schemas/context-builder/execution-context.schema.json",
+  "title": "DevFlow Execution Context",
+  "description": "Contexto de ejecución producido por Context Builder Agent para un intento de tarea.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "classification",
+    "taskId",
+    "epicId",
+    "attempt",
+    "sourceSnapshot",
+    "authorizedScope",
+    "outOfScope",
+    "acceptanceCriteria",
+    "requirementIds",
+    "behaviorIds",
+    "capabilitiesCreated",
+    "capabilitiesRequired",
+    "predecessorTaskIds",
+    "predecessors",
+    "decisions",
+    "memoryEntries",
+    "repositoryContext",
+    "taskFile",
+    "epicFile",
+    "issues"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "classification": {
+      "enum": [
+        "READY",
+        "DEPENDENCY_BLOCKED",
+        "HUMAN_REQUIRED",
+        "PLAN_DEFECT"
+      ]
+    },
+    "taskId": {
+      "type": "string",
+      "pattern": "^TASK-(?:0*[1-9][0-9]*)$"
+    },
+    "epicId": {
+      "type": "string",
+      "pattern": "^EPIC-[A-Z0-9][A-Z0-9_-]*$"
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sourceSnapshot": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/sourceSnapshot" }
+      ]
+    },
+    "authorizedScope": {
+      "type": "string"
+    },
+    "outOfScope": {
+      "type": "string"
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "requirementIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "behaviorIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "capabilitiesCreated": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "capabilitiesRequired": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "predecessorTaskIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "predecessors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/predecessorInfo" }
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" }
+    },
+    "memoryEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/memoryEntry" }
+    },
+    "repositoryContext": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/repositoryContext" }
+      ]
+    },
+    "taskFile": {
+      "type": "string"
+    },
+    "epicFile": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issue" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "classification": { "const": "READY" } }
+      },
+      "then": {
+        "properties": {
+          "issues": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "enum": [
+              "DEPENDENCY_BLOCKED",
+              "HUMAN_REQUIRED",
+              "PLAN_DEFECT"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "issues": { "minItems": 1 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "contentHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "nullableDateTime": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
+    },
+    "sourceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planningVersion",
+        "executionStateRevision",
+        "epicPlanContentHash",
+        "taskPlanContentHash",
+        "capabilityMapContentHash",
+        "requirementsContentHash",
+        "semanticContractContentHash",
+        "decisionsContentHash",
+        "repositoryHead"
+      ],
+      "properties": {
+        "planningVersion": { "type": "integer", "minimum": 1 },
+        "executionStateRevision": { "type": "integer", "minimum": 0 },
+        "epicPlanContentHash": { "$ref": "#/$defs/contentHash" },
+        "taskPlanContentHash": { "$ref": "#/$defs/contentHash" },
+        "capabilityMapContentHash": { "$ref": "#/$defs/contentHash" },
+        "requirementsContentHash": { "$ref": "#/$defs/contentHash" },
+        "semanticContractContentHash": { "$ref": "#/$defs/contentHash" },
+        "decisionsContentHash": { "$ref": "#/$defs/contentHash" },
+        "repositoryHead": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "predecessorInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "status",
+        "runId",
+        "classification",
+        "evidencePaths"
+      ],
+      "properties": {
+        "taskId": { "type": "string" },
+        "status": { "type": "string" },
+        "runId": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "classification": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "evidencePaths": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "option",
+        "justification"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "option": { "type": "string" },
+        "justification": { "type": "string" },
+        "consequences": { "type": "string" },
+        "constraints": { "type": "string" }
+      }
+    },
+    "memoryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "status",
+        "verifiedAt",
+        "verifiedBy",
+        "summary"
+      ],
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "verifiedAt": { "$ref": "#/$defs/nullableDateTime" },
+        "verifiedBy": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "repositoryContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "head",
+        "branch",
+        "dirty",
+        "modifiedFiles"
+      ],
+      "properties": {
+        "head": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "branch": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "dirty": { "type": "boolean" },
+        "modifiedFiles": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "source", "message", "reference"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "source": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "reference": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        }
+      }
+    }
+  }
+}

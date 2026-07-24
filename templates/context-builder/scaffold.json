@@ -1,0 +1,16 @@
+{
+  "directory": ".devflow/execution",
+  "files": [
+    "README.md",
+    "context-build-request.schema.json",
+    "execution-context.schema.json",
+    "execution-context.template.json",
+    "execution-prompt.template.md"
+  ],
+  "dirs": [],
+  "agent": {
+    "description": "Prepara el contexto ejecutable y el prompt de una tarea ya seleccionada, sin elegir otra tarea ni modificar el plan o el estado de ejecución.",
+    "mode": "subagent",
+    "temperature": "0.1"
+  }
+}
