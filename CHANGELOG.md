@@ -22,6 +22,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 
 ### Added
 
+- **`templates/shared/tools/timestamp.mjs`** — Herramienta determinista compartida para timestamps. Todos los agentes deben usarla en lugar de escribir fechas manualmente.
+- **Regla global en AGENTS.md** — Timestamps deterministas: prohibido escribir fechas manualmente, usar siempre `timestamp.mjs`.
 - **`consistency-reviewer`** — Subagente que revisa la consistencia del Software Blueprint completo: estructura, cobertura, contradicciones y trazabilidad. Produce `review-report.md` con clasificación `BLOCKING`/`WARNING`/`INFO`.
 - **`/review-consistency`** — Comando que ejecuta la revisión independiente de consistencia.
 - **`context-builder`** — Subagente que prepara el contexto ejecutable de una tarea ya seleccionada: lee plan, artefactos, predecesores y repo; produce `execution-context.json` y `execution-prompt.md`.

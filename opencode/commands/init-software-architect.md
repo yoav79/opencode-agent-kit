@@ -23,6 +23,10 @@ Archivos requeridos:
 - `project-state.json`
 - `workflow.md`
 
+Plantillas de documento disponibles en:
+
+`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/`
+
 No reconstruyas estos archivos desde memoria ni desde contenido embebido en el
 comando. Si una plantilla no existe, detén la inicialización e informa cuál
 archivo falta.

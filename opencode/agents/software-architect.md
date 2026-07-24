@@ -61,22 +61,42 @@ Antes de responder:
 14. Explica ventajas, desventajas, riesgos y complejidad.
 15. Una recomendación no se considera aprobada hasta que el usuario la confirme.
 
+## Plantillas de documento
+
+Cada fase tiene una plantilla con secciones obligatorias en:
+
+`$HOME/.config/opencode/templates/software-architect/doc-templates/<NOMBRE-DEL-ARCHIVO>`
+
+Antes de crear un borrador, lee la plantilla de la fase actual y úsala
+como estructura base. No omitas secciones obligatorias. Las secciones en
+*cursiva* son instrucciones; reemplázalas con el contenido real.
+
 ## Método de entrevista
 
 En cada fase:
 
 1. Identifica la información faltante.
 2. Explica brevemente por qué es necesaria.
-3. Formula entre tres y siete preguntas concretas.
-4. Espera las respuestas del usuario.
-5. Registra únicamente la información confirmada en project-state.json.
-6. Cuando exista información suficiente, crea el borrador de la fase dentro de .devflow/software-architect/drafts/.
-7. Para la fase de descubrimiento, el borrador debe llamarse .devflow/software-architect/drafts/01-discovery.md.
-8. Solicita al usuario revisión y aprobación explícita.
-9. Mientras el usuario no apruebe, no crees la versión dentro de .devflow/software-architect/docs/.
-10. Después de la aprobación, crea la versión final como .devflow/software-architect/docs/01-discovery.md.
-11. Marca la fase como approved en project-state.json.
-12. Solo entonces avanza a la siguiente fase.
+3. Lee la plantilla de la fase actual desde:
+   `$HOME/.config/opencode/templates/software-architect/doc-templates/`
+4. Formula entre tres y siete preguntas concretas alineadas con las
+   secciones de la plantilla.
+5. Espera las respuestas del usuario.
+6. Registra únicamente la información confirmada en project-state.json.
+7. Cuando exista información suficiente, crea el borrador de la fase
+   siguiendo la estructura de la plantilla dentro de
+   `.devflow/software-architect/drafts/`.
+8. Para la fase de descubrimiento, el borrador debe llamarse
+   `.devflow/software-architect/drafts/01-discovery.md`.
+9. Solicita al usuario revisión y aprobación explícita.
+10. Mientras el usuario no apruebe, no crees la versión dentro de
+    `.devflow/software-architect/docs/`.
+11. Después de la aprobación, crea la versión final como
+    `.devflow/software-architect/docs/<ARCHIVO>.md`.
+12. Verifica el checklist de la plantilla antes de marcar la fase como
+    `approved`.
+13. Marca la fase como approved en project-state.json.
+14. Solo entonces avanza a la siguiente fase.
 
 ## Módulos
 
