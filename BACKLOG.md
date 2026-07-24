@@ -20,21 +20,25 @@ desde el directorio global y los usa como estructura base.
 
 - Implementado en: `600b7fc`
 
+### Validador determinista validate-blueprint.mjs (software-architect)
+
+Creado `templates/software-architect/tools/validate-blueprint.mjs`.
+Verifica: existencia de 12 docs, headings vs templates, consistencia
+estado/fase, puertas de aprobación, ADRs, orphan docs, IDs únicos REQ-*.
+
+- Implementado en: pendiente de commit
+
 ---
 
 ## software-architect
 
-### Validador determinista validate-blueprint.mjs
+### Project-state.schema.json
 
-Herramienta que verifique:
-- Los 14 documentos obligatorios existen en `docs/`
-- Cada documento tiene las secciones requeridas según su fase
-- Las aprobaciones están registradas en project-state.json
-- project-state.json es válido contra un schema
-- No hay contradicciones entre documentos
-- Los ADRs en `decisions/` están referenciados
+Schema JSON para validar programáticamente `project-state.json`, similar
+a `execution-state.schema.json` del dominio de ejecución. (El validador
+ya hace validación estructural inline, un schema aparte es opcional.)
 
-- **P:** alta | **E:** M | **A:** tool
+- **P:** baja | **E:** S | **A:** template
 
 ### Project-state.schema.json
 
