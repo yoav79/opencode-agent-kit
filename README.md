@@ -28,6 +28,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  │  task-planner        │◄──────│  init-task-planner    │        │
 │  │  next-task           │◄──────│  select-next-task     │        │
 │  │  context-builder     │◄──────│  build-task-context   │        │
+│  │  consistency-reviewer│◄──────│  review-consistency   │        │
 │  └──────────────────────┘       └──────────────────────┘        │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -154,6 +155,20 @@ Permisos: Solo lectura sobre planificación, ejecución y repo. Escribe
 únicamente en el directorio del intento. No selecciona tareas ni ejecuta
 código.
 
+### `consistency-reviewer` — Revisor de Consistencia
+
+Examina el Software Blueprint completo de forma independiente y produce
+un reporte estructurado con hallazgos clasificados por gravedad. Es
+invocado por `software-architect` en la fase 11 y puede ejecutarse
+manualmente.
+
+- **Modo:** subagent
+- **Temperatura:** 0
+- **Entrada:** `.devflow/software-architect/` (solo lectura)
+- **Salida:** `.devflow/software-architect/review/review-report.md`
+
+Permisos: Solo lectura sobre el blueprint. No modifica documentos.
+
 ## Comandos
 
 | Comando | Agente | Descripcion |
@@ -165,6 +180,7 @@ código.
 | `/prepare-task-run` | next-task | Crea el directorio del run y registra la tarea en el estado |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
 | `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
+| `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 
 ## Estructura del Repositorio
 
@@ -175,7 +191,8 @@ opencode-agent-kit/
 │   │   ├── software-architect.md
 │   │   ├── task-planner.md
 │   │   ├── next-task.md
-│   │   └── context-builder.md
+│   │   ├── context-builder.md
+│   │   └── consistency-reviewer.md
 │   ├── commands/                  # Comandos slash (.md)
 │   │   ├── init-software-architect.md
 │   │   ├── init-task-planner.md
@@ -183,7 +200,8 @@ opencode-agent-kit/
 │   │   ├── select-next-task.md
 │   │   ├── prepare-task-run.md
 │   │   ├── build-task-context.md
-│   │   └── build-next-task-context.md
+│   │   ├── build-next-task-context.md
+│   │   └── review-consistency.md
 │   ├── rules/                     # Reglas compartidas (.md)
 │   │   ├── general.md
 │   │   ├── git-policy.md

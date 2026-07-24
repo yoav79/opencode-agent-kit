@@ -1,6 +1,6 @@
 # Backlog
 
-Features, mejoras y correcciones pendientes para el OpenCode Agent Kit.
+Features, mejoras y correcciones pendientes organizadas por agente/área.
 
 ## Formato
 
@@ -10,44 +10,161 @@ Features, mejoras y correcciones pendientes para el OpenCode Agent Kit.
 
 ---
 
-## Features
+## software-architect
 
-### Hacer que `next-task` mode: primary funcione sin comando
+### Templates de documento por fase
 
-Actualmente `next-task` es `mode: primary` pero no se puede invocar directamente
-sin un comando. Los comandos `/select-next-task` y `/prepare-task-run` existen
-como puente, pero el agente no tiene un `/next-task` directo.
+Crear templates `.md` para cada una de las 12 fases con secciones
+obligatorias. El agente debe usarlos como estructura base para cada
+entregable, asegurando consistencia entre proyectos.
+
+- **P:** alta | **E:** M | **A:** template
+
+### Validador determinista validate-blueprint.mjs
+
+Herramienta que verifique:
+- Los 14 documentos obligatorios existen en `docs/`
+- Cada documento tiene las secciones requeridas según su fase
+- Las aprobaciones están registradas en project-state.json
+- project-state.json es válido contra un schema
+- No hay contradicciones entre documentos
+- Los ADRs en `decisions/` están referenciados
+
+- **P:** alta | **E:** M | **A:** tool
+
+### Project-state.schema.json
+
+Schema JSON para validar programáticamente `project-state.json`, similar
+a `execution-state.schema.json` del dominio de ejecución.
+
+- **P:** media | **E:** S | **A:** template
+
+### Workflow: rutas relativas vs absolutas
+
+`workflow.md` usa `docs/01-discovery.md` (rutas relativas) pero el agente
+usa `.devflow/software-architect/docs/...` (rutas completas). Unificar.
+
+- **P:** baja | **E:** S | **A:** template
+
+### Document.path no utilizado
+
+El campo `path` en cada documento de `project-state.json` se define pero
+nunca se usa para determinar la ruta de escritura. Decidir si se elimina
+o se usa realmente.
+
+- **P:** baja | **E:** S | **A:** template
+
+---
+
+## task-planner
+
+### Unificar ruta de templates
+
+`task-planner` usa `$CONFIG_DIR/task-planner/templates/` mientras que
+`software-architect` y `context-builder` usan
+`$CONFIG_DIR/templates/<agente>/`. Unificar.
+
+- **P:** media | **E:** S | **A:** agente, script
+
+---
+
+## next-task
+
+### Hacer que mode: primary funcione sin comando
+
+Actualmente `next-task` se invoca únicamente mediante comandos
+(`/select-next-task`, `/prepare-task-run`). Debería poder invocarse
+directamente como agente primario.
 
 - **P:** media | **E:** S | **A:** agente, comando
 
-### Validador determinista para context-builder
+---
 
-`next-task` tiene `validate-next-task.mjs`. `context-builder` debería tener
-un `validate-execution-context.mjs` que verifique que `execution-context.json`
-cumple su schema, que los hashes coinciden, y que el prompt Markdown es
-consistente con el JSON.
+## context-builder
+
+### Validador determinista validate-execution-context.mjs
+
+Similar a `validate-next-task.mjs`. Debe verificar que
+`execution-context.json` cumple su schema, los hashes coinciden, y el
+prompt Markdown es consistente con el JSON.
 
 - **P:** media | **E:** M | **A:** template, tool
 
-### Esquema de validación para selection.json
+### Revisar permisos de read
 
-`task-selection.schema.json` existe pero no hay un comando o script que valide
-`selection.json` contra su schema de forma independiente. El validador
-`validate-next-task.mjs` hace algunas comprobaciones pero no usa el schema.
+`context-builder` tiene `"*": allow` en read. Sería más seguro
+restringirlo a `.devflow/` y archivos de repo necesarios (manifiestos,
+git).
 
-- **P:** baja | **E:** S | **A:** tool
+- **P:** baja | **E:** M | **A:** agente
 
-### Modo dry-run para comandos de inicialización
+### Patrón `**` en permisos
 
-Los comandos `/init-*` modifican archivos sin confirmación. Sería útil que
-soportaran un flag `--dry-run` para mostrar qué harían sin escribirlo.
+OpenCode no soporta `**` (globstar). Se cambió a `*` en la última
+revisión. Verificar que `*` alcanza para los templates.
+
+- **P:** media | **E:** S | **A:** agente
+
+---
+
+## consistency-reviewer
+
+*(recién creado, backlog inicial)*
+
+### Reporte con schema JSON
+
+Además del reporte Markdown, producir un `review-report.json` con schema
+validable para que herramientas externas puedan procesar los hallazgos.
+
+- **P:** baja | **E:** S | **A:** template
+
+### Integración con fase 11 del software-architect
+
+El `software-architect` debe invocar automáticamente al
+`consistency-reviewer` al llegar a la fase 11 y no avanzar si el
+veredicto es `BLOCKED`.
+
+- **P:** alta | **E:** M | **A:** agente
+
+---
+
+## general (multi-agente)
+
+### Normalizar nombres de clasificaciones
+
+`next-task` usa `TASK_SELECTED`, `NO_READY_TASK`, etc. `context-builder`
+usa `READY`, `PLAN_DEFECT`, etc. `consistency-reviewer` usa `BLOCKING`,
+`WARNING`, `INFO`. Definir un vocabulario compartido entre agentes de
+ejecución y revisión.
+
+- **P:** baja | **E:** S | **A:** agente
+
+### README: documentar schemas y contratos
+
+Los schemas JSON (`execution-state.schema.json`,
+`task-selection.schema.json`, `execution-context.schema.json`) no están
+documentados. Incluir un diagrama de contratos.
+
+- **P:** baja | **E:** M | **A:** docs
+
+### Agregar test para validate-next-task.mjs
+
+`validate-plan.mjs` y `update-timestamps.mjs` tienen tests.
+`validate-next-task.mjs` no.
+
+- **P:** media | **E:** M | **A:** tool, test
+
+### Modo dry-run para init-*
+
+Los comandos `/init-*` modifican archivos sin confirmación. Soportar un
+flag `--dry-run` para mostrar qué harían sin escribirlo.
 
 - **P:** baja | **E:** M | **A:** comando
 
 ### Integración con DevFlow real
 
-Actualmente los artefactos se generan en `.devflow/` pero no hay un conector
-que envíe las tareas a un sistema DevFlow real. El `task-plan.json` y los
+Los artefactos se generan en `.devflow/` pero no hay un conector que
+envíe las tareas a un sistema DevFlow real. `task-plan.json` y los
 archivos en `tasks/` son el contrato de salida, pero falta el paso de
 publicación.
 
@@ -55,72 +172,20 @@ publicación.
 
 ---
 
-## Mejoras
+## scripts
 
-### Unificar ruta de templates entre agentes
+### generate-scaffold.sh: rutas hardcodeadas
 
-Actualmente `software-architect` y `context-builder` usan
-`$CONFIG_DIR/templates/<agente>/` mientras que `task-planner` usa
-`$CONFIG_DIR/<agente>/templates/`. Esto es inconsistente y confuso.
-
-- **P:** media | **E:** S | **A:** agente, script
-
-### Revisar permisos de `*: allow` en read
-
-`context-builder` tiene `"*": allow` en read, lo que permite leer cualquier
-archivo del proyecto. Sería más seguro restringirlo a `.devflow/` y archivos
-de repo necesarios (manifiestos, git).
-
-- **P:** baja | **E:** M | **A:** agente
-
-### Agregar test para validate-next-task.mjs
-
-`validate-plan.mjs` tiene tests (`validate-plan.test.mjs`),
-`update-timestamps.mjs` también. `validate-next-task.mjs` no tiene tests.
-
-- **P:** media | **E:** M | **A:** tool, test
-
-### Normalizar nombres de clasificaciones
-
-`next-task` usa `TASK_SELECTED`, `NO_READY_TASK`, etc. `context-builder` usa
-`READY`, `PLAN_DEFECT`, etc. No hay un vocabulario compartido entre agentes
-de ejecución.
-
-- **P:** baja | **E:** S | **A:** agente
-
-### README: documentar schemas y contratos
-
-Los schemas JSON (`execution-state.schema.json`, `task-selection.schema.json`,
-`execution-context.schema.json`) no están documentados en el README. Sería útil
-incluir un diagrama de contratos.
-
-- **P:** baja | **E:** M | **A:** docs
-
----
-
-## Bugs / Correcciones
-
-### context-builder: `**` en permisos puede no funcionar
-
-OpenCode no soporta `**` (globstar) en patrones de permisos. Se cambió a `*`
-en la última revisión, pero `*` solo coincide con archivos directos, no
-subdirectorios. Si los templates tienen subdirectorios, no serán accesibles.
-
-- **P:** media | **E:** S | **A:** agente
-
-### create-project.sh: `directory` con ruta anidada
-
-`scaffold.json` usa `".devflow/execution"` como `directory`, y
-`create-project.sh` lo crea con `project_path / dir_name`. Pero si el directorio
-tiene múltiples niveles (`.devflow/execution`), `mkdir -p` lo resuelve bien.
-El problema es que el `AGENTS.md` y `project-state.json` se generan en
-`project_path / dir_name`, lo que es correcto.
+El script tiene valores fijos en el mapa `scaffolds`. No detecta
+automáticamente nuevos agentes agregados al directorio `templates/`.
 
 - **P:** baja | **E:** S | **A:** script
 
-### scripts/generate-scaffold.sh: rutas no actualizadas
+### create-project.sh: directory con ruta anidada
 
-El script tiene hardcodeados los valores del mapa `scaffolds`. Si se agregan
-nuevos agentes, el script no los detecta automáticamente.
+`scaffold.json` usa `".devflow/execution"` como `directory`.
+`create-project.sh` crea `project_path / dir_name`. Con rutas anidadas
+funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
+`project-state.json` se generan en la ubicación correcta.
 
 - **P:** baja | **E:** S | **A:** script

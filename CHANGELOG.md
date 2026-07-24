@@ -22,6 +22,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 
 ### Added
 
+- **`consistency-reviewer`** — Subagente que revisa la consistencia del Software Blueprint completo: estructura, cobertura, contradicciones y trazabilidad. Produce `review-report.md` con clasificación `BLOCKING`/`WARNING`/`INFO`.
+- **`/review-consistency`** — Comando que ejecuta la revisión independiente de consistencia.
 - **`context-builder`** — Subagente que prepara el contexto ejecutable de una tarea ya seleccionada: lee plan, artefactos, predecesores y repo; produce `execution-context.json` y `execution-prompt.md`.
 - **`next-task`** — Agente determinista de selección de tareas, con contratos de estado/selección y validador `validate-next-task.mjs`. Comandos `/init-next-task`, `/select-next-task`, `/prepare-task-run`.
 - **`task-planner`** — Agente de planificacion que transforma un blueprint aprobado en un plan completo de tareas para DevFlow. Workflow de 10 fases con validacion determinista.
