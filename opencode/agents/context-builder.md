@@ -13,12 +13,15 @@ permission:
     "$HOME/.config/opencode/templates/context-builder/*": allow
   edit:
     "*": deny
+    ".devflow/execution/execution-state.json": allow
+    ".devflow/execution/runs/TASK-*/attempt-*/selection.json": allow
     ".devflow/execution/runs/TASK-*/attempt-*/execution-context.json": allow
     ".devflow/execution/runs/TASK-*/attempt-*/execution-prompt.md": allow
   glob: allow
   grep: allow
   bash:
     "*": deny
+    "mkdir -p .devflow/execution/runs/TASK-*/attempt-*": allow
     "git status --short": allow
     "git status --short *": allow
     "git rev-parse HEAD": allow
