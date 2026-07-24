@@ -10,15 +10,19 @@ Features, mejoras y correcciones pendientes organizadas por agente/área.
 
 ---
 
+## Done
+
+### Templates de documento por fase (software-architect)
+
+Creados 12 templates en `templates/software-architect/doc-templates/`
+con secciones obligatorias, condicionales y checklist. El agente los lee
+desde el directorio global y los usa como estructura base.
+
+- Implementado en: `600b7fc`
+
+---
+
 ## software-architect
-
-### Templates de documento por fase
-
-Crear templates `.md` para cada una de las 12 fases con secciones
-obligatorias. El agente debe usarlos como estructura base para cada
-entregable, asegurando consistencia entre proyectos.
-
-- **P:** alta | **E:** M | **A:** template
 
 ### Validador determinista validate-blueprint.mjs
 
