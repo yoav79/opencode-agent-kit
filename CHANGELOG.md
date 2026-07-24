@@ -20,6 +20,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proye
 
 ### Added
 
+- **`next-task`** — Subagente determinista de selección de tareas, con contratos de estado/selección y validador independiente `validate-next-task.mjs`.
+
 - **`task-planner`** — Agente de planificacion que transforma un blueprint aprobado en un plan completo de tareas para DevFlow. Workflow de 10 fases con validacion determinista.
 - **`/init-software-architect`** — Comando que inicializa o continua el diseno de arquitectura con workflow de 12 fases y aprobaciones en puertas criticas.
 - **`/init-task-planner`** — Comando que inicializa o continua la planificacion de tareas con contrato de version e integridad.

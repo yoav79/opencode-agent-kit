@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "sourceSnapshot": null,
+  "selectedTaskId": null,
+  "epicId": null,
+  "executionWave": null,
+  "selectionReason": null,
+  "otherReadyTaskIds": [],
+  "classification": "NOT_EVALUATED",
+  "issues": []
+}

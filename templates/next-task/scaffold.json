@@ -1,0 +1,18 @@
+{
+  "directory": ".devflow/execution",
+  "files": [
+    "README.md",
+    "execution-state.json",
+    "execution-state.schema.json",
+    "selection.json",
+    "task-selection.schema.json"
+  ],
+  "dirs": [
+    "runs"
+  ],
+  "agent": {
+    "description": "Selecciona de forma determinista la siguiente tarea ejecutable sin modificar el plan ni el estado de ejecución.",
+    "mode": "subagent",
+    "temperature": "0"
+  }
+}

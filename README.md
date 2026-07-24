@@ -26,6 +26,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  │                      │       │                       │        │
 │  │  software-architect  │◄──────│  init-software-       │        │
 │  │  task-planner        │◄──────│  init-task-planner    │        │
+│  │  next-task           │       │  invocado por flujo   │        │
 │  └──────────────────────┘       └──────────────────────┘        │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -35,7 +36,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │                     Templates                             │   │
-│  │   software-architect/  |  task-planner/                   │   │
+│  │   software-architect/ | task-planner/ | next-task/         │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -62,6 +63,13 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  ├── epics/                                                     │
 │  ├── tasks/                                                     │
 │  └── tools/         (validador y actualizador determinista)     │
+│                                                                  │
+│  .devflow/execution/                                             │
+│  ├── execution-state.json  (estado mutable del orquestador)     │
+│  ├── selection.json        (salida de Next Task Agent)          │
+│  ├── *.schema.json         (contratos de ejecución)             │
+│  ├── tools/validate-next-task.mjs                               │
+│  └── runs/                 (evidencia creada por orquestador)    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -109,6 +117,18 @@ Transforma un Software Blueprint aprobado en un plan completo de tareas para Dev
 
 **Permisos:** Puede editar archivos en `.devflow/task-planner/`. **No puede** ejecutar codigo, hacer commits, ni modificar el producto.
 
+### `next-task` — Selector de Siguiente Tarea
+
+Consume el plan aprobado y el estado de ejecución para seleccionar exactamente una tarea mediante reglas deterministas. Es un subagente temporal que podrá ser reemplazado por un scheduler sin cambiar los contratos.
+
+- **Modo:** subagent
+- **Temperatura:** 0
+- **Entrada:** `.devflow/task-planner/*.json` y `.devflow/execution/execution-state.json`
+- **Salida:** `.devflow/execution/selection.json`
+- **Gate:** `.devflow/execution/tools/validate-next-task.mjs`
+
+**Permisos:** Solo lectura sobre planificación y estado; solo puede reemplazar `selection.json`. No ejecuta código ni modifica estados.
+
 ## Comandos
 
 | Comando | Agente | Descripcion |
@@ -123,7 +143,8 @@ opencode-agent-kit/
 ├── opencode/
 │   ├── agents/                    # Definiciones de agentes (.md + frontmatter YAML)
 │   │   ├── software-architect.md
-│   │   └── task-planner.md
+│   │   ├── task-planner.md
+│   │   └── next-task.md
 │   ├── commands/                  # Comandos slash (.md)
 │   │   ├── init-software-architect.md
 │   │   └── init-task-planner.md
@@ -137,16 +158,21 @@ opencode-agent-kit/
 │   ├── software-architect/        # Plantillas del agente de diseno
 │   │   ├── project-state.json
 │   │   └── workflow.md
-│   └── task-planner/              # Plantillas del agente de planificacion
-│       ├── project-state.json
-│       ├── workflow.md
-│       ├── semantic-contract.json
-│       ├── requirements.json
-│       ├── capability-map.json
-│       ├── epic-plan.json
-│       ├── task-plan.json
-│       ├── task-template.md
-│       └── tools/                 # Validador y actualizador determinista
+│   ├── task-planner/              # Plantillas del agente de planificacion
+│   │   ├── project-state.json
+│   │   ├── workflow.md
+│   │   ├── semantic-contract.json
+│   │   ├── requirements.json
+│   │   ├── capability-map.json
+│   │   ├── epic-plan.json
+│   │   ├── task-plan.json
+│   │   ├── task-template.md
+│   │   └── tools/                 # Validador y actualizador determinista
+│   └── next-task/                 # Contratos y gate de selección
+│       ├── execution-state.json
+│       ├── selection.json
+│       ├── *.schema.json
+│       └── tools/validate-next-task.mjs
 ├── scripts/
 │   ├── install.sh                 # Instalacion global via symlinks
 │   ├── uninstall.sh               # Desinstalacion segura
@@ -166,7 +192,7 @@ opencode-agent-kit/
 - [OpenCode](https://opencode.ai) instalado y configurado
 - Bash
 - Python 3 (para validacion)
-- Node.js (para las herramientas deterministas del task-planner)
+- Node.js (para las herramientas deterministas de task-planner y next-task)
 
 ### Instalacion Global
 
@@ -266,7 +292,7 @@ make test
 
 1. **Los agentes definen roles y autoridad.** Cada agente tiene un alcance claro y permisos minimos.
 2. **Los comandos inician flujos repetibles.** Cada comando tiene un agente asignado y un proposito definido.
-3. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene su propio `.devflow/software-architect/` y `.devflow/task-planner/`.
+3. **Los resultados de cada proyecto no se guardan en este repositorio.** Cada proyecto mantiene sus propios `.devflow/software-architect/`, `.devflow/task-planner/` y `.devflow/execution/`.
 4. **Ningun agente puede hacer `git commit` o `git push`** sin cambiar explicitamente su politica.
 5. **Los borradores nunca se eliminan.** Se promueven a docs o se mueven a archive.
 6. **`project-state.json` es la unica fuente de verdad** para el progreso del workflow.

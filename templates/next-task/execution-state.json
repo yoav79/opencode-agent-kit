@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "engine": {
+    "name": "next-task",
+    "contractVersion": "1.0"
+  },
+  "project": {
+    "id": "<project-slug>",
+    "planningVersion": 1
+  },
+  "revision": 0,
+  "status": "initialized",
+  "policy": {
+    "defaultMaxAttempts": 3,
+    "maxConcurrentTasks": 1
+  },
+  "tasks": [],
+  "timestamps": {
+    "createdAt": null,
+    "updatedAt": null
+  }
+}

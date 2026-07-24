@@ -1,0 +1,355 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devflow.local/schemas/next-task/task-selection.schema.json",
+  "title": "DevFlow Next Task Selection",
+  "description": "Resultado determinista producido por Next Task Agent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceSnapshot",
+    "selectedTaskId",
+    "epicId",
+    "executionWave",
+    "selectionReason",
+    "otherReadyTaskIds",
+    "classification",
+    "issues"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "sourceSnapshot": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/sourceSnapshot"
+        }
+      ]
+    },
+    "selectedTaskId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/taskId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "epicId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/epicId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "executionWave": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "selectionReason": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/selectionReason"
+        }
+      ]
+    },
+    "otherReadyTaskIds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/taskId"
+      },
+      "uniqueItems": true
+    },
+    "classification": {
+      "enum": [
+        "NOT_EVALUATED",
+        "TASK_SELECTED",
+        "NO_READY_TASK",
+        "PLAN_NOT_READY",
+        "INPUT_INVALID",
+        "STATE_CONFLICT"
+      ]
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "NOT_EVALUATED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sourceSnapshot": {
+            "type": "null"
+          },
+          "selectedTaskId": {
+            "type": "null"
+          },
+          "epicId": {
+            "type": "null"
+          },
+          "executionWave": {
+            "type": "null"
+          },
+          "selectionReason": {
+            "type": "null"
+          },
+          "otherReadyTaskIds": {
+            "maxItems": 0
+          },
+          "issues": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "TASK_SELECTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sourceSnapshot": {
+            "$ref": "#/$defs/sourceSnapshot"
+          },
+          "selectedTaskId": {
+            "$ref": "#/$defs/taskId"
+          },
+          "epicId": {
+            "$ref": "#/$defs/epicId"
+          },
+          "executionWave": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "selectionReason": {
+            "$ref": "#/$defs/selectionReason"
+          },
+          "issues": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "NO_READY_TASK"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sourceSnapshot": {
+            "$ref": "#/$defs/sourceSnapshot"
+          },
+          "selectedTaskId": {
+            "type": "null"
+          },
+          "epicId": {
+            "type": "null"
+          },
+          "executionWave": {
+            "type": "null"
+          },
+          "selectionReason": {
+            "type": "null"
+          },
+          "otherReadyTaskIds": {
+            "maxItems": 0
+          },
+          "issues": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "enum": [
+              "PLAN_NOT_READY",
+              "INPUT_INVALID",
+              "STATE_CONFLICT"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "selectedTaskId": {
+            "type": "null"
+          },
+          "epicId": {
+            "type": "null"
+          },
+          "executionWave": {
+            "type": "null"
+          },
+          "selectionReason": {
+            "type": "null"
+          },
+          "otherReadyTaskIds": {
+            "maxItems": 0
+          },
+          "issues": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^TASK-(?:0*[1-9][0-9]*)$"
+    },
+    "epicId": {
+      "type": "string",
+      "pattern": "^EPIC-[A-Z0-9][A-Z0-9_-]*$"
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "sourceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planningVersion",
+        "epicPlanContentHash",
+        "taskPlanContentHash",
+        "capabilityMapContentHash",
+        "executionStateRevision"
+      ],
+      "properties": {
+        "planningVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "epicPlanContentHash": {
+          "$ref": "#/$defs/contentHash"
+        },
+        "taskPlanContentHash": {
+          "$ref": "#/$defs/contentHash"
+        },
+        "capabilityMapContentHash": {
+          "$ref": "#/$defs/contentHash"
+        },
+        "executionStateRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "selectionReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependenciesCompleted",
+        "attemptsAvailable",
+        "taskStatus",
+        "readyTaskCount",
+        "unlocksTaskIds",
+        "tieBreaker"
+      ],
+      "properties": {
+        "dependenciesCompleted": {
+          "const": true
+        },
+        "attemptsAvailable": {
+          "const": true
+        },
+        "taskStatus": {
+          "enum": [
+            "pending",
+            "interrupted",
+            "failed_retryable"
+          ]
+        },
+        "readyTaskCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unlocksTaskIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taskId"
+          },
+          "uniqueItems": true
+        },
+        "tieBreaker": {
+          "const": "lowest-execution-wave-then-lowest-task-id"
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "source",
+        "message",
+        "reference"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devflow.local/schemas/next-task/execution-state.schema.json",
+  "title": "DevFlow Execution State",
+  "description": "Estado canónico y mutable de ejecución consumido en modo de solo lectura por Next Task Agent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "engine",
+    "project",
+    "revision",
+    "status",
+    "policy",
+    "tasks",
+    "timestamps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "contractVersion"
+      ],
+      "properties": {
+        "name": {
+          "const": "next-task"
+        },
+        "contractVersion": {
+          "const": "1.0"
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "planningVersion"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planningVersion": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Contador monotónico incrementado por el orquestador en cada modificación del estado."
+    },
+    "status": {
+      "enum": [
+        "initialized",
+        "active",
+        "paused",
+        "completed",
+        "failed"
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultMaxAttempts",
+        "maxConcurrentTasks"
+      ],
+      "properties": {
+        "defaultMaxAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxConcurrentTasks": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/taskExecution"
+      }
+    },
+    "timestamps": {
+      "$ref": "#/$defs/timestamps"
+    }
+  },
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^TASK-(?:0*[1-9][0-9]*)$"
+    },
+    "nullableDateTime": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "createdAt": {
+          "$ref": "#/$defs/nullableDateTime"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/nullableDateTime"
+        }
+      }
+    },
+    "blocker": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "source"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "reservation": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token",
+            "reservedAt",
+            "stateRevision"
+          ],
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reservedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "stateRevision": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "lastResult": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "runId",
+            "completedAt"
+          ],
+          "properties": {
+            "classification": {
+              "enum": [
+                "SUCCEEDED",
+                "FAILED",
+                "INTERRUPTED",
+                "CANCELLED"
+              ]
+            },
+            "runId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "completedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ]
+    },
+    "taskExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "status",
+        "attemptCount",
+        "maxAttempts",
+        "activeRunId",
+        "reservation",
+        "blocker",
+        "lastResult",
+        "updatedAt"
+      ],
+      "properties": {
+        "taskId": {
+          "$ref": "#/$defs/taskId"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "reserved",
+            "running",
+            "waiting_human",
+            "waiting_external",
+            "blocked",
+            "interrupted",
+            "completed",
+            "failed_retryable",
+            "failed_permanent",
+            "cancelled"
+          ]
+        },
+        "attemptCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "activeRunId": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reservation": {
+          "$ref": "#/$defs/reservation"
+        },
+        "blocker": {
+          "$ref": "#/$defs/blocker"
+        },
+        "lastResult": {
+          "$ref": "#/$defs/lastResult"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/nullableDateTime"
+        }
+      }
+    }
+  }
+}
