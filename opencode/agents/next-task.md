@@ -24,6 +24,7 @@ permission:
   grep: deny
   bash:
     "*": deny
+    "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
     "cp *": ask
     "mkdir *": ask
     "mkdir -p .devflow/execution .devflow/execution/runs .devflow/execution/tools": allow

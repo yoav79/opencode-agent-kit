@@ -83,10 +83,13 @@ archivo falta.
 
    - Sustituye `project.id` por un slug derivado del nombre del proyecto.
    - Sustituye `project.planningVersion` por `1`.
-   - Sustituye `timestamps.createdAt` y `timestamps.updatedAt` por la fecha
-     actual en formato ISO 8601.
    - Conserva el resto de la estructura sin modificaciones.
-   - Verifica que el resultado siga siendo JSON válido.
+   - Después de escribir el JSON, ejecuta:
+     ```
+     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     ```
+   - No escribas fechas manualmente. El timestamp tool actualiza
+     `createdAt` y `updatedAt`.
 
 7. Si `.devflow/execution/` ya existe:
 

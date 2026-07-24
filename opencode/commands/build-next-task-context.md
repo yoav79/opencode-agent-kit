@@ -30,8 +30,11 @@ desde `execution-state.json`. No requiere escribir el `taskId` manualmente.
    - Crea el directorio del intento.
    - Copia `.devflow/execution/selection.json` al run como evidencia.
    - Agrega o actualiza la entrada de la tarea en
-     `execution-state.json.tasks[]` con `status: reserved` e incrementa
-     `revision`.
+     `execution-state.json.tasks[]` con `status: reserved`, incrementa
+     `revision`, y luego actualiza timestamps con:
+     ```
+     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     ```
 
 8. Continúa con el proceso normal de construcción de contexto usando el
    `taskId` y `attempt` resueltos. Lee el `selection.json` del run (no el

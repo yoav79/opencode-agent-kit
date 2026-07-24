@@ -21,6 +21,7 @@ permission:
   grep: allow
   bash:
     "*": deny
+    "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
     "mkdir -p .devflow/execution/runs/TASK-*/attempt-*": allow
     "git status --short": allow
     "git status --short *": allow
@@ -453,6 +454,14 @@ El JSON debe:
 - cumplir `execution-context.schema.json`.
 
 `repositoryContext` debe ser evidencia, no un plan de implementación.
+
+Después de escribir `execution-context.json`, ejecuta:
+
+```
+node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/runs/<TASK-ID>/attempt-<NN>/execution-context.json
+```
+
+No escribas fechas manualmente. Usa siempre el timestamp tool.
 
 `issues` debe usar códigos estables en mayúsculas, por ejemplo:
 

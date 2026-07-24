@@ -65,11 +65,12 @@ archivo falta.
 
 6. Cuando se cree `.devflow/software-architect/project-state.json` por primera vez:
 
-   - Sustituye `project.createdAt` y `project.updatedAt` por la fecha actual en
-     formato ISO 8601.
-   - Sustituye `changeLog[0].date` por la misma fecha.
+   - Sustituye `changeLog[0].date` ejecutando:
+     ```
+     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/software-architect/project-state.json
+     ```
    - Conserva el resto de la estructura sin modificaciones.
-   - Verifica que el resultado siga siendo JSON válido.
+   - No escribas fechas manualmente. Usa siempre el timestamp tool.
 
 7. Si `.devflow/software-architect/` ya existe:
 

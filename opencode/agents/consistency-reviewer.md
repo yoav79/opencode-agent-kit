@@ -13,7 +13,9 @@ permission:
     ".devflow/software-architect/review/review-report.md": allow
   glob: allow
   grep: allow
-  bash: deny
+  bash:
+    "*": deny
+    "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
   task: deny
   webfetch: deny
   websearch: deny
@@ -59,6 +61,14 @@ Escribe únicamente:
 `.devflow/software-architect/review/review-report.md`
 
 Si el directorio `review/` no existe, créalo.
+
+Incluye la fecha de revisión obtenida mediante:
+
+```
+node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
+```
+
+No escribas fechas manualmente. Usa siempre el timestamp tool.
 
 ## Clasificación
 

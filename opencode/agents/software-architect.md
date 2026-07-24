@@ -9,7 +9,9 @@ permission:
   edit: allow
   glob: allow
   grep: allow
-  bash: deny
+  bash:
+    "*": deny
+    "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
   task: deny
   webfetch: ask
   websearch: ask

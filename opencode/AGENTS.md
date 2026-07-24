@@ -20,6 +20,18 @@ proyecto deben vivir en el `AGENTS.md` de ese proyecto.
   (como `rm -rf`, `DROP TABLE`, o sobreescritura de archivos sin backup) sin
   autorizacion explicita.
 
+## Timestamps deterministas
+
+- No escribas fechas, timestamps ni hashes manualmente.
+- Toda fecha debe provenir de:
+  ```
+  node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
+  ```
+- Todo JSON con campo `timestamps` debe actualizarse con:
+  ```
+  node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch <archivo.json>
+  ```
+
 ## Decisiones
 
 - Registra decisiones arquitectonicas relevantes en `.devflow/software-architect/decisions/`

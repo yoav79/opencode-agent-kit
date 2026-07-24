@@ -75,11 +75,15 @@ Ejemplo:
        "reservation": null,
        "blocker": null,
        "lastResult": null,
-       "updatedAt": "<fecha-actual-iso>"
+       "updatedAt": null
      }
      ```
    - Incrementa `revision` en 1.
-   - Actualiza `timestamps.updatedAt`.
+   - Después de escribir el JSON, ejecuta:
+     ```
+     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     ```
+   - No escribas fechas manualmente. El timestamp tool actualiza `updatedAt`.
 
 8. Verifica que el directorio existe y contiene `selection.json`.
 
