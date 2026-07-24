@@ -1,0 +1,39 @@
+Crea físicamente el siguiente scaffold dentro de la raíz actual del proyecto.
+
+Reglas:
+
+1. Crea exactamente la estructura indicada.
+2. No elimines ni sobrescribas archivos existentes.
+3. Si un archivo ya existe, léelo antes de modificarlo.
+4. No agregues dependencias ni código de producción.
+5. Crea los archivos con el contenido inicial descrito.
+6. Al terminar, verifica el árbol y reporta cualquier diferencia.
+
+Estructura:
+
+.
+├── AGENTS.md
+├── opencode.json
+├── project-state.json
+├── workflow.md
+├── .opencode/
+│   └── agents/
+│       └── software-architect.md
+├── docs/
+│   └── .gitkeep
+├── decisions/
+│   └── .gitkeep
+└── drafts/
+    └── .gitkeep
+
+Contenido inicial:
+
+- AGENTS.md: reglas generales del proyecto documental.
+- opencode.json: configuración mínima válida de OpenCode.
+- project-state.json: estado inicial del proyecto en fase de descubrimiento.
+- workflow.md: fases y reglas de avance.
+- .opencode/agents/software-architect.md: definición del agente principal.
+- Los archivos .gitkeep deben quedar vacíos.
+
+Antes de escribir, resume brevemente qué crearás.
+Después crea los archivos y muestra el árbol final.

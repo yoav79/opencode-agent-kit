@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "validatedAt": "2026-07-23T05:11:23.413Z",
+  "validator": {
+    "name": "validate-plan.mjs",
+    "version": 2
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "requirements": 44,
+    "mvpRequirements": 44,
+    "coveredMvpRequirements": 44,
+    "mvpFunctions": 49,
+    "unresolvedMvpFunctions": 0,
+    "mvpBehaviors": 49,
+    "coveredMvpBehaviors": 49,
+    "capabilities": 47,
+    "epics": 10,
+    "decomposedEpics": 10,
+    "tasks": 47
+  },
+  "blockingIssues": [],
+  "warnings": []
+}

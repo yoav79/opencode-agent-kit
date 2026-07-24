@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "status": "published",
+  "epics": [
+    {
+      "id": "EPIC-001",
+      "title": "Infraestructura Base y Autenticación",
+      "file": "task-planning/epics/EPIC-001.md",
+      "incrementId": "INC-001",
+      "dependencyIds": [],
+      "capabilityIds": ["CAP-001", "CAP-002", "CAP-003"],
+      "requirementIds": ["REQ-001"],
+      "decisionIds": ["DEC-001", "DEC-002", "DEC-004", "DEC-005"],
+      "taskIds": ["TASK-001", "TASK-002", "TASK-003"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-002",
+      "title": "Dashboard y Componentes UI",
+      "file": "task-planning/epics/EPIC-002.md",
+      "incrementId": "INC-002",
+      "dependencyIds": ["EPIC-001"],
+      "capabilityIds": ["CAP-004", "CAP-014", "CAP-015", "CAP-016"],
+      "requirementIds": ["REQ-002", "REQ-003", "REQ-004", "REQ-005"],
+      "decisionIds": ["DEC-007"],
+      "taskIds": ["TASK-004", "TASK-005", "TASK-006", "TASK-007"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-003",
+      "title": "Gestión de Dominios",
+      "file": "task-planning/epics/EPIC-003.md",
+      "incrementId": "INC-003",
+      "dependencyIds": ["EPIC-002"],
+      "capabilityIds": ["CAP-005", "CAP-018", "CAP-019", "CAP-020"],
+      "requirementIds": ["REQ-006", "REQ-007", "REQ-008", "REQ-009"],
+      "decisionIds": ["DEC-001", "DEC-002", "DEC-003"],
+      "taskIds": ["TASK-008", "TASK-009", "TASK-010", "TASK-011"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-004",
+      "title": "Gestión de Buzones",
+      "file": "task-planning/epics/EPIC-004.md",
+      "incrementId": "INC-004",
+      "dependencyIds": ["EPIC-003"],
+      "capabilityIds": ["CAP-006", "CAP-021", "CAP-022", "CAP-023", "CAP-024", "CAP-025"],
+      "requirementIds": ["REQ-010", "REQ-011", "REQ-012", "REQ-013", "REQ-014", "REQ-015", "REQ-016"],
+      "decisionIds": ["DEC-001", "DEC-002", "DEC-003"],
+      "taskIds": ["TASK-012", "TASK-013", "TASK-014", "TASK-015", "TASK-016", "TASK-017"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-005",
+      "title": "Gestión de Aliases e Identidades",
+      "file": "task-planning/epics/EPIC-005.md",
+      "incrementId": "INC-005",
+      "dependencyIds": ["EPIC-004"],
+      "capabilityIds": ["CAP-007", "CAP-008", "CAP-026", "CAP-027", "CAP-028", "CAP-029", "CAP-030", "CAP-031", "CAP-032"],
+      "requirementIds": ["REQ-017", "REQ-018", "REQ-019", "REQ-020", "REQ-021", "REQ-022", "REQ-023", "REQ-024", "REQ-025"],
+      "decisionIds": ["DEC-001", "DEC-002", "DEC-003"],
+      "taskIds": ["TASK-018", "TASK-019", "TASK-020", "TASK-021", "TASK-022", "TASK-023", "TASK-024", "TASK-025", "TASK-026"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-006",
+      "title": "Listas de Distribución",
+      "file": "task-planning/epics/EPIC-006.md",
+      "incrementId": "INC-006",
+      "dependencyIds": ["EPIC-005"],
+      "capabilityIds": ["CAP-009", "CAP-033", "CAP-034", "CAP-035"],
+      "requirementIds": ["REQ-026", "REQ-027", "REQ-028", "REQ-029"],
+      "decisionIds": ["DEC-001", "DEC-002", "DEC-003"],
+      "taskIds": ["TASK-027", "TASK-028", "TASK-029", "TASK-030"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-007",
+      "title": "Migración IMAP",
+      "file": "task-planning/epics/EPIC-007.md",
+      "incrementId": "INC-007",
+      "dependencyIds": ["EPIC-006"],
+      "capabilityIds": ["CAP-048", "CAP-036", "CAP-037", "CAP-038"],
+      "requirementIds": ["REQ-030", "REQ-031", "REQ-032", "REQ-033"],
+      "decisionIds": ["DEC-001", "DEC-002"],
+      "taskIds": ["TASK-031", "TASK-032", "TASK-033", "TASK-034"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-008",
+      "title": "Validación y Bitácoras",
+      "file": "task-planning/epics/EPIC-008.md",
+      "incrementId": "INC-008",
+      "dependencyIds": ["EPIC-007"],
+      "capabilityIds": ["CAP-011", "CAP-012", "CAP-039", "CAP-040", "CAP-041", "CAP-042", "CAP-043"],
+      "requirementIds": ["REQ-034", "REQ-035", "REQ-036", "REQ-037", "REQ-038", "REQ-039", "REQ-040"],
+      "decisionIds": ["DEC-001", "DEC-002"],
+      "taskIds": ["TASK-035", "TASK-036", "TASK-037", "TASK-038", "TASK-039", "TASK-040", "TASK-041"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-009",
+      "title": "Administración de Servicios",
+      "file": "task-planning/epics/EPIC-009.md",
+      "incrementId": "INC-009",
+      "dependencyIds": ["EPIC-008"],
+      "capabilityIds": ["CAP-013", "CAP-044", "CAP-045", "CAP-046"],
+      "requirementIds": ["REQ-041", "REQ-042"],
+      "decisionIds": ["DEC-001", "DEC-002"],
+      "taskIds": ["TASK-042", "TASK-043", "TASK-044", "TASK-045"],
+      "decomposed": true
+    },
+    {
+      "id": "EPIC-010",
+      "title": "Pulido y Despliegue",
+      "file": "task-planning/epics/EPIC-010.md",
+      "incrementId": "INC-010",
+      "dependencyIds": ["EPIC-009"],
+      "capabilityIds": ["CAP-017", "CAP-047"],
+      "requirementIds": [],
+      "decisionIds": ["DEC-006"],
+      "taskIds": ["TASK-046", "TASK-047"],
+      "decomposed": true
+    }
+  ]
+}

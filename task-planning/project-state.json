@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 2,
+  "planner": {
+    "name": "task-planner",
+    "workflowVersion": 2
+  },
+  "project": {
+    "id": "software-blueprint-agent",
+    "name": "Software Blueprint Agent",
+    "planningVersion": 1
+  },
+  "source": {
+    "blueprintPath": "docs/12-final-document.md",
+    "blueprintVersion": "2026-07-18"
+  },
+  "workflow": {
+    "phase": "plan_approval",
+    "status": "completed",
+    "resumeFrom": null,
+    "currentDecisionId": null,
+    "currentEpicId": null,
+    "pendingUserAction": null,
+    "blocker": null
+  },
+  "approvals": {
+    "resolvedBlueprint": {
+      "status": "approved",
+      "requestedAt": "2026-07-22T00:00:00.000Z",
+      "resolvedAt": "2026-07-22T00:00:00.000Z",
+      "resolvedBy": "user",
+      "comment": "Aprobado por el usuario"
+    },
+    "finalPlan": {
+      "status": "approved",
+      "requestedAt": "2026-07-23T05:10:00.000Z",
+      "resolvedAt": "2026-07-23T05:10:00.000Z",
+      "resolvedBy": "user",
+      "comment": "Plan aprobado por el usuario"
+    }
+  },
+  "progress": {
+    "blueprintRead": true,
+    "analysisComplete": true,
+    "decisionsDetected": 7,
+    "blockingDecisionsPending": 0,
+    "decisionsResolved": 7,
+    "resolvedBlueprintCreated": true,
+    "resolvedBlueprintApproved": true,
+    "constructionStrategyCreated": true,
+    "capabilitiesMapped": 47,
+    "capabilityMapValidated": true,
+    "epicsGenerated": 10,
+    "epicsDecomposed": 10,
+    "tasksGenerated": 47,
+    "mvpRequirementsDetected": 44,
+    "mvpFunctionsDetected": 49,
+    "mvpFunctionsAtomic": 49,
+    "mvpFunctionsUnresolved": 0,
+    "mvpBehaviorsDetected": 49,
+    "mvpBehaviorsCovered": 49,
+    "mvpRequirementsCovered": 44,
+    "planValidated": true,
+    "planPublished": true,
+    "finalPlanApproved": true
+  },
+  "artifacts": {
+    "workflow": {
+      "path": "task-planning/workflow.md",
+      "status": "available"
+    },
+    "decisions": {
+      "path": "task-planning/decisions.json",
+      "status": "generated"
+    },
+    "requirements": {
+      "path": "task-planning/requirements.json",
+      "status": "validated"
+    },
+    "resolvedBlueprint": {
+      "path": "task-planning/SOFTWARE-BLUEPRINT-RESOLVED.md",
+      "status": "generated"
+    },
+    "constructionStrategy": {
+      "path": "task-planning/construction-strategy.md",
+      "status": "generated"
+    },
+    "capabilityMap": {
+      "path": "task-planning/capability-map.json",
+      "status": "validated"
+    },
+    "epicPlan": {
+      "path": "task-planning/epic-plan.json",
+      "status": "published"
+    },
+    "epicsDirectory": {
+      "path": "task-planning/epics",
+      "status": "populated"
+    },
+    "readiness": {
+      "path": "task-planning/readiness.json",
+      "status": "passed"
+    },
+    "validationReport": {
+      "path": "task-planning/validation-report.md",
+      "status": "passed"
+    },
+    "planValidator": {
+      "path": "task-planning/tools/validate-plan.mjs",
+      "status": "available"
+    },
+    "taskPlan": {
+      "path": "task-planning/task-plan.json",
+      "status": "published"
+    },
+    "tasksDirectory": {
+      "path": "task-planning/tasks",
+      "status": "populated"
+    }
+  },
+  "timestamps": {
+    "createdAt": "2026-07-22T00:00:00.000Z",
+    "updatedAt": "2026-07-22T00:00:00.000Z",
+    "completedAt": "2026-07-23T05:10:00.000Z"
+  }
+}
