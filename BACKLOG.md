@@ -101,6 +101,122 @@ agente, más condición de salida en `workflow.md`.
 
 </div>
 
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Subagente para blueprint_consolidation (fase 3)
+
+Crear un subagente determinista (temp 0) para la generación de contratos
+semánticos y requirements.json. Aislar esta lógica densa del agente
+principal permite reducir pasos y errores.
+
+- **P:** alta | **E:** M | **A:** agente
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Subagente para epic_decomposition (fase 8)
+
+Crear un subagente que descomponga una épica por invocación. El task-planner
+lo invoca N veces (una por épica). Reduce la carga del agente principal y
+permite procesar épicas en paralelo.
+
+- **P:** alta | **E:** L | **A:** agente
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Duplicate agent definition
+
+`opencode/agents/task-planner.md` y `templates/task-planner/task-planner.md`
+son dos versiones del mismo agente con permisos diferentes. Eliminar o
+sincronizar para evitar desviación.
+
+- **P:** media | **E:** S | **A:** agente
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Readiness.json version mismatch (3.4 vs 3.5)
+
+El template `readiness.json` declara `"version": "3.4"` pero
+`validate-plan.mjs` usa `VALIDATOR_VERSION = "3.5"`. Unificar.
+
+- **P:** media | **E:** S | **A:** template, tool
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Project-state.schema.json para task-planner
+
+Crear un schema JSON para `project-state.json` del task-planner, similar
+al que ya tiene `software-architect`. La estructura es compleja
+(approvals, artifacts, progress, 20+ contadores).
+
+- **P:** media | **E:** S | **A:** template
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Template task-planner.md sin shared timestamp tool
+
+`templates/task-planner/task-planner.md` no incluye
+`"node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow`
+mientras que los otros agentes ya lo tienen. Agregarlo.
+
+- **P:** media | **E:** S | **A:** agente
+
+</div>
+
+<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### build-epic-graph.mjs sin tests
+
+`validate-plan.mjs` y `update-timestamps.mjs` tienen archivos `.test.mjs`.
+`build-epic-graph.mjs` no.
+
+- **P:** baja | **E:** M | **A:** tool, test
+
+</div>
+
+<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### SEMANTIC-CONTRACT.md en inglés
+
+Único archivo en inglés en todo el repositorio. Pasarlo a español o
+eliminarlo si su contenido ya está cubierto en el workflow.
+
+- **P:** baja | **E:** S | **A:** docs
+
+</div>
+
+<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### validate-plan.mjs refactor
+
+5071 líneas en un solo archivo. Dividir en módulos separados por
+dominio de validación (semántica, dependencias, capacidades, etc.).
+
+- **P:** baja | **E:** XL | **A:** tool
+
+</div>
+
+<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### task-planner.md copiado al proyecto
+
+`scaffold.json` incluye `task-planner.md` en `files`, copiando 1080
+líneas del agente al proyecto como `.devflow/task-planner/task-planner.md`.
+Evaluar si es necesario o si se puede eliminar del scaffold.
+
+- **P:** baja | **E:** S | **A:** template
+
+</div>
+
 ---
 
 ## next-task
