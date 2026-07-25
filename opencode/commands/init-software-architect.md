@@ -53,8 +53,10 @@ archivo falta.
    .devflow/software-architect/
    ├── project-state.json
    ├── workflow.md
-   ├── drafts/
-   └── docs/
+   ├── archive/
+   ├── decisions/
+   ├── docs/
+   └── drafts/
    ```
 
 5. Para inicializar archivos faltantes:
@@ -108,10 +110,9 @@ archivo falta.
 
     Requieren aprobación humana explícita:
 
-    - `02-executive-definition.md`
-    - `04-module-catalog.md`
-    - `07-solution-architecture.md`
-    - `10-delivery-roadmap.md`
+    - `08-solution-architecture.md`
+    - `12-delivery-roadmap.md`
+    - `14-consistency-review.md`
 
 11. No modifiques código fuente.
 

@@ -85,23 +85,25 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 
 ### `software-architect` — Agente de Diseno
 
-Convierte una idea incompleta en un blueprint coherente, trazable y listo para ejecucion. Workflow de 12 fases con documentos aprobados en puertas criticas.
+Convierte una idea incompleta en un blueprint coherente, trazable y listo para ejecucion. Workflow de 14 fases con documentos aprobados en puertas criticas.
 
 - **Modo:** primary
-- **Temperatura:** 0.1 (near-determinista)
+- **Temperatura:** 0.2
 - **Fases del workflow:**
   1. Discovery — Problema, usuarios, contexto
-  2. Executive Definition — Vision, solucion propuesta (requiere aprobacion)
-  3. Users and Processes — Actores, procesos, excepciones
-  4. Module Catalog — Modulos, responsabilidades, dependencias (requiere aprobacion)
-  5. Functional Requirements — Requisitos trazables con criterios de aceptacion
-  6. Data and Integrations — Entidades, datos sensibles, sistemas externos
-  7. Architecture — Alternativas, estilo, principios (requiere aprobacion)
-  8. Technology Stack — Stack seleccionado con justificacion
-  9. Security and NFR — Seguridad, rendimiento, disponibilidad
-  10. Delivery Roadmap — MVP, epicas, fases, despliegue (requiere aprobacion)
-  11. Consistency Review — Contradicciones, omisiones
-  12. Final Document — Blueprint consolidado
+  2. Product Requirements — Vision, propuesta de valor, MVP (requiere aprobacion)
+  3. Application Flow — Actores, journeys, estados, excepciones
+  4. UI/UX Brief — Design system, devices, accesibilidad
+  5. Module Catalog — Modulos, responsabilidades, dependencias
+  6. Functional Requirements — Requisitos trazables con criterios de aceptacion
+  7. Backend Schema — Entidades, APIs, almacenamiento, datos sensibles
+  8. Solution Architecture — Alternativas, estilo, principios (gate)
+  9. Technology Stack — Stack seleccionado con justificacion
+  10. Security & NFR — Seguridad, rendimiento, disponibilidad
+  11. Technical Requirements — Performance, compliance, monitoring (sintesis)
+  12. Delivery Roadmap — MVP, epicas, fases, despliegue (gate)
+  13. Software Blueprint — Documento consolidado (sintesis)
+  14. Consistency Review — Revision final, veredicto (gate final)
 
 **Permisos:** Puede editar archivos en `.devflow/software-architect/`. **No puede** hacer `git commit` ni `git push`.
 
@@ -160,7 +162,7 @@ código.
 
 Examina el Software Blueprint completo de forma independiente y produce
 un reporte estructurado con hallazgos clasificados por gravedad. Es
-invocado por `software-architect` en la fase 11 y puede ejecutarse
+invocado por `software-architect` en la fase 14 y puede ejecutarse
 manualmente.
 
 - **Modo:** subagent

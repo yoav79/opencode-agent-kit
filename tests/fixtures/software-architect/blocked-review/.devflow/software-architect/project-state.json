@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 2,
+  "project": {
+    "name": "valid-v2-project",
+    "workingTitle": "valid-v2-project",
+    "description": "Proyecto de prueba v2 completo",
+    "status": "in_progress",
+    "currentPhase": 14,
+    "createdAt": "2026-07-24T00:00:00.000Z",
+    "updatedAt": "2026-07-24T00:00:00.000Z"
+  },
+  "phases": {
+    "1_discovery": "approved",
+    "2_product_requirements": "approved",
+    "3_application_flow": "approved",
+    "4_uiux_brief": "approved",
+    "5_module_catalog": "approved",
+    "6_functional_requirements": "approved",
+    "7_backend_schema": "approved",
+    "8_solution_architecture": "in_progress",
+    "9_technology_stack": "approved",
+    "10_security_and_nfr": "approved",
+    "11_technical_requirements": "approved",
+    "12_delivery_roadmap": "approved",
+    "13_software_blueprint": "approved",
+    "14_consistency_review": "approved"
+  },
+  "confirmed": {
+    "problem": "Test problem",
+    "currentOperation": "Manual process",
+    "targetUsers": [
+      "admin"
+    ],
+    "buyer": "Company",
+    "beneficiaries": [
+      "users"
+    ],
+    "objectives": [
+      "Automate"
+    ],
+    "successCriteria": [
+      "It works"
+    ],
+    "constraints": [
+      "Budget"
+    ],
+    "scope": [
+      "Feature X"
+    ],
+    "outOfScope": [
+      "Feature Y"
+    ]
+  },
+  "productRequirements": {
+    "vision": "A great product",
+    "valueProposition": "Saves time",
+    "objectives": [
+      "Launch"
+    ],
+    "mvpScope": [
+      "Core"
+    ],
+    "postMvpScope": [
+      "Advanced"
+    ],
+    "outOfScope": [
+      "Not now"
+    ]
+  },
+  "applicationFlow": {
+    "actors": [
+      {
+        "name": "User",
+        "role": "End user",
+        "description": "Regular user"
+      }
+    ],
+    "processes": [
+      {
+        "name": "Login",
+        "description": "User logs in",
+        "actors": [
+          "User"
+        ]
+      }
+    ],
+    "exceptions": [
+      "Timeout"
+    ],
+    "controlPoints": [
+      "2FA"
+    ]
+  },
+  "uiuxBrief": {
+    "designSystem": "Material",
+    "brandColors": [
+      "#000"
+    ],
+    "typography": "Roboto",
+    "targetDevices": [
+      "Desktop"
+    ],
+    "accessibility": "WCAG AA",
+    "keyScreens": [
+      "Home"
+    ]
+  },
+  "modules": [
+    {
+      "name": "Auth",
+      "objective": "Handle auth",
+      "users": "All",
+      "responsibilities": "Login",
+      "functions": [
+        "login"
+      ],
+      "inputs": [
+        "credentials"
+      ],
+      "outputs": [
+        "token"
+      ],
+      "dependencies": [],
+      "permissions": "admin",
+      "priority": "high"
+    }
+  ],
+  "functionalRequirements": [
+    {
+      "id": "REQ-001",
+      "description": "User can login",
+      "module": "Auth",
+      "priority": "high",
+      "acceptanceCriteria": [
+        "Valid credentials grant access"
+      ]
+    }
+  ],
+  "backendSchema": {
+    "entities": [
+      {
+        "name": "User",
+        "description": "System user",
+        "attributes": [
+          "email",
+          "password"
+        ],
+        "relations": [
+          "has Role"
+        ]
+      }
+    ],
+    "sensitiveData": [
+      "email"
+    ],
+    "integrations": [
+      {
+        "system": "Email",
+        "type": "SMTP",
+        "protocol": "TLS",
+        "frequency": "on-event",
+        "volume": "low"
+      }
+    ],
+    "volumeEstimates": "1K users"
+  },
+  "architecture": {
+    "status": "approved",
+    "style": "Microservices",
+    "description": "Modular architecture",
+    "layers": [
+      "API",
+      "Workers"
+    ],
+    "principles": [
+      "SOLID"
+    ]
+  },
+  "technologyStack": {
+    "status": "approved",
+    "approvedStack": {
+      "backend": "Node.js",
+      "frontend": "React"
+    }
+  },
+  "technicalRequirements": {
+    "performance": "<200ms p95",
+    "scalability": "Horizontal",
+    "availability": "99.9%",
+    "compliance": "SOC2",
+    "security": "TLS 1.3",
+    "monitoring": "Datadog"
+  },
+  "approvedDecisions": [
+    "use-microservices"
+  ],
+  "assumptions": [
+    {
+      "assumption": "Team size grows",
+      "status": "confirmed"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Budget overrun",
+      "impact": "high",
+      "mitigation": "Weekly reviews"
+    }
+  ],
+  "openQuestions": [],
+  "pendingApprovals": [],
+  "documents": {
+    "01_discovery": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "02_product_requirements": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "03_application_flow": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "04_uiux_brief": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "05_module_catalog": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "06_functional_requirements": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "07_backend_schema": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "08_solution_architecture": {
+      "status": "pending",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "09_technology_stack": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "10_security_and_nfr": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "11_technical_requirements": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "12_delivery_roadmap": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "13_software_blueprint": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    },
+    "14_consistency_review": {
+      "status": "approved",
+      "approvedAt": "2026-07-24T00:00:00.000Z"
+    }
+  },
+  "changeLog": [
+    {
+      "date": "2026-07-24T00:00:00.000Z",
+      "action": "Fixture creado",
+      "details": "Proyecto v2 completo para pruebas."
+    }
+  ]
+}
