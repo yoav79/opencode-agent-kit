@@ -70,6 +70,23 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 6 — Corrección integral de coherencia (software-architect)
+
+Deadlock contractual de fase 11 eliminado: blueprint-compiler opera por modo
+(technical-requirements/software-blueprint). Fase 14 unificada en drafts/ y
+ya no compite entre docs/, drafts/ y review/. Permisos del agente restringidos
+a .devflow/software-architect/**. Validador corregido con mapping
+docKey→phaseKey y llamadas async completas. Migración v1→v2 corregida (fases
+4/11, currentPhase inteligente, timestamp tool, rename explícito de docs).
+Nuevos tests de migración real y consistency docKey→phaseKey. README, scripts,
+scaffold y contratos alineados.
+
+- Implementado en (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Fase 5 — Cierre (software-architect)
 
 Migración v1→v2 definida (política + script). Tests end-to-end con 3 fixtures

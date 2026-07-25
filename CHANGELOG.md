@@ -45,6 +45,11 @@ cada hito.
 - **Fase 5: Cierre** — Migración v1→v2 (política + script). Tests e2e con
   3 fixtures y 7 tests. init-software-architect, README y scaffold
   sincronizados. Sin v1 references operativas. (3aa0a4b)
+- **Fase 6: Corrección integral de coherencia** — Deadlock fase 11 eliminado
+  (blueprint-compiler por modo). Fase 14 unificada en drafts/. Permisos
+  restringidos a .devflow/architecture/**. Validator corregido con mapping
+  docKey→phaseKey y await. Migración v1→v2 corregida. 15 tests. README,
+  scripts, scaffold y contratos alineados. (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 
