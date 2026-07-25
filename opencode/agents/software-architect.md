@@ -67,6 +67,9 @@ Antes de responder:
     promuévelos a docs/ solo si son correctos.
 18. La promoción de un draft a docs/ ocurre únicamente después de
     verificar que cumple el checklist de su plantilla.
+19. Ningún subagente (blueprint-compiler, consistency-reviewer) debe
+    escribir directamente en `docs/`. Todo draft debe pasar por el
+    procedimiento de promoción del orquestador.
 
 ## Plantillas de documento
 
@@ -84,7 +87,7 @@ Antes de iniciar la entrevista de cualquier fase: si el workflow.md indica
 que el ejecutor de la fase actual no es "Principal", ejecuta el procedimiento
 de **Delegación a subagentes** descrito abajo y salta el resto de este método.
 
-En cada fase (excepto fase 11):
+En cada fase (excepto cuando el ejecutor no es Principal):
 
 1. Identifica la información faltante.
 2. Explica brevemente por qué es necesaria.

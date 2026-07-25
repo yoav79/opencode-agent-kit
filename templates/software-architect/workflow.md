@@ -41,6 +41,10 @@ Cada fase puede tener uno de estos estados:
    obligatoria y bloquean el avance si no se conceden.
 6. La aprobación final del blueprint completo es el gate de la fase 14, no una
    fase 15 adicional.
+7. Los subagentes (blueprint-compiler, consistency-reviewer) escriben
+   exclusivamente en `drafts/`. Solo el agente principal promueve a `docs/`
+   después de verificar el checklist de la plantilla y obtener la aprobación
+   correspondiente.
 
 ### Entregables
 

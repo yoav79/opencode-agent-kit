@@ -6,30 +6,33 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const VALIDATOR_NAME = 'validate-blueprint.mjs';
-const VALIDATOR_VERSION = '1.0';
+const VALIDATOR_VERSION = '2.0';
 
-const APPROVAL_PHASES = new Set([2, 4, 7, 10]);
+const APPROVAL_PHASES = new Set([8, 12, 14]);
 
 const PHASE_KEYS = [
-  '1_discovery', '2_executive_definition', '3_users_and_processes',
-  '4_module_catalog', '5_functional_requirements', '6_data_and_integrations',
-  '7_architecture', '8_technology_stack', '9_security_and_nfr',
-  '10_delivery_roadmap', '11_consistency_review', '12_final_document',
+  '1_discovery', '2_product_requirements', '3_application_flow',
+  '4_uiux_brief', '5_module_catalog', '6_functional_requirements',
+  '7_backend_schema', '8_solution_architecture', '9_technology_stack',
+  '10_security_and_nfr', '11_technical_requirements', '12_delivery_roadmap',
+  '13_software_blueprint', '14_consistency_review',
 ];
 
 const DOC_KEY_TO_FILENAME = {
   '01_discovery': '01-discovery.md',
-  '02_executive_definition': '02-executive-definition.md',
-  '03_users_and_processes': '03-users-and-processes.md',
-  '04_module_catalog': '04-module-catalog.md',
-  '05_functional_requirements': '05-functional-requirements.md',
-  '06_data_and_integrations': '06-data-and-integrations.md',
-  '07_solution_architecture': '07-solution-architecture.md',
-  '08_technology_stack': '08-technology-stack.md',
-  '09_security_and_nfr': '09-security-and-nfr.md',
-  '10_delivery_roadmap': '10-delivery-roadmap.md',
-  '11_consistency_review': '11-consistency-review.md',
-  '12_final_document': 'SOFTWARE-BLUEPRINT.md',
+  '02_product_requirements': '02-product-requirements.md',
+  '03_application_flow': '03-application-flow.md',
+  '04_uiux_brief': '04-uiux-brief.md',
+  '05_module_catalog': '05-module-catalog.md',
+  '06_functional_requirements': '06-functional-requirements.md',
+  '07_backend_schema': '07-backend-schema.md',
+  '08_solution_architecture': '08-solution-architecture.md',
+  '09_technology_stack': '09-technology-stack.md',
+  '10_security_and_nfr': '10-security-and-nfr.md',
+  '11_technical_requirements': '11-technical-requirements.md',
+  '12_delivery_roadmap': '12-delivery-roadmap.md',
+  '13_software_blueprint': 'SOFTWARE-BLUEPRINT.md',
+  '14_consistency_review': '14-consistency-review.md',
 };
 
 const DOCS_DIR = '.devflow/software-architect/docs';
@@ -42,17 +45,19 @@ function docFile(root, docKey) {
 
 const DOC_TEMPLATE_MAP = {
   '01-discovery.md': '01-discovery.md',
-  '02-executive-definition.md': '02-executive-definition.md',
-  '03-users-and-processes.md': '03-users-and-processes.md',
-  '04-module-catalog.md': '04-module-catalog.md',
-  '05-functional-requirements.md': '05-functional-requirements.md',
-  '06-data-and-integrations.md': '06-data-and-integrations.md',
-  '07-solution-architecture.md': '07-solution-architecture.md',
-  '08-technology-stack.md': '08-technology-stack.md',
-  '09-security-and-nfr.md': '09-security-and-nfr.md',
-  '10-delivery-roadmap.md': '10-delivery-roadmap.md',
-  '11-consistency-review.md': '11-consistency-review.md',
+  '02-product-requirements.md': '02-product-requirements.md',
+  '03-application-flow.md': '03-application-flow.md',
+  '04-uiux-brief.md': '04-uiux-brief.md',
+  '05-module-catalog.md': '05-module-catalog.md',
+  '06-functional-requirements.md': '06-functional-requirements.md',
+  '07-backend-schema.md': '07-backend-schema.md',
+  '08-solution-architecture.md': '08-solution-architecture.md',
+  '09-technology-stack.md': '09-technology-stack.md',
+  '10-security-and-nfr.md': '10-security-and-nfr.md',
+  '11-technical-requirements.md': '11-technical-requirements.md',
+  '12-delivery-roadmap.md': '12-delivery-roadmap.md',
   'SOFTWARE-BLUEPRINT.md': 'SOFTWARE-BLUEPRINT.md',
+  '14-consistency-review.md': '14-consistency-review.md',
 };
 
 const VALID_PHASE_STATUSES = new Set([
@@ -190,8 +195,8 @@ function formatIssue(issue) {
 function validateProjectState(state, statePath, root) {
   if (!state) return;
 
-  if (state.schemaVersion !== 1) {
-    addError('SCHEMA_VERSION_INVALID', `project-state.json schemaVersion debe ser 1, recibió ${JSON.stringify(state.schemaVersion)}.`, rel(statePath, root));
+  if (state.schemaVersion !== 2) {
+    addError('SCHEMA_VERSION_INVALID', `project-state.json schemaVersion debe ser 2, recibió ${JSON.stringify(state.schemaVersion)}.`, rel(statePath, root));
   }
 
   if (!isObject(state.project)) {
@@ -267,12 +272,12 @@ async function validateDocHeadings(state, root, templatesDir) {
 
     const templateExists = await fileExists(templatePath);
     if (!templateExists) {
-      addWarning('TEMPLATE_MISSING', `No se encuentra la plantilla ${templateFile}.`, rel(templatePath, root));
+      addWarning('TEMPLATE_MISSING', `No se encuentra la plantilla ${templateFilename}.`, rel(templatePath, root));
       continue;
     }
 
-    const docText = await readText(docPath, docFile, root);
-    const templateText = await readText(templatePath, templateFile, root);
+    const docText = await readText(docPath, filename, root);
+    const templateText = await readText(templatePath, templateFilename, root);
     if (!docText || !templateText) continue;
 
     const docHeadings = markdownHeadings(docText);
@@ -315,8 +320,8 @@ async function validatePhaseConsistency(state, root) {
 async function validateApprovalGates(state) {
   if (!isObject(state?.phases)) return;
 
-  const phase11Status = state.phases['11_consistency_review'];
-  if (!phase11Status || phase11Status === 'pending') return;
+  const phase14Status = state.phases['14_consistency_review'];
+  if (!phase14Status || phase14Status === 'pending') return;
 
   for (const phaseNum of APPROVAL_PHASES) {
     const key = PHASE_KEYS[phaseNum - 1];
@@ -387,13 +392,13 @@ async function validateNoOrphanDocs(state, root) {
 async function validateUniqueReqIds(state, root) {
   if (!isObject(state?.documents)) return;
 
-  const reqPath = docFile(root, '05_functional_requirements');
+  const reqPath = docFile(root, '06_functional_requirements');
   if (!reqPath) return;
 
   const reqExists = await fileExists(reqPath);
   if (!reqExists) return;
 
-  const text = await readText(reqPath, '05-functional-requirements.md', root);
+  const text = await readText(reqPath, '06-functional-requirements.md', root);
   if (!text) return;
 
   const ids = markdownIds(text, 'REQ');
@@ -403,6 +408,37 @@ async function validateUniqueReqIds(state, root) {
       addError('REQUIREMENT_ID_DUPLICATED', `ID ${id} aparece más de una vez en 05-functional-requirements.md.`, rel(reqPath, root), id);
     }
     seen.add(id);
+  }
+}
+
+async function validateDataSections(state) {
+  if (!isObject(state)) return;
+
+  const phaseDocMap = {
+    '2_product_requirements': { section: 'productRequirements', fields: ['vision', 'objectives', 'mvpScope'] },
+    '3_application_flow': { section: 'applicationFlow', fields: ['actors', 'processes'] },
+    '4_uiux_brief': { section: 'uiuxBrief', fields: ['designSystem', 'targetDevices'] },
+    '7_backend_schema': { section: 'backendSchema', fields: ['entities', 'integrations'] },
+    '11_technical_requirements': { section: 'technicalRequirements', fields: ['performance', 'security'] },
+  };
+
+  const statePath = '.devflow/software-architect/project-state.json';
+
+  for (const [phaseKey, info] of Object.entries(phaseDocMap)) {
+    const phaseStatus = state.phases?.[phaseKey];
+    if (phaseStatus !== 'approved') continue;
+
+    const sectionData = state[info.section];
+    if (!isObject(sectionData)) {
+      addError('SECTION_MISSING', `project-state.json.${info.section} debería existir (fase ${phaseKey} approved).`, statePath, info.section);
+      continue;
+    }
+
+    for (const field of info.fields) {
+      if (sectionData[field] === null || (Array.isArray(sectionData[field]) && sectionData[field].length === 0)) {
+        addWarning('SECTION_DATA_EMPTY', `${info.section}.${field} está vacío pero la fase ${phaseKey} está approved.`, statePath, `${info.section}.${field}`);
+      }
+    }
   }
 }
 
@@ -445,6 +481,7 @@ async function main() {
   await validateADRs(state, root);
   await validateNoOrphanDocs(state, root);
   await validateUniqueReqIds(state, root);
+  await validateDataSections(state);
 
   const output = buildOutput();
 
