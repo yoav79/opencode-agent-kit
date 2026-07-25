@@ -9,6 +9,13 @@ DRY_RUN=0
 FORCE=0
 WITH_GLOBAL_RULES=0
 
+# Colors
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 usage() {
   cat <<USAGE
 Usage: ./scripts/install.sh [options]
@@ -71,19 +78,23 @@ link_item() {
     local current
     current=$(readlink "$destination")
     if [ "$current" = "$source" ]; then
-      echo "Already installed: $destination"
+      echo -e "${YELLOW}Already installed:${NC} $destination"
       return
+    else
+      echo -e "${RED}Different version:${NC} $destination"
+      echo -e "  Current: ${CYAN}$current${NC}"
+      echo -e "  New:     ${GREEN}$source${NC}"
     fi
   fi
 
   if [ -e "$destination" ] || [ -L "$destination" ]; then
     if [ "$FORCE" -ne 1 ]; then
-      echo "Conflict: $destination" >&2
+      echo -e "${RED}Conflict:${NC} $destination" >&2
       echo "Review it or rerun with --force." >&2
       exit 1
     fi
     if [ -d "$destination" ] && [ ! -L "$destination" ]; then
-      echo "Refusing to remove a real directory: $destination" >&2
+      echo -e "${RED}Refusing to remove a real directory:${NC} $destination" >&2
       exit 1
     fi
     run rm -f "$destination"
@@ -92,9 +103,9 @@ link_item() {
   run mkdir -p "$(dirname "$destination")"
   run ln -s "$source" "$destination"
   if [ "$DRY_RUN" -eq 1 ]; then
-    echo "Would install: $destination"
+    echo -e "${CYAN}Would install:${NC} $destination"
   else
-    echo "Installed: $destination"
+    echo -e "${GREEN}Installed:${NC} $destination"
   fi
 }
 
