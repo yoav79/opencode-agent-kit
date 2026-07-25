@@ -90,157 +90,6 @@ publicación.
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] El agente no puede explorar adecuadamente el proyecto
-**[software-architect]**
-
-`glob` y `grep` están restringidos a `.devflow/software-architect/**`, pero el
-comando ordena revisar información existente del proyecto. Puede leer rutas
-conocidas, pero no descubrir estructura, código, documentación o configuración.
-
-- **P:** media | **E:** S | **A:** agente, permisos
-- **Referencias:** `opencode/agents/software-architect.md:12-17`, `opencode/commands/init-software-architect.md:105-108`
-- **Criterio de salida:** el agente puede descubrir archivos del proyecto en solo lectura sin ampliar sus permisos de edición
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Rutas iniciales ambiguas
-**[software-architect]**
-
-El agente indica leer `workflow.md` y `project-state.json` sin la ruta
-`.devflow/software-architect/`, mientras el comando sí define las ubicaciones
-completas.
-
-- **P:** media | **E:** S | **A:** agente, docs
-- **Referencias:** `opencode/agents/software-architect.md:41-44`, `opencode/commands/init-software-architect.md:41-44`
-- **Criterio de salida:** todas las instrucciones usan rutas canónicas y no dependen del directorio actual implícito
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Fase 14 no tiene formato para el veredicto contractual
-**[software-architect]**
-
-El contrato calcula resultados desde `BLOCKING` y `WARNING`, pero la plantilla
-de fase 14 no contiene secciones de veredicto, severidad ni conteos.
-
-- **P:** media | **E:** S | **A:** template, contrato, test
-- **Referencias:** `templates/software-architect/contracts/consistency-reviewer.md:17-21`, `templates/software-architect/doc-templates/14-consistency-review.md:3-21`
-- **Criterio de salida:** la plantilla representa hallazgos por severidad, conteos y un veredicto inequívoco compatible con el contrato
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Revisiones posteriores dejan documentos indebidamente aprobados
-**[software-architect]**
-
-El workflow marca fases dependientes como `needs_revision`, pero los documentos
-solo admiten `pending` o `approved`. El validador tampoco detecta un documento
-`approved` cuya fase está `needs_revision`.
-
-- **P:** media | **E:** M | **A:** workflow, schema, validator, test
-- **Referencias:** `templates/software-architect/workflow.md:81-89`, `templates/software-architect/project-state.schema.json:438-447`
-- **Criterio de salida:** fases y documentos modelan coherentemente la invalidación, revisión y nueva aprobación de artefactos dependientes
-- **Depende de:** El validador no forma parte del cierre del agente
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Reparación incompleta de inicializaciones parciales
-**[software-architect]**
-
-Si `.devflow/software-architect/` ya existe, el comando solo asegura `docs/` y
-`drafts/`; no restaura `archive/` ni `decisions/`.
-
-- **P:** media | **E:** S | **A:** comando, test
-- **Referencias:** `opencode/commands/init-software-architect.md:52-76`
-- **Criterio de salida:** reinvocar el comando restaura de forma idempotente todos los archivos y directorios faltantes sin sobrescribir contenido
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] La migración no está conectada al comando de inicio
-**[software-architect]**
-
-`/init-software-architect` no comprueba `schemaVersion` ni informa sobre la
-política v1→v2. Puede intentar continuar un estado v1 usando workflow v2.
-
-- **P:** media | **E:** S | **A:** comando, migración
-- **Referencias:** `opencode/commands/init-software-architect.md:41-44`, `templates/software-architect/migration/v1-to-v2-policy.md`
-- **Criterio de salida:** el inicio detecta v1, detiene el workflow v2 y ofrece instrucciones explícitas y no destructivas para migrar
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] El validador no forma parte del cierre del agente
-**[software-architect]**
-
-El agente tiene permiso para ejecutarlo, pero ninguna instrucción obliga a
-usarlo antes de declarar terminado el blueprint. Además, el validador exige
-todos los documentos aunque estén `pending`, por lo que no está definido en
-qué momentos intermedios puede utilizarse.
-
-- **P:** media | **E:** M | **A:** agente, workflow, validator, test
-- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:263-279`
-- **Criterio de salida:** el workflow define cuándo ejecutar validación parcial y final, y la finalización requiere una ejecución exitosa registrada
-- **Depende de:** El JSON Schema distribuido nunca se aplica
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Soporte inconsistente de XDG_CONFIG_HOME
-**[software-architect]**
-
-El instalador y parte del comando respetan XDG, pero agente, permisos bash,
-timestamp y política de migración fijan `$HOME/.config`. Una instalación con
-`XDG_CONFIG_HOME` personalizado rompe esas rutas.
-
-- **P:** media | **E:** M | **A:** agente, comando, migración, docs
-- **Referencias:** `scripts/install.sh:7`, `opencode/commands/init-software-architect.md:19-50`, `opencode/agents/software-architect.md:20-21`, `opencode/agents/software-architect.md:85`, `opencode/agents/software-architect.md:102`, `opencode/agents/software-architect.md:129`, `templates/software-architect/migration/v1-to-v2-policy.md:12`
-- **Criterio de salida:** todas las rutas globales usan una única convención compatible con `XDG_CONFIG_HOME` y con el fallback `$HOME/.config`
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] La migración promete backups que no crea
-**[software-architect]**
-
-Solo se respalda `project-state.json`. Los documentos se renombran sin copia,
-pero el mensaje final afirma que todos los archivos originales tienen sufijo
-`.v1`.
-
-- **P:** media | **E:** S | **A:** migración, docs, test
-- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:148-150`, `templates/software-architect/tools/migrate-v1-to-v2.mjs:254-274`
-- **Criterio de salida:** la herramienta crea los backups prometidos o comunica con precisión qué respalda y cómo revertir cada rename
-- **Depende de:** Ninguna
-- **Completado en:** (este commit)
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
 ### [Medio] Unificar ruta de templates
 **[task-planner]**
 
@@ -1068,5 +917,191 @@ agente, más condición de salida en `workflow.md`.
 - **Criterio de salida:** el agente invoca consistency-reviewer en fase 11, veredicto BLOCKED detiene avance a fase 12
 - **Depende de:** Fase 3 — Agentes (consistency-reviewer creado)
 - **Completado en:** `a43953c`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] La migración promete backups que no crea
+**[software-architect]**
+
+Solo se respalda `project-state.json`. Los documentos se renombran sin copia,
+pero el mensaje final afirma que todos los archivos originales tienen sufijo
+`.v1`.
+
+Corregido en `migrate-v1-to-v2.mjs`: antes de renombrar cada documento,
+se crea una copia `.<archivo>.md.v1`. Mensaje final preciso sobre qué se respaldó.
+
+- **P:** media | **E:** S | **A:** migración, docs, test
+- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs`
+- **Criterio de salida:** la herramienta crea los backups prometidos o comunica con precisión qué respalda y cómo revertir cada rename
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Soporte inconsistente de XDG_CONFIG_HOME
+**[software-architect]**
+
+El instalador y parte del comando respetan XDG, pero agente, permisos bash,
+timestamp y política de migración fijan `$HOME/.config`. Una instalación con
+`XDG_CONFIG_HOME` personalizado rompe esas rutas.
+
+Corregido en `software-architect.md` y `v1-to-v2-policy.md`: rutas humanas usan
+`${XDG_CONFIG_HOME:-$HOME/.config}`. Permisos bash conservan `$HOME/.config`
+(estándar OpenCode para patrones de shell).
+
+- **P:** media | **E:** M | **A:** agente, comando, migración, docs
+- **Referencias:** `opencode/agents/software-architect.md:85-87,104,131`, `templates/software-architect/migration/v1-to-v2-policy.md:12`
+- **Criterio de salida:** todas las rutas globales usan una única convención compatible con `XDG_CONFIG_HOME` y con el fallback `$HOME/.config`
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] El agente no puede explorar adecuadamente el proyecto
+**[software-architect]**
+
+`glob` y `grep` están restringidos a `.devflow/software-architect/**`, pero el
+comando ordena revisar información existente del proyecto. Puede leer rutas
+conocidas, pero no descubrir estructura, código, documentación o configuración.
+
+Corregido en `software-architect.md:12-17`: permisos `glob` y `grep` cambiados
+a `"*": allow` (solo lectura, consistente con `read: allow` global).
+
+- **P:** media | **E:** S | **A:** agente, permisos
+- **Referencias:** `opencode/agents/software-architect.md:12-17`
+- **Criterio de salida:** el agente puede descubrir archivos del proyecto en solo lectura sin ampliar sus permisos de edición
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Rutas iniciales ambiguas
+**[software-architect]**
+
+El agente indica leer `workflow.md` y `project-state.json` sin la ruta
+`.devflow/software-architect/`, mientras el comando sí define las ubicaciones
+completas.
+
+Corregido en `software-architect.md:43-45`: instrucciones usan rutas canónicas
+`.devflow/software-architect/workflow.md` y
+`.devflow/software-architect/project-state.json`.
+
+- **P:** media | **E:** S | **A:** agente, docs
+- **Referencias:** `opencode/agents/software-architect.md:43-45`
+- **Criterio de salida:** todas las instrucciones usan rutas canónicas y no dependen del directorio actual implícito
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Fase 14 no tiene formato para el veredicto contractual
+**[software-architect]**
+
+El contrato calcula resultados desde `BLOCKING` y `WARNING`, pero la plantilla
+de fase 14 no contiene secciones de veredicto, severidad ni conteos.
+
+Corregido en `14-consistency-review.md`: nuevas secciones Veredicto, Resumen de
+hallazgos, BLOCKING/WARNING/INFO con conteos y checklist. Compatible con el
+contrato de consistency-reviewer.
+
+- **P:** media | **E:** S | **A:** template, contrato, test
+- **Referencias:** `templates/software-architect/doc-templates/14-consistency-review.md`
+- **Criterio de salida:** la plantilla representa hallazgos por severidad, conteos y un veredicto inequívoco compatible con el contrato
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Revisiones posteriores dejan documentos indebidamente aprobados
+**[software-architect]**
+
+El workflow marca fases dependientes como `needs_revision`, pero los documentos
+solo admiten `pending` o `approved`. El validador tampoco detecta un documento
+`approved` cuya fase está `needs_revision`.
+
+Corregido en `project-state.schema.json` y `validate-blueprint.mjs`:
+`needs_revision` añadido a `documentEntry.status`. Validación cruzada
+`DOC_APPROVED_PHASE_NEEDS_REVISION`. Ambos bugs (6 y 9) resueltos en el mismo
+commit, por lo que la dependencia ya no aplica.
+
+- **P:** media | **E:** M | **A:** workflow, schema, validator, test
+- **Referencias:** `templates/software-architect/project-state.schema.json:477`, `templates/software-architect/tools/validate-blueprint.mjs:89-91,413-415`
+- **Criterio de salida:** fases y documentos modelan coherentemente la invalidación, revisión y nueva aprobación de artefactos dependientes
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Reparación incompleta de inicializaciones parciales
+**[software-architect]**
+
+Si `.devflow/software-architect/` ya existe, el comando solo asegura `docs/` y
+`drafts/`; no restaura `archive/` ni `decisions/`.
+
+Corregido en `init-software-architect.md:69-76`: paso 5 ahora crea `archive/` y
+`decisions/` si faltan, además de `drafts/` y `docs/`.
+
+- **P:** media | **E:** S | **A:** comando, test
+- **Referencias:** `opencode/commands/init-software-architect.md:69-76`
+- **Criterio de salida:** reinvocar el comando restaura de forma idempotente todos los archivos y directorios faltantes sin sobrescribir contenido
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] La migración no está conectada al comando de inicio
+**[software-architect]**
+
+`/init-software-architect` no comprueba `schemaVersion` ni informa sobre la
+política v1→v2. Puede intentar continuar un estado v1 usando workflow v2.
+
+Corregido en `init-software-architect.md:93-101`: paso 7 verifica `schemaVersion`
+y si es 1, detiene el flujo y muestra instrucción para migrar.
+
+- **P:** media | **E:** S | **A:** comando, migración
+- **Referencias:** `opencode/commands/init-software-architect.md:93-101`
+- **Criterio de salida:** el inicio detecta v1, detiene el workflow v2 y ofrece instrucciones explícitas y no destructivas para migrar
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] El validador no forma parte del cierre del agente
+**[software-architect]**
+
+El agente tiene permiso para ejecutarlo, pero ninguna instrucción obliga a
+usarlo antes de declarar terminado el blueprint. Además, el validador exige
+todos los documentos aunque estén `pending`, por lo que no está definido en
+qué momentos intermedios puede utilizarse.
+
+Corregido en `software-architect.md:226-249`: nueva sección "Validación
+obligatoria" que exige ejecutar `validate-blueprint.mjs` con 0 errores antes de
+declarar terminado el blueprint. Validación parcial antes de gates 8/12/14.
+Dependencia resuelta (El JSON Schema distribuido nunca se aplica fue completado
+en commit anterior).
+
+- **P:** media | **E:** M | **A:** agente, workflow, validator, test
+- **Referencias:** `opencode/agents/software-architect.md:226-249`
+- **Criterio de salida:** el workflow define cuándo ejecutar validación parcial y final, y la finalización requiere una ejecución exitosa registrada
+- **Depende de:** El JSON Schema distribuido nunca se aplica
+- **Completado en:** (este commit)
 
 </div>
