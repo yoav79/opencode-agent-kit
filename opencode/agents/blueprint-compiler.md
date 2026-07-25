@@ -1,7 +1,6 @@
 ---
 description: Compila drafts de Technical Requirements y Software Blueprint desde documentos fuente aprobados
 mode: subagent
-model: gpt-4o
 temperature: 0
 permission:
   "*": deny
