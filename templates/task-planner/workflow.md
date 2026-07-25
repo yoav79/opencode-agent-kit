@@ -997,6 +997,15 @@ La fase termina cuando:
 Descomponer una épica por vez en tareas ejecutables que preserven exactamente la
 identidad semántica de sus capacidades.
 
+## Ejecutor
+
+`epic-decomposer` (subagente)
+
+El agente principal (`task-planner`) invoca al subagente `epic-decomposer` para
+cada épica. El subagente escribe drafts en `.devflow/task-planner/drafts/`;
+el agente principal promueve los drafts, mergea los JSON parciales y actualiza
+el estado global.
+
 ## Estado inicial
 
 - fase: `epic_decomposition`
@@ -1004,28 +1013,34 @@ identidad semántica de sus capacidades.
 
 ## Entradas permitidas
 
-- épica actual;
-- capacidades creadas y consumidas;
+- épica actual (`currentEpicId`);
+- capacidades de la épica (`ownerEpicId = currentEpicId`);
 - `semantic-contract.json` aprobado;
 - `requirements.json`;
+- `capability-map.json`;
+- `task-plan.json` existente;
 - blueprint resuelto;
-- decisiones y estrategia.
+- `construction-strategy.md`;
+- decisiones y estrategia;
+- mapa preasignado `capabilityId -> taskId`.
 
 ## Proceso obligatorio por épica
 
 0. Establecer `task-plan.json.status = in_progress` si el estado actual es `initialized`.
-1. Leer la épica, capacidades y contratos relacionados.
-2. Crear una tarea por capacidad principal.
-3. Para cada tarea funcional copiar:
-   - `behaviorIds` de la capacidad creada;
-   - `semanticKeys` de la capacidad creada;
-   - los mismos `behaviorIds` a `requirementCoverage`.
-4. Crear el Markdown con `SCOPE-*`, `AC-*` y `## Contrato semántico`.
-5. En el bloque semántico copiar `behaviorIds`, `semanticKeys` y
-   `sourceFunctionIds` derivados del contrato.
-6. Confirmar igualdad exacta entre tarea, capacidad, cobertura y Markdown.
-7. Asignar `ownerTaskId`, actualizar índices y contadores.
-8. Marcar la épica como descompuesta solo al completar todas sus capacidades.
+1. El agente principal verifica los inputs según el contrato de `epic-decomposer`.
+2. El agente principal invoca al subagente con `currentEpicId` y los inputs.
+3. El subagente genera los drafts (TASK-*.md, partial JSON, result.json).
+4. El subagente devuelve `GENERATED` o `BLOCKED`.
+5. Si `GENERATED`, el agente principal:
+   a. Lee `drafts/<EPIC-ID>.result.json`.
+   b. Promueve cada `TASK-*.md` de `drafts/` a `tasks/`.
+   c. Mergea `task-plan.partial.json` en `task-plan.json`.
+   d. Actualiza `ownerTaskId` en `capability-map.json`.
+   e. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
+   f. Actualiza contadores y `project-state.json`.
+   g. Ejecuta `build-epic-graph.mjs`.
+   h. Si quedan épicas, continúa; si no, avanza a `plan_validation`.
+6. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
 ## Estructura de `task-plan.json`
 
@@ -1064,7 +1079,7 @@ Supervisor a inventar reglas.
 
 ## Entregables
 
-- `.devflow/task-planner/tasks/*.md`;
+- `.devflow/task-planner/tasks/*.md` (promovidos desde drafts/);
 - `.devflow/task-planner/task-plan.json`;
 - `.devflow/task-planner/epic-plan.json`;
 - `.devflow/task-planner/capability-map.json`;
