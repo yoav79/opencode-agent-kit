@@ -2,7 +2,7 @@
 description: Examina el Software Blueprint completo y produce un reporte estructurado de consistencia
 mode: subagent
 temperature: 0
-model: anthropic/claude-sonnet-4-6
+model: gpt-4o
 permission:
   "*": deny
   read:

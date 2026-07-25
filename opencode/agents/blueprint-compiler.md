@@ -1,7 +1,7 @@
 ---
 description: Compila drafts de Technical Requirements y Software Blueprint desde documentos fuente aprobados
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: gpt-4o
 temperature: 0
 permission:
   "*": deny
