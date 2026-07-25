@@ -70,6 +70,22 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 3 — Agentes (software-architect)
+
+software-architect refactorizado como orquestador con delegación genérica a
+subagentes. Creados blueprint-compiler (subagente temp 0) y comando
+/compile-blueprint. consistency-reviewer actualizado a docs v2, sin
+dependencias circulares ni references a documents.*.path.
+
+- **3a.** `opencode/agents/software-architect.md` — orquestador con delegación
+- **3b.** `opencode/agents/blueprint-compiler.md` + `opencode/commands/compile-blueprint.md`
+- **3c.** `opencode/agents/consistency-reviewer.md` + `opencode/commands/review-consistency.md`
+- Implementado en: `b299f5d`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Fase 2 — Datos y templates (software-architect)
 
 project-state actualizado a schemaVersion 2 con 14 fases, 14 documentos y
@@ -115,58 +131,6 @@ agente, más condición de salida en `workflow.md`.
 ---
 
 ## software-architect
-
-### Fase 3 — Agentes
-
-Dependen de los contratos y datos definidos en fases 1 y 2.
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 3a. Refactorizar software-architect como orquestador
-
-Conservar en el agente principal la entrevista, continuidad conversacional,
-gestión de decisiones, actualización del estado, aprobaciones y delegación.
-Extraer la compilación semántica y mantener una única autoridad sobre
-`project-state.json`.
-
-- **P:** alta | **E:** L | **A:** agente
-- **Criterio de salida:** el agente principal es la única interfaz con el
-  usuario y el único componente que cambia fases, aprobaciones y estado.
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 3b. Crear subagente blueprint-compiler y comando /compile-blueprint
-
-Crear un subagente con temperatura `0` que lea documentos aprobados y genere
-los drafts de `11-technical-requirements.md` y `SOFTWARE-BLUEPRINT.md`. Debe
-responder con `GENERATED` o `BLOCKED`, sin interactuar con el usuario,
-modificar documentos fuente ni actualizar el estado.
-Crear también el comando `/compile-blueprint` para invocación independiente
-y pruebas, análogo a `/review-consistency`.
-
-- **P:** alta | **E:** M | **A:** agente, comando
-- **Criterio de salida:** el compilador solo escribe en los drafts autorizados,
-  se bloquea cuando faltan entradas, y el comando permite probarlo sin el
-  agente principal.
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 3c. Corregir consistency-reviewer para el workflow v2
-
-Mover la revisión después de generar el Blueprint candidato y eliminar sus
-precondiciones circulares. No debe exigir su propio documento de salida ni
-usar `documents.*.path`, campo eliminado del estado. Debe revisar documentos
-aprobados y el Blueprint candidato sin modificar fuentes.
-
-- **P:** alta | **E:** M | **A:** agente, comando
-- **Criterio de salida:** un veredicto `BLOCKED` impide la aprobación final y
-  el revisor no depende de artefactos que todavía no pueden existir.
-
-</div>
 
 ### Fase 4 — Validación y reglas
 

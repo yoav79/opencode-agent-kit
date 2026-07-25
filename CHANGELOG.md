@@ -35,6 +35,9 @@ cada hito.
 - **Fase 2: Datos y templates** — project-state schema v2 con 14 fases,
   14 documentos y 5 secciones nuevas. Templates v2 creados/renombrados.
   Scaffold con `review/` y tests actualizados. (fde4110)
+- **Fase 3: Agentes** — software-architect como orquestador con delegación
+  genérica. blueprint-compiler (subagent + /compile-blueprint). consistency-
+  reviewer actualizado a docs v2 sin dependencias circulares. (b299f5d)
 
 ## [0.1.0] — Estado inicial del repositorio
 
