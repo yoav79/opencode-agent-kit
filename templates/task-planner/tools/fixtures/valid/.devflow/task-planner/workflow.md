@@ -860,7 +860,7 @@ Agrupar capacidades planificadas en incrementos funcionales coherentes, usando
 
 ## Contrato estructurado de épicas
 
-`epic-plan.json` debe usar `schemaVersion = 3`.
+`epic-plan.json` debe usar `schemaVersion = 4`.
 
 Cada épica registra:
 

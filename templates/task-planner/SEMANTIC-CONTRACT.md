@@ -19,6 +19,7 @@ Each `contracts[]` record must contain:
 - `sourceSection`
 - `sourceItem`
 - `scope`
+- `backendBinding`
 
 Example:
 
@@ -32,7 +33,8 @@ Example:
   "outcome": "The administrator updates one existing domain.",
   "sourceSection": "5.3 Domain management",
   "sourceItem": "Update domain",
-  "scope": "mvp"
+  "scope": "mvp",
+  "backendBinding": "backendctl domain update"
 }
 ```
 
@@ -49,6 +51,7 @@ Every behavior must copy exactly from its approved semantic contract:
 - `sourceSection`
 - `sourceItem`
 - `scope`
+- `backendBinding`
 
 Any difference is `BEHAVIOR_SEMANTIC_CONTRACT_MISMATCH`.
 
@@ -95,7 +98,8 @@ Every task contains:
 {
   "behaviorIds": ["BEH-DOMAIN-UPDATE"],
   "semanticKeys": ["domain.update"],
-  "sourceFunctionIds": ["FUN-DOMAIN-UPDATE"]
+  "sourceFunctionIds": ["FUN-DOMAIN-UPDATE"],
+  "backendBindings": ["backendctl domain update"]
 }
 ```
 ```

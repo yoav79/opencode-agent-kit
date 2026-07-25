@@ -16,10 +16,8 @@ cada hito.
 - **14 items en software-architect** — Refactorización ordenada en 5 fases
   por cadena de dependencia: cimientos, datos/templates, agentes,
   validación/reglas y cierre. (e719e42)
-- **2 items restantes en task-planner** — Completan la planificación del
-  agente de planificación. (8e19dd9)
-- **10 items en task-planner** — Plan de trabajo para el agente de
-  planificación. (73e29d4)
+- **backendBinding en contrato semántico** — Campo obligatorio añadido a
+  contratos, behaviors y template de tarea. (este commit)
 
 ### Changed
 
@@ -52,8 +50,25 @@ cada hito.
   docKey→phaseKey y await. Migración v1→v2 corregida. 15 tests. README,
   scripts, scaffold y contratos alineados. (este commit)
 - **Taxonomía de tests** — Suite de software-architect renombrada como tests
-   deterministas de herramientas; `make test` ejecuta ambas suites. Alcance y
-   exclusiones de runtime documentados en `tests/README.md`. (este commit)
+  deterministas de herramientas; `make test` ejecuta ambas suites. Alcance y
+  exclusiones de runtime documentados en `tests/README.md`. (este commit)
+- **Rutas de templates unificadas** — task-planner migrado de
+  `$CONFIG_DIR/task-planner/templates/` a
+  `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/`
+  consistente con los demás agentes. `external_directory` con 3 formas
+  redundantes (`$HOME/.config`, `$XDG_CONFIG_HOME`, `${...}`).
+  (este commit)
+- **Permisos edit restringidos** — task-planner pasa de `edit: allow` global
+  a solo `.devflow/task-planner/**`. (este commit)
+- **Readiness.json version 3.5** — Sincronizado con el validador. (este commit)
+- **epic-plan.json schemaVersion 4** — Actualizado en workflow.md. (este commit)
+
+### Removed
+
+- **`templates/task-planner/task-planner.md`** — Definición duplicada del
+  agente; la canónica está en `opencode/agents/task-planner.md`. (este commit)
+- **`SEMANTIC-CONTRACT.md` y `task-planner.md` del scaffold** — Ya no se
+  copian al proyecto. (este commit)
 
 ### Fixed
 
@@ -110,6 +125,10 @@ cada hito.
 - **matchSchema compatible con propertyNames** — `matchSchema` ahora verifica
   que `props` exista antes de validar `additionalProperties`, permitiendo
   definiciones como `phases` que usan `propertyNames`/`patternProperties`.
+  (este commit)
+- **external_directory multi-regla** — `task-planner.md` ahora autoriza
+  `$HOME/.config`, `$XDG_CONFIG_HOME` y `${XDG_CONFIG_HOME:-$HOME/.config}`
+  para templates globales, eliminando la dependencia de una ruta fija.
   (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio

@@ -32,55 +32,55 @@ Utiliza estas plantillas como fuente de verdad.
 
 - Workflow:
 
-  @$HOME/.config/opencode/task-planner/templates/workflow.md
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md
 
 - Estado inicial:
 
-  @$HOME/.config/opencode/task-planner/templates/project-state.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json
 
 - Decisiones:
 
-  @$HOME/.config/opencode/task-planner/templates/decisions.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json
 
 - Contrato semántico:
 
-  @$HOME/.config/opencode/task-planner/templates/semantic-contract.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/semantic-contract.json
 
 - Requisitos:
 
-  @$HOME/.config/opencode/task-planner/templates/requirements.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/requirements.json
 
 - Mapa de capacidades:
 
-  @$HOME/.config/opencode/task-planner/templates/capability-map.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/capability-map.json
 
 - Índice de épicas:
 
-  @$HOME/.config/opencode/task-planner/templates/epic-plan.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-plan.json
 
 - Readiness:
 
-  @$HOME/.config/opencode/task-planner/templates/readiness.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json
 
 - Índice de tareas:
 
-  @$HOME/.config/opencode/task-planner/templates/task-plan.json
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json
 
 - Plantilla de tarea:
 
-  @$HOME/.config/opencode/task-planner/templates/task-template.md
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md
 
 - Validador determinista:
 
-  @$HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs
 
 - Actualizador determinista de fechas:
 
-  @$HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs
 
 - Constructor determinista del grafo de épicas:
 
-  @$HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs
 
 ## Objetivo
 
@@ -108,7 +108,8 @@ La estructura inicial válida es:
 ├── tasks/
 └── tools/
     ├── validate-plan.mjs
-    └── update-timestamps.mjs
+    ├── update-timestamps.mjs
+    └── build-epic-graph.mjs
 ```
 
 No crees durante la inicialización:
@@ -129,19 +130,19 @@ Para un proyecto nuevo usa exactamente:
 
 ```bash
 mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools
-cp -n $HOME/.config/opencode/task-planner/templates/project-state.json .devflow/task-planner/project-state.json
-cp -n $HOME/.config/opencode/task-planner/templates/workflow.md .devflow/task-planner/workflow.md
-cp -n $HOME/.config/opencode/task-planner/templates/decisions.json .devflow/task-planner/decisions.json
-cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json .devflow/task-planner/semantic-contract.json
-cp -n $HOME/.config/opencode/task-planner/templates/requirements.json .devflow/task-planner/requirements.json
-cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json .devflow/task-planner/capability-map.json
-cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json .devflow/task-planner/epic-plan.json
-cp -n $HOME/.config/opencode/task-planner/templates/readiness.json .devflow/task-planner/readiness.json
-cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json .devflow/task-planner/task-plan.json
-cp -n $HOME/.config/opencode/task-planner/templates/task-template.md .devflow/task-planner/task-template.md
-cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
-cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
-cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json .devflow/task-planner/project-state.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md .devflow/task-planner/workflow.md
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json .devflow/task-planner/decisions.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/semantic-contract.json .devflow/task-planner/semantic-contract.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/requirements.json .devflow/task-planner/requirements.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/capability-map.json .devflow/task-planner/capability-map.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-plan.json .devflow/task-planner/epic-plan.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
 node .devflow/task-planner/tools/update-timestamps.mjs bootstrap
 ```
 
@@ -178,7 +179,8 @@ Antes de crear o modificar cualquier archivo del proyecto:
    - `task-plan.json.schemaVersion = 4`;
 3. confirma que el workflow global declara versión `7`;
 4. confirma que el validador global existe;
-5. si falta una plantilla o una versión no coincide:
+5. confirma que el constructor del grafo de épicas global existe;
+6. si falta una plantilla o una versión no coincide:
    - informa la ruta y el valor encontrado;
    - no inventes contenido;
    - no escribas archivos en el proyecto;
@@ -199,9 +201,10 @@ Inicializa un proyecto nuevo:
 5. crea cada archivo inicial usando exactamente su plantilla oficial;
 6. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
 7. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
-8. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
-9. no agregues registros de ejemplo;
-10. no ejecutes el validador.
+8. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
+9. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
+10. no agregues registros de ejemplo;
+11. no ejecutes el validador.
 
 #### Caso B — `.devflow/task-planner/` ya existe
 
@@ -259,7 +262,8 @@ falten:
 - `.devflow/task-planner/task-plan.json`;
 - `.devflow/task-planner/task-template.md`;
 - `.devflow/task-planner/tools/validate-plan.mjs`;
-- `.devflow/task-planner/tools/update-timestamps.mjs`.
+- `.devflow/task-planner/tools/update-timestamps.mjs`;
+- `.devflow/task-planner/tools/build-epic-graph.mjs`.
 
 Cada archivo faltante debe crearse exclusivamente desde su plantilla oficial.
 

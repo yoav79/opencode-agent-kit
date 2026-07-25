@@ -36,6 +36,7 @@ Describir un único resultado principal observable.
 {
   "behaviorIds": ["BEH-RESOURCE-ACTION"],
   "semanticKeys": ["resource.action"],
-  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"]
+  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"],
+  "backendBindings": ["backendctl resource action"]
 }
 ```

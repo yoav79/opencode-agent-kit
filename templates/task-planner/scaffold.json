@@ -1,7 +1,6 @@
 {
   "directory": ".devflow/task-planner",
   "files": [
-    "SEMANTIC-CONTRACT.md",
     "capability-map.json",
     "decisions.json",
     "epic-plan.json",
@@ -10,7 +9,6 @@
     "requirements.json",
     "semantic-contract.json",
     "task-plan.json",
-    "task-planner.md",
     "task-template.md",
     "workflow.md"
   ],

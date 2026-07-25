@@ -88,21 +88,7 @@ publicación.
 
 ## Medio
 
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Unificar ruta de templates
-**[task-planner]**
-
-`task-planner` usa `$CONFIG_DIR/task-planner/templates/` mientras que
-`software-architect` y `context-builder` usan
-`$CONFIG_DIR/templates/<agente>/`. Unificar.
-
-- **P:** media | **E:** S | **A:** agente, script
-- **Referencias:** `opencode/agents/task-planner.md`, `templates/task-planner/`
-- **Criterio de salida:** todos los agentes usan la misma convención de ruta para templates desde `$CONFIG_DIR/templates/<agente>/`
-- **Depende de:** Ninguna
-
-</div>
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
@@ -120,36 +106,9 @@ u otros validadores externos.
 
 </div>
 
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Duplicate agent definition
-**[task-planner]**
 
-`opencode/agents/task-planner.md` y `templates/task-planner/task-planner.md`
-son dos versiones del mismo agente con permisos diferentes. Eliminar o
-sincronizar para evitar desviación.
 
-- **P:** media | **E:** S | **A:** agente
-- **Referencias:** `opencode/agents/task-planner.md`, `templates/task-planner/task-planner.md`
-- **Criterio de salida:** existe una sola definición canónica del agente task-planner, o ambas versiones están sincronizadas
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Readiness.json version mismatch (3.4 vs 3.5)
-**[task-planner]**
-
-El template `readiness.json` declara `"version": "3.4"` pero
-`validate-plan.mjs` usa `VALIDATOR_VERSION = "3.5"`. Unificar.
-
-- **P:** media | **E:** S | **A:** template, tool
-- **Referencias:** `templates/task-planner/readiness.json`, `templates/task-planner/tools/validate-plan.mjs`
-- **Criterio de salida:** el template y el validador usan la misma versión
-- **Depende de:** Ninguna
-
-</div>
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
@@ -328,21 +287,7 @@ dominio de validación (semántica, dependencias, capacidades, etc.).
 
 </div>
 
-<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Bajo] task-planner.md copiado al proyecto
-**[task-planner]**
-
-`scaffold.json` incluye `task-planner.md` en `files`, copiando 1080
-líneas del agente al proyecto como `.devflow/task-planner/task-planner.md`.
-Evaluar si es necesario o si se puede eliminar del scaffold.
-
-- **P:** baja | **E:** S | **A:** template
-- **Referencias:** `templates/task-planner/scaffold.json`
-- **Criterio de salida:** decisión documentada sobre si task-planner.md debe copiarse al proyecto o no
-- **Depende de:** Ninguna
-
-</div>
 
 <div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
@@ -1145,6 +1090,74 @@ en commit anterior).
 - **Referencias:** `opencode/agents/software-architect.md:226-249`
 - **Criterio de salida:** el workflow define cuándo ejecutar validación parcial y final, y la finalización requiere una ejecución exitosa registrada
 - **Depende de:** El JSON Schema distribuido nunca se aplica
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Unificar ruta de templates
+**[task-planner]**
+
+`task-planner` usaba `$CONFIG_DIR/task-planner/templates/` mientras que los
+demás agentes usan `$CONFIG_DIR/templates/<agente>/`. Ahora todas las rutas
+usan `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/`.
+
+Corregido en `task-planner.md`: bash cp y external_directory migrados a la
+nueva convención con soporte `XDG_CONFIG_HOME`.
+
+- **P:** media | **E:** S | **A:** agente, script
+- **Referencias:** `opencode/agents/task-planner.md`
+- **Criterio de salida:** todos los agentes usan la misma convención de ruta para templates desde `$CONFIG_DIR/templates/<agente>/`
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Duplicate agent definition
+**[task-planner]**
+
+`templates/task-planner/task-planner.md` eliminado. La única definición
+canónica es `opencode/agents/task-planner.md`.
+
+- **P:** media | **E:** S | **A:** agente
+- **Referencias:** `opencode/agents/task-planner.md`, `templates/task-planner/task-planner.md`
+- **Criterio de salida:** existe una sola definición canónica del agente task-planner, o ambas versiones están sincronizadas
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Readiness.json version mismatch (3.4 vs 3.5)
+**[task-planner]**
+
+El template `readiness.json` declaraba `"version": "3.4"` pero el validador
+usa `VALIDATOR_VERSION = "3.5"`. Ahora sincronizado a 3.5.
+
+- **P:** media | **E:** S | **A:** template, tool
+- **Referencias:** `templates/task-planner/readiness.json`, `templates/task-planner/tools/validate-plan.mjs`
+- **Criterio de salida:** el template y el validador usan la misma versión
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Bajo] task-planner.md copiado al proyecto
+**[task-planner]**
+
+`scaffold.json` ya no incluye `task-planner.md` en `files`. El agente no se
+copia al proyecto.
+
+- **P:** baja | **E:** S | **A:** template
+- **Referencias:** `templates/task-planner/scaffold.json`
+- **Criterio de salida:** decisión documentada sobre si task-planner.md debe copiarse al proyecto o no
+- **Depende de:** Ninguna
 - **Completado en:** (este commit)
 
 </div>

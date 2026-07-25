@@ -4,7 +4,7 @@
   "validatedAt": "2026-07-23T06:39:59.835Z",
   "validator": {
     "name": "validate-plan.mjs",
-    "version": "3.4"
+    "version": "3.5"
   },
   "summary": {
     "errors": 0,

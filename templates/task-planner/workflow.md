@@ -136,7 +136,8 @@ Contiene la identidad semántica canónica de cada función atómica confirmada:
 - `outcome`;
 - `sourceSection`;
 - `sourceItem`;
-- `scope`.
+- `scope`;
+- `backendBinding`.
 
 Se genera en `blueprint_consolidation`, se aprueba junto con el blueprint y no
 puede reinterpretarse en fases posteriores.
@@ -543,16 +544,17 @@ funcional el contrato semántico canónico y el catálogo de requisitos.
 3. Clasificar cada función como `atomic`, `aggregate`, `ambiguous`,
    `cross_cutting`, `informational`, `out_of_scope` o `duplicate`.
 4. Resolver antes de avanzar cualquier función MVP `aggregate` o `ambiguous`.
-5. Asignar a cada función atómica confirmada:
-   - `sourceFunctionId`;
-   - `behaviorId`;
-   - `semanticKey`;
-   - `requirementId`;
-   - `operation`;
-   - `outcome`;
-   - `sourceSection`;
-   - `sourceItem`;
-   - `scope`.
+ 5. Asignar a cada función atómica confirmada:
+    - `sourceFunctionId`;
+    - `behaviorId`;
+    - `semanticKey`;
+    - `requirementId`;
+    - `operation`;
+    - `outcome`;
+    - `sourceSection`;
+    - `sourceItem`;
+    - `scope`;
+    - `backendBinding`.
 6. Incorporar `Function ID`, operación y resultado observable en el blueprint
    resuelto.
 7. Generar `.devflow/task-planner/semantic-contract.json` con `schemaVersion = 1`.
@@ -860,7 +862,7 @@ Agrupar capacidades planificadas en incrementos funcionales coherentes, usando
 
 ## Contrato estructurado de épicas
 
-`epic-plan.json` debe usar `schemaVersion = 3`.
+`epic-plan.json` debe usar `schemaVersion = 4`.
 
 Cada épica registra:
 

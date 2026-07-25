@@ -6,7 +6,9 @@ steps: 60
 permission:
   "*": deny
   read: allow
-  edit: allow
+  edit:
+    ".devflow/task-planner/**": allow
+    "*": deny
   glob: allow
   grep: allow
   bash:
@@ -14,19 +16,19 @@ permission:
     "cp *": ask
     "mkdir *": ask
     "mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/project-state.json .devflow/task-planner/project-state.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/workflow.md .devflow/task-planner/workflow.md": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/decisions.json .devflow/task-planner/decisions.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/semantic-contract.json .devflow/task-planner/semantic-contract.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/requirements.json .devflow/task-planner/requirements.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/capability-map.json .devflow/task-planner/capability-map.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/epic-plan.json .devflow/task-planner/epic-plan.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/readiness.json .devflow/task-planner/readiness.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/task-plan.json .devflow/task-planner/task-plan.json": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/task-template.md .devflow/task-planner/task-template.md": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
-    "cp -n $HOME/.config/opencode/task-planner/templates/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json .devflow/task-planner/project-state.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md .devflow/task-planner/workflow.md": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json .devflow/task-planner/decisions.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/semantic-contract.json .devflow/task-planner/semantic-contract.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/requirements.json .devflow/task-planner/requirements.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/capability-map.json .devflow/task-planner/capability-map.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-plan.json .devflow/task-planner/epic-plan.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
     "node .devflow/task-planner/tools/update-timestamps.mjs *": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs *": allow
@@ -37,8 +39,12 @@ permission:
   websearch: ask
   external_directory:
     "*": deny
-    "$HOME/.config/opencode/task-planner/templates/*": allow
-    "$HOME/.config/opencode/task-planner/templates/tools/*": allow
+    "$HOME/.config/opencode/templates/task-planner/*": allow
+    "$XDG_CONFIG_HOME/opencode/templates/task-planner/*": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/*": allow
+    "$HOME/.config/opencode/templates/task-planner/tools/*": allow
+    "$XDG_CONFIG_HOME/opencode/templates/task-planner/tools/*": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/*": allow
 ---
 
 # Task Planner
@@ -106,11 +112,12 @@ Antes de responder:
 10. Revisa los artefactos declarados en `project-state.json`.
 11. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
 12. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
-13. Lee únicamente los archivos necesarios para la fase actual.
-14. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
-15. No reinicies el proceso.
-16. No repitas fases aprobadas.
-17. No regeneres artefactos validados salvo que una transición de regreso los
+13. Comprueba que `.devflow/task-planner/tools/build-epic-graph.mjs` exista cuando el estado declare `artifacts.epicGraphBuilder.status = available`.
+14. Lee únicamente los archivos necesarios para la fase actual.
+15. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
+16. No reinicies el proceso.
+17. No repitas fases aprobadas.
+18. No regeneres artefactos validados salvo que una transición de regreso los
     haya invalidado explícitamente.
 
 Si falta un archivo obligatorio para la fase actual:
@@ -468,7 +475,8 @@ Cada contrato debe incluir exactamente:
 - `outcome`;
 - `sourceSection`;
 - `sourceItem`;
-- `scope`.
+- `scope`;
+- `backendBinding`.
 
 La identidad semántica nace únicamente durante `blueprint_consolidation` y se
 aprueba junto con el blueprint resuelto.
@@ -495,7 +503,8 @@ Después de la aprobación está prohibido cambiar:
 - `outcome`;
 - `sourceSection`;
 - `sourceItem`;
-- `scope`.
+- `scope`;
+- `backendBinding`.
 
 Un cambio en cualquiera de esos campos invalida el contrato y todos los
 artefactos derivados.
@@ -527,6 +536,7 @@ Cada registro de `behaviors` debe incluir:
 - `sourceSection`;
 - `sourceItem`;
 - `scope`;
+- `backendBinding`;
 - `confirmationStatus`.
 
 Excepto `confirmationStatus`, todos esos campos deben copiar exactamente el
@@ -671,7 +681,8 @@ bloque JSON copiado del índice:
 {
   "behaviorIds": ["BEH-RESOURCE-ACTION"],
   "semanticKeys": ["resource.action"],
-  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"]
+  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"],
+  "backendBindings": ["backendctl resource action"]
 }
 ```
 
@@ -733,16 +744,17 @@ Proceso obligatorio:
 3. clasifica cada función como `atomic`, `aggregate`, `ambiguous`,
    `cross_cutting`, `informational`, `out_of_scope` o `duplicate`;
 4. no avances mientras exista una función MVP `aggregate` o `ambiguous`;
-5. para cada función `atomic` confirmada asigna:
-   - `sourceFunctionId`;
-   - `behaviorId`;
-   - `semanticKey`;
-   - `operation`;
-   - `outcome`;
-   - `requirementId`;
-   - `sourceSection`;
-   - `sourceItem`;
-   - `scope`;
+  5. para cada función `atomic` confirmada asigna:
+    - `sourceFunctionId`;
+    - `behaviorId`;
+    - `semanticKey`;
+    - `operation`;
+    - `outcome`;
+    - `requirementId`;
+    - `sourceSection`;
+    - `sourceItem`;
+    - `scope`;
+    - `backendBinding`;
 6. escribe `Function ID`, operación y resultado observable en la tabla o lista
    funcional correspondiente del blueprint resuelto;
 7. genera `semantic-contract.json` exclusivamente desde ese inventario;
@@ -957,7 +969,8 @@ Procesa cada épica así:
 {
   "behaviorIds": ["BEH-RESOURCE-ACTION"],
   "semanticKeys": ["resource.action"],
-  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"]
+  "sourceFunctionIds": ["FUN-RESOURCE-ACTION"],
+  "backendBindings": ["backendctl resource action"]
 }
 ```
 
