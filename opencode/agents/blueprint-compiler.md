@@ -19,6 +19,8 @@ permission:
     ".devflow/software-architect/docs/06-functional-requirements.md": allow
     ".devflow/software-architect/docs/11-technical-requirements.md": allow
     ".devflow/software-architect/project-state.json": allow
+    "$HOME/.config/opencode/templates/software-architect/doc-templates/11-technical-requirements.md": allow
+    "$HOME/.config/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md": allow
   edit:
     ".devflow/software-architect/drafts/11-technical-requirements.md": allow
     ".devflow/software-architect/drafts/SOFTWARE-BLUEPRINT.md": allow

@@ -6,9 +6,12 @@ model: anthropic/claude-sonnet-4-6
 permission:
   "*": deny
   read:
-    ".devflow/software-architect/*": allow
+    ".devflow/software-architect/**": allow
   edit:
     ".devflow/software-architect/drafts/14-consistency-review.md": allow
+  bash:
+    "*": deny
+    "mkdir -p .devflow/software-architect/drafts": allow
 ---
 
 # Consistency Reviewer

@@ -16,13 +16,26 @@ permission:
   bash:
     "*": deny
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
+    "node $XDG_CONFIG_HOME/opencode/templates/shared/tools/timestamp.mjs *": allow
+    "node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/shared/tools/timestamp.mjs *": allow
     "node $HOME/.config/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
+    "node $XDG_CONFIG_HOME/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
+    "node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
     "mkdir -p .devflow/software-architect/*": allow
     "cp * .devflow/software-architect/*": allow
   task: allow
   webfetch: ask
   websearch: ask
-  external_directory: deny
+  external_directory:
+    "*": deny
+    "~/.config/opencode/templates/software-architect/**": allow
+    "$HOME/.config/opencode/templates/software-architect/**": allow
+    "$XDG_CONFIG_HOME/opencode/templates/software-architect/**": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/**": allow
+    "~/.config/opencode/templates/shared/tools/**": allow
+    "$HOME/.config/opencode/templates/shared/tools/**": allow
+    "$XDG_CONFIG_HOME/opencode/templates/shared/tools/**": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/shared/tools/**": allow
 ---
 
 # Software Architect
@@ -84,6 +97,10 @@ Cada fase tiene una plantilla con secciones obligatorias en:
 
 `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/<NOMBRE-DEL-ARCHIVO>`
 
+Para leer templates globales, usa `$XDG_CONFIG_HOME/opencode` si
+`XDG_CONFIG_HOME` está definido; si no, usa `$HOME/.config/opencode`.
+No ejecutes `node` para leer directorios o archivos Markdown.
+
 Antes de crear un borrador, lee la plantilla de la fase actual y úsala
 como estructura base. No omitas secciones obligatorias. Las secciones en
 *cursiva* son instrucciones; reemplázalas con el contenido real.
@@ -99,7 +116,7 @@ En cada fase (excepto cuando el ejecutor no es Principal):
 1. Identifica la información faltante.
 2. Explica brevemente por qué es necesaria.
 3. Lee la plantilla de la fase actual desde:
-   `node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/`
+   `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/<ARCHIVO-DE-LA-FASE>.md`
 4. Formula entre tres y siete preguntas concretas alineadas con las
    secciones de la plantilla.
 5. Espera las respuestas del usuario.
@@ -126,7 +143,7 @@ no es "Principal":
 
 1. Identifica el nombre del subagente desde workflow.md.
 2. Lee el contrato del subagente desde:
-   `node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/<AGENTE>.md`
+   `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/<AGENTE>.md`
 3. Verifica que los inputs requeridos por el contrato existen y están approved
    en project-state.json.
 4. Invoca al subagente mediante la herramienta `task`:
