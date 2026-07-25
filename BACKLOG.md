@@ -70,6 +70,21 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 4 — Validación y reglas (software-architect)
+
+validate-blueprint.mjs actualizado a v2: mappings de 14 phases/docs, gates
+8/12/14, schemaVersion 2, nueva validación cruzada de secciones de datos.
+Workflow.md regla 7 + agente regla 19: subagentes escriben en drafts/, solo
+el orquestador promueve a docs/.
+
+- **4a.** `templates/software-architect/tools/validate-blueprint.mjs`
+- **4b.** `templates/software-architect/workflow.md` + `opencode/agents/software-architect.md`
+- Implementado en: `024b5a0`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Fase 3 — Agentes (software-architect)
 
 software-architect refactorizado como orquestador con delegación genérica a
@@ -131,39 +146,6 @@ agente, más condición de salida en `workflow.md`.
 ---
 
 ## software-architect
-
-### Fase 4 — Validación y reglas
-
-Dependen de los agentes construidos en fase 3.
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 4a. Actualizar validate-blueprint.mjs para workflow v2
-
-Actualizar fases, mappings, documentos, gates y reglas de trazabilidad.
-Validar relaciones entre Product Requirements, Application Flow, requisitos
-funcionales, Backend Schema, arquitectura y Technical Requirements.
-
-- **P:** alta | **E:** L | **A:** tool, test
-- **Criterio de salida:** el validador acepta un fixture v2 completo, rechaza
-  fixtures inconsistentes y no conserva mappings del workflow v1.
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 4b. Documentar política de drafts vs docs en workflow v2
-
-Establecer regla explícita: el compilador y el revisor escriben únicamente en
-`drafts/`; el agente principal promueve a `docs/` solo después de aprobación
-humana o veredicto satisfactorio. El workflow y el agente deben reflejar esto
-sin ambigüedad.
-
-- **P:** media | **E:** S | **A:** workflow, docs
-- **Criterio de salida:** existe una regla en workflow.md y en el agente
-  principal que prohíbe escribir en `docs/` sin autorización explícita.
-
-</div>
 
 ### Fase 5 — Cierre
 

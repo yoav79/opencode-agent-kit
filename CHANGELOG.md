@@ -38,6 +38,10 @@ cada hito.
 - **Fase 3: Agentes** — software-architect como orquestador con delegación
   genérica. blueprint-compiler (subagent + /compile-blueprint). consistency-
   reviewer actualizado a docs v2 sin dependencias circulares. (b299f5d)
+- **Fase 4: Validación y reglas** — validate-blueprint.mjs actualizado a v2
+  con mappings 14 phases/docs, gates 8/12/14, schemaVersion 2 y validación
+  cruzada de secciones. Reglas de drafts vs docs en workflow.md y agente.
+  (024b5a0)
 
 ## [0.1.0] — Estado inicial del repositorio
 
