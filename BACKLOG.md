@@ -39,58 +39,6 @@ Prioridades: `[Crítico]` `[Alto]` `[Medio]` `[Bajo]`
 
 <div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Alto] Invocación de subagentes ambigua o no ejecutable
-**[software-architect]**
-
-El agente ordena usar `task`, pero después describe nombres de slash commands
-como `compile-blueprint technical-requirements` y `review-consistency`. `task`
-debe seleccionar explícitamente el subagente y proporcionarle un prompt; no
-ejecuta automáticamente un slash command.
-
-- **P:** alta | **E:** S | **A:** agente, contratos, comandos
-- **Referencias:** `opencode/agents/software-architect.md:127-135`
-- **Criterio de salida:** cada delegación define subagente, prompt, modo, inputs esperados y códigos de retorno sin depender de semántica implícita
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] project-state no almacena toda la información exigida
-**[software-architect]**
-
-El agente exige registrar cada decisión confirmada y 17 atributos por módulo,
-pero el schema de módulos prohíbe propiedades adicionales y omite reglas de
-negocio, notificaciones, reportes, criterios de aceptación y clasificación
-MVP. También faltan secciones estructuradas para roadmap, privacidad, backups,
-mantenibilidad y requisitos de despliegue.
-
-- **P:** alta | **E:** L | **A:** agente, schema, estado, templates
-- **Referencias:** `opencode/agents/software-architect.md:62`, `opencode/agents/software-architect.md:106`, `opencode/agents/software-architect.md:161-177`, `templates/software-architect/project-state.schema.json:283-309`
-- **Criterio de salida:** toda información que el agente debe registrar tiene representación válida y trazable en `project-state.json` y su schema
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] El JSON Schema distribuido nunca se aplica
-**[software-architect]**
-
-El comando copia `project-state.schema.json`, pero `validate-blueprint.mjs` no
-lo carga y realiza validaciones manuales parciales. Además, el schema permite
-un objeto `phases` vacío y hace opcionales secciones que el agente considera
-canónicas.
-
-- **P:** alta | **E:** M | **A:** schema, validator, test
-- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:510-537`, `templates/software-architect/project-state.schema.json:8-14`, `templates/software-architect/project-state.schema.json:126-159`
-- **Criterio de salida:** el validador aplica el schema distribuido y el schema exige todas las fases y secciones canónicas del estado v2
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
 ### [Alto] El validador acepta documentos obligatorios no registrados
 **[software-architect]**
 
@@ -719,6 +667,74 @@ funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
 ---
 
 ## <span style="color:#155724">&#x2713; Done</span>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] Invocación de subagentes ambigua o no ejecutable
+**[software-architect]**
+
+El agente ordena usar `task`, pero después describe nombres de slash commands
+como `compile-blueprint technical-requirements` y `review-consistency`. `task`
+debe seleccionar explícitamente el subagente y proporcionarle un prompt; no
+ejecuta automáticamente un slash command.
+
+Corregido en `opencode/agents/software-architect.md:134-139`: ahora cada
+delegación especifica subagente, prompt con inputs requeridos según el
+contrato, modo y ruta de salida esperada en drafts/.
+
+- **P:** alta | **E:** S | **A:** agente, contratos, comandos
+- **Referencias:** `opencode/agents/software-architect.md:134-139`
+- **Criterio de salida:** cada delegación define subagente, prompt, modo, inputs esperados y códigos de retorno sin depender de semántica implícita
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] project-state no almacena toda la información exigida
+**[software-architect]**
+
+El agente exige registrar cada decisión confirmada y 17 atributos por módulo,
+pero el schema de módulos prohíbe propiedades adicionales y omite reglas de
+negocio, notificaciones, reportes, criterios de aceptación y clasificación
+MVP. También faltan secciones estructuradas para roadmap, privacidad, backups,
+mantenibilidad y requisitos de despliegue.
+
+Corregido en `project-state.schema.json`: module ahora incluye businessRules,
+notifications, reports, acceptanceCriteria, mvpClassification. Nuevas secciones
+top-level: deliveryRoadmap, privacy, backups, maintainability,
+deploymentRequirements. project-state.json template actualizado.
+
+- **P:** alta | **E:** L | **A:** agente, schema, estado, templates
+- **Referencias:** `templates/software-architect/project-state.schema.json:283-347`, `templates/software-architect/project-state.json:117-149`
+- **Criterio de salida:** toda información que el agente debe registrar tiene representación válida y trazable en `project-state.json` y su schema
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El JSON Schema distribuido nunca se aplica
+**[software-architect]**
+
+El comando copia `project-state.schema.json`, pero `validate-blueprint.mjs` no
+lo carga y realiza validaciones manuales parciales. Además, el schema permite
+un objeto `phases` vacío y hace opcionales secciones que el agente considera
+canónicas.
+
+Corregido: `validate-blueprint.mjs` ahora carga `project-state.schema.json` y
+ejecuta `matchSchema()` validando required, additionalProperties y $ref contra
+las definiciones del schema. Schema de phases ahora exige `minProperties: 14`.
+
+- **P:** alta | **E:** M | **A:** schema, validator, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:276-329`, `templates/software-architect/project-state.schema.json:129`
+- **Criterio de salida:** el validador aplica el schema distribuido y el schema exige todas las fases y secciones canónicas del estado v2
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 

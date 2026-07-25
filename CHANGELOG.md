@@ -65,6 +65,15 @@ cada hito.
 - **Gate humano fase 14** — `software-architect.md` ya no cierra la fase 14
   automáticamente al recibir APPROVED del revisor; ahora solicita aprobación
   humana explícita. (este commit)
+- **Delegación de subagentes** — `software-architect.md` ahora usa invocación
+  `task` con subagente + prompt explícito en vez de slash commands. (este commit)
+- **Schema de módulos y secciones faltantes** — `project-state.schema.json`
+  extendido con los 17 atributos de módulo y 5 secciones top-level:
+  deliveryRoadmap, privacy, backups, maintainability, deploymentRequirements.
+  (este commit)
+- **Validador carga schema JSON** — `validate-blueprint.mjs` ahora aplica
+  `project-state.schema.json` mediante `matchSchema()`. Schema de phases
+  reforzado con `minProperties: 14`. (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 

@@ -80,6 +80,21 @@
     "changeLog": {
       "type": "array",
       "items": { "$ref": "#/$defs/changeLogEntry" }
+    },
+    "deliveryRoadmap": {
+      "$ref": "#/$defs/deliveryRoadmap"
+    },
+    "privacy": {
+      "$ref": "#/$defs/privacy"
+    },
+    "backups": {
+      "$ref": "#/$defs/backups"
+    },
+    "maintainability": {
+      "$ref": "#/$defs/maintainability"
+    },
+    "deploymentRequirements": {
+      "$ref": "#/$defs/deploymentRequirements"
     }
   },
   "$defs": {
@@ -126,6 +141,7 @@
     "phases": {
       "type": "object",
       "additionalProperties": false,
+      "minProperties": 14,
       "propertyNames": {
         "enum": [
           "1_discovery",
@@ -300,12 +316,29 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "businessRules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "dependencies": {
           "type": "array",
           "items": { "type": "string" }
         },
         "permissions": { "type": "string" },
-        "priority": { "type": "string" }
+        "notifications": { "type": "string" },
+        "reports": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "priority": { "type": "string" },
+        "mvpClassification": {
+          "type": "string",
+          "enum": ["mvp", "posterior"]
+        }
       }
     },
     "functionalRequirement": {
@@ -489,6 +522,82 @@
         "date": { "$ref": "#/$defs/nullableDateTime" },
         "action": { "type": "string" },
         "details": { "type": "string" }
+      }
+    },
+    "deliveryRoadmap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "duration": { "type": "string" },
+              "dependencies": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataClassification": { "type": "string" },
+        "piiEntities": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "retentionPolicy": { "type": "string" },
+        "regulatoryCompliance": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "backups": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strategy": { "type": "string" },
+        "frequency": { "type": "string" },
+        "retention": { "type": "string" },
+        "disasterRecovery": { "type": "string" }
+      }
+    },
+    "maintainability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "codingStandards": { "type": "string" },
+        "documentationPolicy": { "type": "string" },
+        "testingStrategy": { "type": "string" },
+        "ciCd": { "type": "string" },
+        "monitoring": { "type": "string" }
+      }
+    },
+    "deploymentRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "infrastructure": { "type": "string" },
+        "environments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "scalability": { "type": "string" },
+        "availability": { "type": "string" },
+        "securityRequirements": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     }
   }

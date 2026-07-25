@@ -113,5 +113,34 @@
       "action": "Blueprint inicializado",
       "details": "Estructura inicial creada. Fase 1 de descubrimiento iniciada."
     }
-  ]
+  ],
+  "deliveryRoadmap": {
+    "phases": []
+  },
+  "privacy": {
+    "dataClassification": null,
+    "piiEntities": [],
+    "retentionPolicy": null,
+    "regulatoryCompliance": []
+  },
+  "backups": {
+    "strategy": null,
+    "frequency": null,
+    "retention": null,
+    "disasterRecovery": null
+  },
+  "maintainability": {
+    "codingStandards": null,
+    "documentationPolicy": null,
+    "testingStrategy": null,
+    "ciCd": null,
+    "monitoring": null
+  },
+  "deploymentRequirements": {
+    "infrastructure": null,
+    "environments": [],
+    "scalability": null,
+    "availability": null,
+    "securityRequirements": []
+  }
 }

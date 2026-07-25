@@ -272,7 +272,69 @@ async function validateDocExistence(state, root) {
         if (!ok) {
           const filename = DOC_KEY_TO_FILENAME[key] || key;
           addError('DOCUMENT_MISSING', `Falta ${DOCS_DIR}/${filename}.`, `${DOCS_DIR}/${filename}`, key);
+}
+
+// --- JSON Schema validation ---
+
+async function resolveSchemaPath(bpDir, root) {
+  const localSchema = path.join(bpDir, 'project-state.schema.json');
+  if (await fileExists(localSchema)) return localSchema;
+  const globalSchema = path.join(HERE, '../project-state.schema.json');
+  if (await fileExists(globalSchema)) return globalSchema;
+  addError('SCHEMA_FILE_MISSING', 'No se encontró project-state.schema.json.', rel(bpDir, root));
+  return null;
+}
+
+function matchSchema(state, schema, defs, context, root) {
+  if (!isObject(schema)) return;
+  const required = schema.required || [];
+  const props = schema.properties || {};
+  const addl = schema.additionalProperties !== false;
+
+  for (const key of required) {
+    if (!(key in state)) {
+      addError('SCHEMA_REQUIRED_MISSING', `Falta campo obligatorio "${context ? context + '.' + key : key}" según project-state.schema.json.`, null);
+    }
+  }
+
+  if (!addl) {
+    for (const key of Object.keys(state)) {
+      if (!(key in props)) {
+        addError('SCHEMA_ADDITIONAL_PROP', `Campo "${context ? context + '.' + key : key}" no está permitido por project-state.schema.json (additionalProperties: false).`, null);
+      }
+    }
+  }
+
+  for (const [key, value] of Object.entries(props)) {
+    if (!(key in state)) continue;
+    const val = state[key];
+    const ref = value.$ref;
+    if (ref && ref.startsWith('#/$defs/')) {
+      const defName = ref.replace('#/$defs/', '');
+      const def = defs[defName];
+      if (def && isObject(val)) {
+        matchSchema(val, def, defs, context ? `${context}.${key}` : key, root);
+      }
+      if (def && def.type === 'object' && def.properties && Array.isArray(val)) {
+        for (let i = 0; i < val.length; i++) {
+          matchSchema(val[i], def, defs, `${key}[${i}]`, root);
         }
+      }
+    }
+    if (value.type === 'array' && Array.isArray(val) && value.items && value.items.$ref) {
+      const ref = value.items.$ref;
+      if (ref && ref.startsWith('#/$defs/')) {
+        const defName = ref.replace('#/$defs/', '');
+        const def = defs[defName];
+        if (def) {
+          for (let i = 0; i < val.length; i++) {
+            matchSchema(val[i], def, defs, `${key}[${i}]`, root);
+          }
+        }
+      }
+    }
+  }
+}
       })
     );
   }
@@ -525,6 +587,15 @@ async function main() {
   const state = await readJson(stateFile, 'project-state.json', root);
 
   validateProjectState(state, stateFile, root);
+
+  const schemaPath = await resolveSchemaPath(bpDir, root);
+  if (schemaPath) {
+    const schema = await readJson(schemaPath, 'project-state.schema.json', root);
+    if (schema && schema.$defs) {
+      matchSchema(state, schema, schema.$defs, '', root);
+    }
+  }
+
   await validateDocExistence(state, root);
   await validateDocHeadings(state, root, templatesDir);
   await validatePhaseConsistency(state, root);

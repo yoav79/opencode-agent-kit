@@ -131,11 +131,19 @@ no es "Principal":
    `$HOME/.config/opencode/templates/software-architect/contracts/<AGENTE>.md`
 3. Verifica que los inputs requeridos por el contrato existen y están approved
    en project-state.json.
-4. Invoca al subagente mediante `task`:
-    - Para `blueprint-compiler` en fase 11: invoca `compile-blueprint technical-requirements`
-    - Para `blueprint-compiler` en fase 13: invoca `compile-blueprint software-blueprint`
-    - Para `consistency-reviewer`: invoca la tarea `review-consistency`
-5. Lee la salida del subagente.
+4. Invoca al subagente mediante la herramienta `task`:
+    - Para `blueprint-compiler` en fase 11: selecciona el subagente
+      `blueprint-compiler` con modo `technical-requirements`. El prompt debe
+      incluir: los inputs requeridos según el contrato, el modo, y la ruta
+      de salida esperada en `drafts/`.
+    - Para `blueprint-compiler` en fase 13: selecciona el subagente
+      `blueprint-compiler` con modo `software-blueprint`. El prompt debe
+      incluir: los inputs requeridos según el contrato, el modo, y la ruta
+      de salida esperada en `drafts/`.
+    - Para `consistency-reviewer`: selecciona el subagente
+      `consistency-reviewer`. El prompt debe incluir los docs aprobados
+      (1-13) y la ruta de salida esperada en `drafts/`.
+5. Lee el resultado del subagente y su return code.
 
 ### Manejo de resultados
 
