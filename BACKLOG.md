@@ -31,26 +31,7 @@ Prioridades: `[Crítico]` `[Alto]` `[Medio]` `[Bajo]`
 
 ---
 
-## Crítico
 
-<div style="background:#f5c6cb; border-left:4px solid #bd2130; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Crítico] `/init-software-architect` no puede ejecutar su propia inicialización
-**[software-architect]**
-
-El comando debe crear directorios y copiar plantillas, pero el agente deniega
-todo `bash` salvo dos comandos Node y solo permite editar dentro de
-`.devflow/software-architect/**`. No puede ejecutar `mkdir` ni `cp`, ni crear
-directorios vacíos como `archive/` o `decisions/`.
-
-- **P:** crítica | **E:** M | **A:** agente, comando, permisos
-- **Referencias:** `opencode/commands/init-software-architect.md:54-76`, `opencode/agents/software-architect.md:6-22`
-- **Criterio de salida:** el agente puede inicializar y reparar de forma segura toda la estructura declarada sin obtener permisos de escritura fuera de `.devflow/software-architect/`
-- **Depende de:** Ninguna
-
-</div>
-
----
 
 ## Alto
 
@@ -754,6 +735,28 @@ funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
 ---
 
 ## <span style="color:#155724">&#x2713; Done</span>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Crítico] `/init-software-architect` no puede ejecutar su propia inicialización
+**[software-architect]**
+
+El comando debe crear directorios y copiar plantillas, pero el agente deniega
+todo `bash` salvo dos comandos Node y solo permite editar dentro de
+`.devflow/software-architect/**`. No puede ejecutar `mkdir` ni `cp`, ni crear
+directorios vacíos como `archive/` o `decisions/`.
+
+Se agregaron permisos `mkdir -p .devflow/software-architect/*` y
+`cp * .devflow/software-architect/*` al agente.
+Corregido en `opencode/agents/software-architect.md:20-23`.
+
+- **P:** crítica | **E:** M | **A:** agente, comando, permisos
+- **Referencias:** `opencode/agents/software-architect.md:20-23`
+- **Criterio de salida:** el agente puede inicializar y reparar de forma segura toda la estructura declarada sin obtener permisos de escritura fuera de `.devflow/software-architect/`
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 

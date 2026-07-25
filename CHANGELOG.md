@@ -60,6 +60,8 @@ cada hito.
 - **Timestamps en null** — `init-software-architect.md` ahora siempre verifica y
   asigna timestamps aunque el archivo ya exista (ej: copiado por
   `create-project.sh`). (este commit)
+- **Init bloqueado por permisos** — `software-architect.md` ahora permite
+  `mkdir` y `cp` dentro de `.devflow/software-architect/`. (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 
