@@ -1,4 +1,4 @@
-# Software Blueprint Workflow
+# Software Blueprint Workflow v2
 
 ## Estados permitidos
 
@@ -13,148 +13,45 @@ Cada fase puede tener uno de estos estados:
 
 ## Fases
 
-### 1. Descubrimiento
-
-Objetivo:
-
-Comprender el problema, contexto, usuarios, operación actual, restricciones y
-criterios de éxito.
-
-Entregable:
-
-`.devflow/software-architect/docs/01-discovery.md`
-
-### 2. Definición ejecutiva
-
-Objetivo:
-
-Definir visión, solución propuesta, propuesta de valor, objetivos, alcance y
-exclusiones.
-
-Entregable:
-
-`.devflow/software-architect/docs/02-executive-definition.md`
-
-Requiere aprobación explícita.
-
-### 3. Usuarios y procesos
-
-Objetivo:
-
-Documentar actores, roles, procesos actuales, procesos futuros, excepciones y
-puntos de control.
-
-Entregable:
-
-`.devflow/software-architect/docs/03-users-and-processes.md`
-
-### 4. Catálogo de módulos
-
-Objetivo:
-
-Definir los módulos necesarios, sus responsabilidades, dependencias,
-funciones, permisos y prioridad.
-
-Entregable:
-
-`.devflow/software-architect/docs/04-module-catalog.md`
-
-Requiere aprobación explícita.
-
-### 5. Requisitos funcionales
-
-Objetivo:
-
-Convertir módulos y procesos en requisitos funcionales trazables y criterios
-de aceptación.
-
-Entregable:
-
-`.devflow/software-architect/docs/05-functional-requirements.md`
-
-### 6. Información e integraciones
-
-Objetivo:
-
-Definir entidades conceptuales, relaciones, datos sensibles, sistemas externos
-e intercambios de información.
-
-Entregable:
-
-`.devflow/software-architect/docs/06-data-and-integrations.md`
-
-### 7. Arquitectura
-
-Objetivo:
-
-Evaluar alternativas de arquitectura basadas en requisitos, volumen,
-seguridad, presupuesto, infraestructura y equipo.
-
-Entregable:
-
-`.devflow/software-architect/docs/07-solution-architecture.md`
-
-Requiere aprobación explícita.
-
-### 8. Stack tecnológico
-
-Objetivo:
-
-Seleccionar tecnologías y justificar cada decisión.
-
-Entregable:
-
-`.devflow/software-architect/docs/08-technology-stack.md`
-
-### 9. Seguridad y requisitos no funcionales
-
-Objetivo:
-
-Definir seguridad, rendimiento, disponibilidad, auditoría, respaldos,
-recuperación, privacidad y mantenibilidad.
-
-Entregable:
-
-`.devflow/software-architect/docs/09-security-and-nfr.md`
-
-### 10. Plan de construcción
-
-Objetivo:
-
-Definir MVP, épicas, dependencias, fases, pruebas, ambientes, despliegue y
-operación.
-
-Entregable:
-
-`.devflow/software-architect/docs/10-delivery-roadmap.md`
-
-Requiere aprobación explícita.
-
-### 11. Revisión de consistencia
-
-Objetivo:
-
-Detectar contradicciones, omisiones y elementos sin trazabilidad mediante
-un revisor externo e independiente.
-
-Entregable:
-
-`.devflow/software-architect/docs/11-consistency-review.md`
-
-Condición de salida:
-- El revisor externo (`consistency-reviewer`) debe devolver veredicto
-  `APPROVED` o `MINOR_ISSUES` resueltos.
-- Si el veredicto es `BLOCKED`, la fase permanece abierta.
-
-### 12. Documento final
-
-Objetivo:
-
-Consolidar toda la documentación aprobada.
-
-Entregable:
-
-`.devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md`
+| # | Fase | Tipo | Entregable | Aprobación | Ejecutor | Dependencia |
+|---|------|------|-----------|-----------|----------|-----------|
+| 1 | Discovery | Entrevista | `01-discovery.md` | Usuario | Principal | — |
+| 2 | Product Requirements | Entrevista | `02-product-requirements.md` | Usuario | Principal | 1 |
+| 3 | Application Flow | Entrevista | `03-application-flow.md` | Usuario | Principal | 2 |
+| 4 | UI/UX Brief | Entrevista | `04-uiux-brief.md` | Usuario | Principal | 3 |
+| 5 | Module Catalog | Entrevista | `05-module-catalog.md` | Usuario | Principal | 4 |
+| 6 | Functional Requirements | Entrevista | `06-functional-requirements.md` | Usuario | Principal | 5 |
+| 7 | Backend Schema | Entrevista | `07-backend-schema.md` | Usuario | Principal | 6 |
+| 8 | Solution Architecture | Entrevista | `08-solution-architecture.md` | Gate explícito | Principal | 7 |
+| 9 | Technology Stack | Entrevista | `09-technology-stack.md` | Usuario | Principal | 8 |
+| 10 | Security & NFR | Entrevista | `10-security-and-nfr.md` | Usuario | Principal | 9 |
+| 11 | Technical Requirements | Síntesis | `11-technical-requirements.md` | Principal (promueve) | blueprint-compiler | 7–10 |
+| 12 | Delivery Roadmap | Entrevista | `12-delivery-roadmap.md` | Gate explícito | Principal | 11 |
+| 13 | Software Blueprint | Síntesis | `SOFTWARE-BLUEPRINT.md` | Principal (promueve) | blueprint-compiler | 1–12 |
+| 14 | Consistency Review | Revisión | `14-consistency-review.md` | Gate final | consistency-reviewer | 13 |
+
+### Reglas
+
+1. Cada fase produce exactamente un entregable.
+2. Una fase solo comienza cuando su dependencia está `approved`.
+3. Las fases de tipo **Síntesis** no entrevistan al usuario; ejecutan un
+   subagente determinista (`blueprint-compiler`).
+4. La fase **Consistency Review** ejecuta al subagente `consistency-reviewer`.
+5. Los **Gates explícitos** (fases 8, 12, 14) requieren aprobación humana
+   obligatoria y bloquean el avance si no se conceden.
+6. La aprobación final del blueprint completo es el gate de la fase 14, no una
+   fase 15 adicional.
+
+### Entregables
+
+Cada entregable se escribe en:
+
+```
+.devflow/software-architect/docs/<ARCHIVO>
+```
+
+Excepto los generados por subagentes, que primero se escriben en `drafts/` y
+luego el agente principal los promueve a `docs/` tras verificación.
 
 ## Regla de avance
 
