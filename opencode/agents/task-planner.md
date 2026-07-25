@@ -103,7 +103,7 @@ Antes de responder:
 1. Lee `AGENTS.md`.
 2. Lee `.devflow/task-planner/workflow.md`.
 3. Lee `.devflow/task-planner/project-state.json`.
-4. Comprueba que `planner.workflowVersion = 7`, `planner.validatorVersion = 3.5` y `planner.timestampToolVersion = 1.0`.
+4. Comprueba que `planner.workflowVersion = 7`, `planner.validatorVersion = 3.5`, `planner.timestampToolVersion = 1.0` y `planner.epicGraphVersion = 1.0`.
 5. Identifica `workflow.phase` y `workflow.status`.
 6. Lee `.devflow/task-planner/decisions.json`.
 7. Lee `.devflow/task-planner/semantic-contract.json` cuando exista y la fase lo permita.
@@ -955,6 +955,7 @@ Objetivo operativo:
 
 Procesa cada épica así:
 
+0. antes de generar la primera tarea, si `task-plan.json.status = initialized`, establécela en `in_progress`;
 1. lee la épica, las capacidades y los contratos semánticos relacionados;
 2. genera una tarea funcional o habilitadora por capacidad principal;
 3. registra `createsCapabilityIds` y `consumesCapabilityIds`;

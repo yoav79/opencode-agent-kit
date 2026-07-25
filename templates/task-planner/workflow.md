@@ -1013,6 +1013,7 @@ identidad semántica de sus capacidades.
 
 ## Proceso obligatorio por épica
 
+0. Establecer `task-plan.json.status = in_progress` si el estado actual es `initialized`.
 1. Leer la épica, capacidades y contratos relacionados.
 2. Crear una tarea por capacidad principal.
 3. Para cada tarea funcional copiar:
@@ -1632,14 +1633,14 @@ Antes de registrar `completed`, deben cumplirse simultáneamente:
 17. Cada épica registrada tiene exactamente un archivo.
 18. Ningún archivo de épica queda fuera del índice.
 19. Todas las épicas están descompuestas.
-21. `task-plan.json.status = published`.
-22. Cada tarea registrada tiene exactamente un archivo.
-23. Ningún archivo de tarea queda fuera del índice.
-24. Cada tarea funcional o habilitadora crea exactamente una capacidad principal.
-25. `tasksGenerated` coincide con `task-plan.json.tasks.length`.
-26. `epicsGenerated` coincide con `epic-plan.json.epics.length`.
-27. `capabilitiesMapped` coincide con `capability-map.json.capabilities.length`.
-28. `mvpRequirementsDetected` y `mvpRequirementsCovered` coinciden con el catálogo.
+20. `task-plan.json.status = published`.
+21. Cada tarea registrada tiene exactamente un archivo.
+22. Ningún archivo de tarea queda fuera del índice.
+23. Cada tarea funcional o habilitadora crea exactamente una capacidad principal.
+24. `tasksGenerated` coincide con `task-plan.json.tasks.length`.
+25. `epicsGenerated` coincide con `epic-plan.json.epics.length`.
+26. `capabilitiesMapped` coincide con `capability-map.json.capabilities.length`.
+27. `mvpRequirementsDetected` y `mvpRequirementsCovered` coinciden con el catálogo.
 28. `mvpBehaviorsDetected` y `mvpBehaviorsCovered` coinciden con la cobertura real.
 29. `mvpFunctionsUnresolved = 0`.
 30. La última ejecución de `validate-plan.mjs` devolvió código `0`.

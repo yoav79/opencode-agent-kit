@@ -257,10 +257,6 @@ async function main() {
     state.progress.executionWavesGenerated = executionWaves.length;
     state.progress.parallelEpicCandidates = epicPlan.graph.parallelCandidateCount;
     state.progress.epicGraphValidated = true;
-    state.artifacts.epicGraphBuilder = {
-      path: '.devflow/task-planner/tools/build-epic-graph.mjs',
-      status: 'available',
-    };
     await writeJson(STATE_FILE, state);
   }
 
