@@ -244,10 +244,13 @@ opencode-agent-kit/
 │   ├── create-project.sh          # Crea scaffold en un proyecto destino
 │   └── validate.sh                # Validacion de integridad del repositorio
 ├── tests/
-│   └── test-scripts.sh            # Tests de integracion
+│   ├── README.md                  # Taxonomia y limites de cobertura
+│   ├── fixtures/software-architect/ # Estados reproducibles
+│   ├── test-scripts.sh            # Integracion determinista del repositorio
+│   └── test-software-architect-tools.sh # Validator y migracion
 ├── examples/                      # Ejemplos sanitizados
 ├── .gitignore
-└── Makefile                       # Targets: help, validate, test, install, dry-run
+└── Makefile                       # Targets de validacion, tests e instalacion
 ```
 
 ## Instalacion
@@ -376,11 +379,27 @@ Valida:
 
 ### Tests
 
+Las suites actuales prueban scripts y herramientas deterministas. No inician
+OpenCode ni validan conversaciones, permisos en runtime, slash commands,
+delegación con `task` o gates humanos.
+
 ```bash
 make test
-# o directamente:
-./tests/test-scripts.sh
 ```
+
+Ejecución separada:
+
+```bash
+make test-repository
+make test-software-architect-tools
+```
+
+- `test-repository` verifica instalación, scaffold y desinstalación.
+- `test-software-architect-tools` verifica validator, migración y fixtures de
+  estado reproducibles.
+
+La taxonomía completa y los límites de cobertura están en
+[`tests/README.md`](tests/README.md).
 
 ## Principios del Repositorio
 

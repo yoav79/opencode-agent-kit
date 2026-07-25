@@ -31,7 +31,7 @@ test_validator() {
   fi
 }
 
-echo "=== Software Architect End-to-End Tests ==="
+echo "=== Software Architect Deterministic Tool Tests ==="
 echo ""
 
 echo "--- Validator Tests ---"
@@ -60,7 +60,7 @@ else
 fi
 
 echo ""
-echo "--- Fixture Structure ---"
+echo "--- Fixture Sanity Checks ---"
 if [ -d "$FIXTURES_DIR/valid-v2/.devflow/software-architect/docs" ] && \
    [ -f "$FIXTURES_DIR/valid-v2/.devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md" ]; then
   echo "PASS: valid-v2 fixture complete"
@@ -80,13 +80,16 @@ else
 fi
 
 echo ""
-echo "--- Real Migration Test ---"
+echo "--- Migration Behavior Tests ---"
 V1_FIXTURE="$FIXTURES_DIR/v1-project"
 MIG_TEST_DIR=$(mktemp -d)
+MIG_CONFIG_HOME=$(mktemp -d)
 cp -r "$V1_FIXTURE/." "$MIG_TEST_DIR/"
+mkdir -p "$MIG_CONFIG_HOME/opencode"
+ln -s "$TEMPLATES_DIR" "$MIG_CONFIG_HOME/opencode/templates"
 
 set +e
-(cd "$MIG_TEST_DIR" && node "$MIGRATOR" 2>&1)
+(cd "$MIG_TEST_DIR" && XDG_CONFIG_HOME="$MIG_CONFIG_HOME" node "$MIGRATOR" 2>&1)
 MIG_EXIT=$?
 set -e
 
@@ -156,6 +159,7 @@ else
 fi
 
 rm -rf "$MIG_TEST_DIR"
+rm -rf "$MIG_CONFIG_HOME"
 
 echo ""
 echo "--- DocKey→PhaseKey Consistency Test ---"
@@ -177,7 +181,6 @@ done
 set +e
 node "$VALIDATOR" --root "$CONSISTENCY_DIR" --templates "$TEMPLATES_DIR/software-architect/doc-templates" --quiet --json 2>/dev/null
 CONSISTENCY_EXIT=$?
-CONSISTENCY_OUTPUT=$(node "$VALIDATOR" --root "$CONSISTENCY_DIR" --templates "$TEMPLATES_DIR/software-architect/doc-templates" --quiet --json 2>/dev/null || true)
 set -e
 
 # Should fail because phase 2 is approved but doc missing

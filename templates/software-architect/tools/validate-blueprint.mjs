@@ -52,6 +52,11 @@ const DOC_KEY_TO_PHASE_KEY = {
   '14_consistency_review': '14_consistency_review',
 };
 
+const PHASE_KEY_TO_DOC_KEY = {};
+for (const [docKey, phaseKey] of Object.entries(DOC_KEY_TO_PHASE_KEY)) {
+  PHASE_KEY_TO_DOC_KEY[phaseKey] = docKey;
+}
+
 const DOCS_DIR = '.devflow/software-architect/docs';
 
 function docFile(root, docKey) {
@@ -158,10 +163,10 @@ function markdownHeadings(text) {
 function markdownIds(text, prefix) {
   if (typeof text !== 'string') return [];
   const ids = [];
-  const pattern = new RegExp(`^${prefix}-[A-Z0-9][A-Z0-9_-]*`);
+  const pattern = new RegExp(`${prefix}-[A-Z0-9][A-Z0-9_-]*`, 'g');
   for (const line of text.split(/\r?\n/)) {
-    const match = line.trim().match(pattern);
-    if (match) ids.push(match[0]);
+    const m = line.match(pattern);
+    if (m) ids.push(...m);
   }
   return ids;
 }
@@ -258,6 +263,13 @@ function validateProjectState(state, statePath, root) {
       addError('APPROVED_AT_INVALID', `documents.${key}.approvedAt debe ser null o string ISO.`, rel(statePath, root), `${key}.approvedAt`);
     }
   }
+
+  const requiredDocKeys = Object.keys(DOC_KEY_TO_FILENAME);
+  for (const key of requiredDocKeys) {
+    if (!(key in state.documents)) {
+      addError('DOCUMENT_KEY_MISSING', `Falta clave obligatoria "${key}" en documents. Todas las 14 claves de documento deben existir en project-state.json.`, rel(statePath, root), key);
+    }
+  }
 }
 
 async function validateDocExistence(state, root) {
@@ -272,6 +284,11 @@ async function validateDocExistence(state, root) {
         if (!ok) {
           const filename = DOC_KEY_TO_FILENAME[key] || key;
           addError('DOCUMENT_MISSING', `Falta ${DOCS_DIR}/${filename}.`, `${DOCS_DIR}/${filename}`, key);
+        }
+      })
+    );
+  }
+  await Promise.all(checks);
 }
 
 // --- JSON Schema validation ---
@@ -288,7 +305,7 @@ async function resolveSchemaPath(bpDir, root) {
 function matchSchema(state, schema, defs, context, root) {
   if (!isObject(schema)) return;
   const required = schema.required || [];
-  const props = schema.properties || {};
+  const props = schema.properties;
   const addl = schema.additionalProperties !== false;
 
   for (const key of required) {
@@ -297,13 +314,15 @@ function matchSchema(state, schema, defs, context, root) {
     }
   }
 
-  if (!addl) {
+  if (!addl && props) {
     for (const key of Object.keys(state)) {
       if (!(key in props)) {
         addError('SCHEMA_ADDITIONAL_PROP', `Campo "${context ? context + '.' + key : key}" no está permitido por project-state.schema.json (additionalProperties: false).`, null);
       }
     }
   }
+
+  if (!props) return;
 
   for (const [key, value] of Object.entries(props)) {
     if (!(key in state)) continue;
@@ -334,11 +353,6 @@ function matchSchema(state, schema, defs, context, root) {
       }
     }
   }
-}
-      })
-    );
-  }
-  await Promise.all(checks);
 }
 
 async function validateDocHeadings(state, root, templatesDir) {
@@ -431,16 +445,22 @@ async function validatePhase14FinalDoc(state, root) {
 }
 
 async function validateApprovalGates(state) {
-  if (!isObject(state?.phases)) return;
+  if (!isObject(state?.phases) || !isObject(state?.documents)) return;
 
   const phase14Status = state.phases['14_consistency_review'];
   if (!phase14Status || phase14Status === 'pending') return;
 
   for (const phaseNum of APPROVAL_PHASES) {
     const key = PHASE_KEYS[phaseNum - 1];
-    const status = state.phases[key];
-    if (status === 'pending' || status === 'in_progress') {
-      addError('APPROVAL_GATE_NOT_PASSED', `La fase ${key} requiere aprobación explícita y está ${status}.`, null, key);
+    const phaseStatus = state.phases[key];
+    const docKey = PHASE_KEY_TO_DOC_KEY[key];
+    const docStatus = docKey && state.documents?.[docKey]?.status;
+
+    if (phaseStatus !== 'approved') {
+      addError('APPROVAL_GATE_NOT_PASSED', `La fase ${key} requiere aprobación humana explícita. Estado actual: ${phaseStatus || 'ausente'}. Solo approved es válido.`, null, key);
+    }
+    if (docKey && docStatus !== 'approved') {
+      addError('APPROVAL_GATE_DOC_NOT_APPROVED', `El documento ${docKey} debe estar approved para superar el gate de la fase ${key}. Estado actual: ${docStatus || 'ausente'}.`, null, docKey);
     }
   }
 }

@@ -82,8 +82,6 @@ const ALL_V2_PHASE_KEYS = [
   '14_consistency_review',
 ];
 
-const NEW_DOC_KEYS = ['04_uiux_brief', '11_technical_requirements'];
-
 const V1_PHASE_ORDER = [
   '1_discovery',
   '2_executive_definition',
@@ -164,9 +162,12 @@ async function main() {
   const newDocs = {};
   for (const [oldKey, docInfo] of Object.entries(state.documents || {})) {
     const newKey = DOC_MAP[oldKey];
-    if (newKey) newDocs[newKey] = docInfo;
+    if (newKey) newDocs[newKey] = {
+      status: docInfo.status || 'pending',
+      approvedAt: docInfo.approvedAt != null ? docInfo.approvedAt : null,
+    };
   }
-  for (const key of NEW_DOC_KEYS) {
+  for (const key of Object.keys(DOC_KEY_TO_FILENAME)) {
     if (!(key in newDocs)) newDocs[key] = { status: 'pending', approvedAt: null };
   }
 

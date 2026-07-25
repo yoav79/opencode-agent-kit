@@ -1,4 +1,4 @@
-.PHONY: help validate test install uninstall dry-run
+.PHONY: help validate test test-repository test-software-architect-tools install uninstall dry-run
 
 .DEFAULT_GOAL := help
 
@@ -13,8 +13,13 @@ help: ## Muestra esta ayuda
 validate: ## Valida integridad del repositorio (JSON, frontmatter, nombres)
 	./scripts/validate.sh
 
-test: validate ## Ejecuta tests de integracion
+test: validate test-repository test-software-architect-tools ## Ejecuta todas las pruebas deterministas
+
+test-repository: ## Prueba instalación, scaffold y desinstalación
 	./tests/test-scripts.sh
+
+test-software-architect-tools: ## Prueba validator, migración y fixtures de software-architect
+	./tests/test-software-architect-tools.sh
 
 install: ## Instala agentes, skills y comandos en ~/.config/opencode
 	./scripts/install.sh

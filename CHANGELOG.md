@@ -57,23 +57,26 @@ cada hito.
 
 ### Fixed
 
-- **Timestamps en null** — `init-software-architect.md` ahora siempre verifica y
-  asigna timestamps aunque el archivo ya exista (ej: copiado por
-  `create-project.sh`). (este commit)
-- **Init bloqueado por permisos** — `software-architect.md` ahora permite
-  `mkdir` y `cp` dentro de `.devflow/software-architect/`. (este commit)
-- **Gate humano fase 14** — `software-architect.md` ya no cierra la fase 14
-  automáticamente al recibir APPROVED del revisor; ahora solicita aprobación
-  humana explícita. (este commit)
-- **Delegación de subagentes** — `software-architect.md` ahora usa invocación
-  `task` con subagente + prompt explícito en vez de slash commands. (este commit)
-- **Schema de módulos y secciones faltantes** — `project-state.schema.json`
-  extendido con los 17 atributos de módulo y 5 secciones top-level:
-  deliveryRoadmap, privacy, backups, maintainability, deploymentRequirements.
+- **Validador exige 14 documentos** — Nueva validación que verifica que todas las
+  claves de `DOC_KEY_TO_FILENAME` existan en `state.documents`, incluso cuando
+  el archivo físico tampoco existe. (este commit)
+- **Gates de aprobación 8/12/14** — `validateApprovalGates` ahora exige
+  `approved` tanto en fase como en documento; rechaza cualquier otro estado
+  (`blocked`, `waiting_for_user`, `needs_revision`). (este commit)
+- **Detección de REQ IDs en tablas** — `markdownIds` usa regex sin ancla `^` y
+  con flag `g`, encontrando IDs en celdas de tabla Markdown (`| REQ-001 |`).
   (este commit)
-- **Validador carga schema JSON** — `validate-blueprint.mjs` ahora aplica
-  `project-state.schema.json` mediante `matchSchema()`. Schema de phases
-  reforzado con `minProperties: 14`. (este commit)
+- **Migración v1→v2 produce estado válido** — Normaliza `approvedAt` (nunca
+  `undefined`), itera sobre las 14 claves de `DOC_KEY_TO_FILENAME`. Eliminada
+  constante `NEW_DOC_KEYS` (huérfana). (este commit)
+- **Estructura de llaves rota en validateDocExistence** — Las llaves de cierre
+  `});` estaban 65 líneas después, atrapando `resolveSchemaPath` y todo el
+  validador JSON Schema dentro de un `.then()` callback. Ahora las funciones
+  de schema son declaraciones de primer nivel. (este commit)
+- **matchSchema compatible con propertyNames** — `matchSchema` ahora verifica
+  que `props` exista antes de validar `additionalProperties`, permitiendo
+  definiciones como `phases` que usan `propertyNames`/`patternProperties`.
+  (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 

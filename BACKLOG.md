@@ -35,73 +35,6 @@ Prioridades: `[Crítico]` `[Alto]` `[Medio]` `[Bajo]`
 
 ## Alto
 
-
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] El validador acepta documentos obligatorios no registrados
-**[software-architect]**
-
-La validación recorre solo las entradas presentes en `state.documents`. Si se
-elimina una clave obligatoria junto con su archivo, no detecta la ausencia;
-solo fases 13 y 14 tienen comprobaciones especiales.
-
-- **P:** alta | **E:** S | **A:** validator, test
-- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:249-260`, `templates/software-architect/tools/validate-blueprint.mjs:263-279`, `templates/software-architect/tools/validate-blueprint.mjs:319-338`
-- **Criterio de salida:** el validador exige exactamente las 14 claves de documentos y detecta claves faltantes aunque tampoco exista el archivo
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] La validación de gates acepta estados no aprobados
-**[software-architect]**
-
-Para fases 8, 12 y 14 solo se rechazan `pending` e `in_progress`. Estados como
-`blocked`, `waiting_for_user` o `needs_revision` pasan aunque no representan
-aprobación humana.
-
-- **P:** alta | **E:** S | **A:** validator, workflow, test
-- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:371-383`
-- **Criterio de salida:** cada gate se considera superado únicamente cuando su fase y documento están `approved` y existe evidencia de aprobación humana
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] La detección de IDs REQ duplicados no funciona con la plantilla
-**[software-architect]**
-
-La plantilla oficial usa tablas con líneas como `| REQ-001 |`, pero el
-validador busca IDs al comienzo exacto de la línea mediante `^REQ-`, por lo que
-no encuentra requisitos dentro de tablas Markdown.
-
-- **P:** alta | **E:** S | **A:** validator, template, test
-- **Referencias:** `templates/software-architect/doc-templates/06-functional-requirements.md:7-9`, `templates/software-architect/tools/validate-blueprint.mjs:158-166`
-- **Criterio de salida:** se detectan IDs válidos y duplicados en el formato de tabla oficial, con pruebas positivas y negativas
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Alto] La migración puede producir un proyecto v2 inválido
-**[software-architect]**
-
-Las fases nuevas 4 y 11 se crean como `pending`, pero se preservan aprobaciones
-posteriores de v1, `project.status` y un `currentPhase` calculado desde la fase
-antigua. Un proyecto v1 completado puede terminar con fases 13/14 aprobadas y
-fases 4/11 pendientes.
-
-- **P:** alta | **E:** M | **A:** migración, estado, test
-- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:152-180`, `templates/software-architect/tools/migrate-v1-to-v2.mjs:186-240`
-- **Criterio de salida:** la migración invalida o reabre fases dependientes, recalcula `currentPhase`/`project.status` y siempre produce una secuencia v2 lógicamente consistente
-- **Depende de:** Ninguna
-
-</div>
-
 <div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
 ### [Alto] Subagente para blueprint_consolidation (fase 3)
@@ -667,6 +600,127 @@ funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
 ---
 
 ## <span style="color:#155724">&#x2713; Done</span>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El validador acepta documentos obligatorios no registrados
+**[software-architect]**
+
+La validación recorre solo las entradas presentes en `state.documents`. Si se
+elimina una clave obligatoria junto con su archivo, no detecta la ausencia.
+
+Corregido en `validate-blueprint.mjs:267-272`: nueva validación que verifica que
+las 14 claves de `DOC_KEY_TO_FILENAME` existan en `state.documents`.
+
+- **P:** alta | **E:** S | **A:** validator, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:267-272`
+- **Criterio de salida:** el validador exige exactamente las 14 claves de documentos y detecta claves faltantes aunque tampoco exista el archivo
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La validación de gates acepta estados no aprobados
+**[software-architect]**
+
+Para fases 8, 12 y 14 solo se rechazan `pending` e `in_progress`. Estados como
+`blocked`, `waiting_for_user` o `needs_revision` pasan aunque no representan
+aprobación humana.
+
+Corregido en `validate-blueprint.mjs:448-462`: exige `approved` tanto en fase
+como en documento; rechaza cualquier otro estado.
+
+- **P:** alta | **E:** S | **A:** validator, workflow, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:448-462`
+- **Criterio de salida:** cada gate se considera superado únicamente cuando su fase y documento están `approved` y existe evidencia de aprobación humana
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La detección de IDs REQ duplicados no funciona con la plantilla
+**[software-architect]**
+
+La plantilla oficial usa tablas con líneas como `| REQ-001 |`, pero el
+validador busca IDs al comienzo exacto de la línea mediante `^REQ-`.
+
+Corregido en `validate-blueprint.mjs:166-172`: `markdownIds` usa regex sin
+ancla `^` y con flag `g`, encontrando IDs en celdas de tabla.
+
+- **P:** alta | **E:** S | **A:** validator, template, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:166-172`
+- **Criterio de salida:** se detectan IDs válidos y duplicados en el formato de tabla oficial, con pruebas positivas y negativas
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La migración puede producir un proyecto v2 inválido
+**[software-architect]**
+
+Las fases nuevas 4 y 11 se crean como `pending`, pero se preservan aprobaciones
+posteriores de v1. Documentos migrados pueden carecer de `approvedAt` y faltan
+claves obligatorias.
+
+Corregido en `migrate-v1-to-v2.mjs:162-172`: normaliza `approvedAt` (nunca
+`undefined`), itera sobre las 14 claves de `DOC_KEY_TO_FILENAME`. Eliminada
+constante `NEW_DOC_KEYS` (huérfana).
+
+- **P:** alta | **E:** M | **A:** migración, estado, test
+- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:162-172`
+- **Criterio de salida:** la migración invalida o reabre fases dependientes, recalcula `currentPhase`/`project.status` y siempre produce una secuencia v2 lógicamente consistente
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] Estructura de llaves rota en validateDocExistence
+**[software-architect]**
+
+Las llaves de cierre `});` estaban 65 líneas después del bloque `if (!ok)`,
+dejando `resolveSchemaPath`, `matchSchema` y todo el validador JSON Schema
+atrapados dentro de un `.then()` callback. Causaba `resolveSchemaPath is not
+defined` en tiempo de ejecución, impidiendo la validación JSON Schema.
+
+Corregido en `validate-blueprint.mjs:275-292`: el bloque `checks.push(...)`
+cierra correctamente y las funciones de schema validation quedan como
+declaraciones de primer nivel.
+
+- **P:** alta | **E:** M | **A:** validator
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs`
+- **Criterio de salida:** todas las funciones de validación JSON Schema son accesibles en el ámbito correcto
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] matchSchema falla con esquemas propertyNames/patternProperties
+**[software-architect]**
+
+`matchSchema` asumía que todo esquema define `properties`. La definición de
+`phases` usa `propertyNames` + `patternProperties` en lugar de `properties`,
+causando que cada clave de fase se reporte como `SCHEMA_ADDITIONAL_PROP`.
+
+Corregido en `validate-blueprint.mjs:305-318`: ahora verifica que `props` exista
+antes de validar `additionalProperties`.
+
+- **P:** alta | **E:** S | **A:** validator, schema
+- **Referencias:** `templates/software-architect/project-state.schema.json:141-175`, `templates/software-architect/tools/validate-blueprint.mjs:305-318`
+- **Criterio de salida:** el validador reconoce esquemas con propertyNames/patternProperties sin falsos positivos
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
