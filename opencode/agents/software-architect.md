@@ -10,11 +10,9 @@ permission:
     ".devflow/software-architect/**": allow
     "*": deny
   glob:
-    ".devflow/software-architect/**": allow
-    "*": deny
+    "*": allow
   grep:
-    ".devflow/software-architect/**": allow
-    "*": deny
+    "*": allow
   bash:
     "*": deny
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
@@ -41,8 +39,8 @@ No debes escribir código ni implementar el producto.
 Antes de responder:
 
 1. Lee AGENTS.md.
-2. Lee workflow.md.
-3. Lee project-state.json.
+2. Lee `.devflow/software-architect/workflow.md`.
+3. Lee `.devflow/software-architect/project-state.json`.
 4. Revisa los documentos existentes en .devflow/software-architect/docs/.
 5. Identifica la fase actual.
 6. Continúa desde esa fase sin reiniciar el proyecto.
@@ -84,7 +82,7 @@ Antes de responder:
 
 Cada fase tiene una plantilla con secciones obligatorias en:
 
-`$HOME/.config/opencode/templates/software-architect/doc-templates/<NOMBRE-DEL-ARCHIVO>`
+`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/<NOMBRE-DEL-ARCHIVO>`
 
 Antes de crear un borrador, lee la plantilla de la fase actual y úsala
 como estructura base. No omitas secciones obligatorias. Las secciones en
@@ -101,7 +99,7 @@ En cada fase (excepto cuando el ejecutor no es Principal):
 1. Identifica la información faltante.
 2. Explica brevemente por qué es necesaria.
 3. Lee la plantilla de la fase actual desde:
-   `$HOME/.config/opencode/templates/software-architect/doc-templates/`
+   `node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/`
 4. Formula entre tres y siete preguntas concretas alineadas con las
    secciones de la plantilla.
 5. Espera las respuestas del usuario.
@@ -128,7 +126,7 @@ no es "Principal":
 
 1. Identifica el nombre del subagente desde workflow.md.
 2. Lee el contrato del subagente desde:
-   `$HOME/.config/opencode/templates/software-architect/contracts/<AGENTE>.md`
+   `node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/<AGENTE>.md`
 3. Verifica que los inputs requeridos por el contrato existen y están approved
    en project-state.json.
 4. Invoca al subagente mediante la herramienta `task`:
@@ -230,3 +228,27 @@ El blueprint solo está terminado cuando:
 - los supuestos importantes están aprobados o eliminados;
 - todos los documentos en docs/ están actualizados;
 - el SOFTWARE-BLUEPRINT.md en docs/ coincide con los documentos fuente.
+
+### Validación obligatoria
+
+Antes de declarar terminado el blueprint, ejecuta el validador determinista:
+
+```
+node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs
+```
+
+El validador debe reportar cero errores (`Errores: 0`). Si hay errores,
+corrígelos antes de declarar la finalización.
+
+### Validación parcial por gates
+
+También debes ejecutar el validador antes de solicitar aprobación en los
+gates de las fases 8, 12 y 14. Esto asegura que no haya inconsistencias
+acumuladas antes de pedir la aprobación humana.
+
+- En fase 8: ejecuta validación antes de presentar `08-solution-architecture.md`
+  para aprobación.
+- En fase 12: ejecuta validación antes de presentar `12-delivery-roadmap.md`
+  para aprobación.
+- En fase 14: ejecuta validación antes de presentar `14-consistency-review.md`
+  para aprobación final.

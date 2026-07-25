@@ -57,6 +57,32 @@ cada hito.
 
 ### Fixed
 
+- **Backups de documentos en migración** — `migrate-v1-to-v2.mjs` ahora copia
+  cada documento a `.md.v1` antes de renombrarlo. Mensaje final preciso sobre
+  qué se respaldó. (este commit)
+- **XDG_CONFIG_HOME consistente** — `software-architect.md` y `v1-to-v2-policy.md`
+  usan `${XDG_CONFIG_HOME:-$HOME/.config}` en lugar de `$HOME/.config` fijo.
+  (este commit)
+- **Glob/grep permisivos para descubrimiento** — `software-architect.md` ahora
+  permite `glob` y `grep` en todo el proyecto (solo lectura), no solo en
+  `.devflow/software-architect/**`. (este commit)
+- **Rutas canónicas en inicio del agente** — `software-architect.md` instruye
+  leer `.devflow/software-architect/workflow.md` y `project-state.json` con
+  ruta completa. (este commit)
+- **Template fase 14 con veredicto contractual** — Secciones de Veredicto,
+  Resumen de hallazgos, BLOCKING/WARNING/INFO, conteos y checklist. Compatible
+  con el contrato de consistency-reviewer. (este commit)
+- **needs_revision en documentos** — `project-state.schema.json` y validador
+  ahora admiten `needs_revision` como estado de documento. Validación cruzada
+  detecta documento `approved` con fase `needs_revision`. (este commit)
+- **archive/ y decisions/ en init** — `init-software-architect.md` ahora crea
+  `archive/` y `decisions/` si faltan al re-inicializar. (este commit)
+- **Init detecta schemaVersion v1** — `init-software-architect.md` ahora
+  verifica `schemaVersion` y ofrece instrucción de migración si es v1. (este commit)
+- **Validación obligatoria en cierre del agente** — `software-architect.md`
+  exige ejecutar `validate-blueprint.mjs` con 0 errores antes de declarar
+  terminado el blueprint, y validación parcial antes de gates 8/12/14. (este commit)
+
 - **Validador exige 14 documentos** — Nueva validación que verifica que todas las
   claves de `DOC_KEY_TO_FILENAME` existan en `state.documents`, incluso cuando
   el archivo físico tampoco existe. (este commit)

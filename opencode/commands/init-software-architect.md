@@ -64,10 +64,12 @@ archivo falta.
    └── drafts/
    ```
 
-5. Para inicializar archivos faltantes:
+5. Para inicializar archivos y directorios faltantes:
 
    - Crea `.devflow/software-architect/drafts/` si no existe.
    - Crea `.devflow/software-architect/docs/` si no existe.
+   - Crea `.devflow/software-architect/archive/` si no existe.
+   - Crea `.devflow/software-architect/decisions/` si no existe.
    - Si `.devflow/software-architect/project-state.json` no existe, cópialo desde la
      plantilla global.
    - Si `.devflow/software-architect/project-state.schema.json` no existe, cópialo desde la
@@ -92,6 +94,13 @@ archivo falta.
 7. Si `.devflow/software-architect/` ya existe:
 
    - Lee `.devflow/software-architect/project-state.json`.
+   - Si `schemaVersion` es 1, detén el workflow v2 e informa al usuario:
+     El proyecto está en schemaVersion 1 (formato antiguo de 12 fases). Para
+     migrar a v2 (14 fases), ejecuta:
+     ```
+     node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/migrate-v1-to-v2.mjs
+     ```
+     Después de la migración, reinicia este comando.
    - Lee `.devflow/software-architect/workflow.md`.
    - Revisa los documentos existentes en `.devflow/software-architect/docs/`.
    - Revisa los borradores existentes en `.devflow/software-architect/drafts/` solo cuando

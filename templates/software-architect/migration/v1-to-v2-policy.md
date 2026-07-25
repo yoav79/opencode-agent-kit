@@ -9,7 +9,7 @@ Los proyectos existentes con schemaVersion 1 (12 fases) NO se migran
 automáticamente. Para migrar un proyecto v1 a v2, ejecuta:
 
 ```
-node $HOME/.config/opencode/templates/software-architect/tools/migrate-v1-to-v2.mjs
+node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/migrate-v1-to-v2.mjs
 ```
 
 ## Qué cambia

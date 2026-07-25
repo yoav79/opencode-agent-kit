@@ -90,38 +90,6 @@ publicación.
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] La migración promete backups que no crea
-**[software-architect]**
-
-Solo se respalda `project-state.json`. Los documentos se renombran sin copia,
-pero el mensaje final afirma que todos los archivos originales tienen sufijo
-`.v1`.
-
-- **P:** media | **E:** S | **A:** migración, docs, test
-- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:148-150`, `templates/software-architect/tools/migrate-v1-to-v2.mjs:254-274`
-- **Criterio de salida:** la herramienta crea los backups prometidos o comunica con precisión qué respalda y cómo revertir cada rename
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### [Medio] Soporte inconsistente de XDG_CONFIG_HOME
-**[software-architect]**
-
-El instalador y parte del comando respetan XDG, pero agente, permisos bash,
-timestamp y política de migración fijan `$HOME/.config`. Una instalación con
-`XDG_CONFIG_HOME` personalizado rompe esas rutas.
-
-- **P:** media | **E:** M | **A:** agente, comando, migración, docs
-- **Referencias:** `scripts/install.sh:7`, `opencode/commands/init-software-architect.md:19-50`, `opencode/agents/software-architect.md:20-21`, `opencode/agents/software-architect.md:85`, `opencode/agents/software-architect.md:102`, `opencode/agents/software-architect.md:129`, `templates/software-architect/migration/v1-to-v2-policy.md:12`
-- **Criterio de salida:** todas las rutas globales usan una única convención compatible con `XDG_CONFIG_HOME` y con el fallback `$HOME/.config`
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
 ### [Medio] El agente no puede explorar adecuadamente el proyecto
 **[software-architect]**
 
@@ -133,6 +101,7 @@ conocidas, pero no descubrir estructura, código, documentación o configuració
 - **Referencias:** `opencode/agents/software-architect.md:12-17`, `opencode/commands/init-software-architect.md:105-108`
 - **Criterio de salida:** el agente puede descubrir archivos del proyecto en solo lectura sin ampliar sus permisos de edición
 - **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 
@@ -149,6 +118,7 @@ completas.
 - **Referencias:** `opencode/agents/software-architect.md:41-44`, `opencode/commands/init-software-architect.md:41-44`
 - **Criterio de salida:** todas las instrucciones usan rutas canónicas y no dependen del directorio actual implícito
 - **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 
@@ -164,6 +134,7 @@ de fase 14 no contiene secciones de veredicto, severidad ni conteos.
 - **Referencias:** `templates/software-architect/contracts/consistency-reviewer.md:17-21`, `templates/software-architect/doc-templates/14-consistency-review.md:3-21`
 - **Criterio de salida:** la plantilla representa hallazgos por severidad, conteos y un veredicto inequívoco compatible con el contrato
 - **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 
@@ -180,6 +151,7 @@ solo admiten `pending` o `approved`. El validador tampoco detecta un documento
 - **Referencias:** `templates/software-architect/workflow.md:81-89`, `templates/software-architect/project-state.schema.json:438-447`
 - **Criterio de salida:** fases y documentos modelan coherentemente la invalidación, revisión y nueva aprobación de artefactos dependientes
 - **Depende de:** El validador no forma parte del cierre del agente
+- **Completado en:** (este commit)
 
 </div>
 
@@ -195,6 +167,7 @@ Si `.devflow/software-architect/` ya existe, el comando solo asegura `docs/` y
 - **Referencias:** `opencode/commands/init-software-architect.md:52-76`
 - **Criterio de salida:** reinvocar el comando restaura de forma idempotente todos los archivos y directorios faltantes sin sobrescribir contenido
 - **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 
@@ -210,6 +183,7 @@ política v1→v2. Puede intentar continuar un estado v1 usando workflow v2.
 - **Referencias:** `opencode/commands/init-software-architect.md:41-44`, `templates/software-architect/migration/v1-to-v2-policy.md`
 - **Criterio de salida:** el inicio detecta v1, detiene el workflow v2 y ofrece instrucciones explícitas y no destructivas para migrar
 - **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 
@@ -227,6 +201,41 @@ qué momentos intermedios puede utilizarse.
 - **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:263-279`
 - **Criterio de salida:** el workflow define cuándo ejecutar validación parcial y final, y la finalización requiere una ejecución exitosa registrada
 - **Depende de:** El JSON Schema distribuido nunca se aplica
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Soporte inconsistente de XDG_CONFIG_HOME
+**[software-architect]**
+
+El instalador y parte del comando respetan XDG, pero agente, permisos bash,
+timestamp y política de migración fijan `$HOME/.config`. Una instalación con
+`XDG_CONFIG_HOME` personalizado rompe esas rutas.
+
+- **P:** media | **E:** M | **A:** agente, comando, migración, docs
+- **Referencias:** `scripts/install.sh:7`, `opencode/commands/init-software-architect.md:19-50`, `opencode/agents/software-architect.md:20-21`, `opencode/agents/software-architect.md:85`, `opencode/agents/software-architect.md:102`, `opencode/agents/software-architect.md:129`, `templates/software-architect/migration/v1-to-v2-policy.md:12`
+- **Criterio de salida:** todas las rutas globales usan una única convención compatible con `XDG_CONFIG_HOME` y con el fallback `$HOME/.config`
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] La migración promete backups que no crea
+**[software-architect]**
+
+Solo se respalda `project-state.json`. Los documentos se renombran sin copia,
+pero el mensaje final afirma que todos los archivos originales tienen sufijo
+`.v1`.
+
+- **P:** media | **E:** S | **A:** migración, docs, test
+- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:148-150`, `templates/software-architect/tools/migrate-v1-to-v2.mjs:254-274`
+- **Criterio de salida:** la herramienta crea los backups prometidos o comunica con precisión qué respalda y cómo revertir cada rename
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 

@@ -87,7 +87,7 @@ const VALID_PHASE_STATUSES = new Set([
 ]);
 
 const VALID_DOC_STATUSES = new Set([
-  'pending', 'approved',
+  'pending', 'approved', 'needs_revision',
 ]);
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -410,6 +410,10 @@ async function validatePhaseConsistency(state, root) {
 
     if (docExists && doc.status === 'pending' && phaseStatus === 'approved') {
       addWarning('DOC_STATUS_STALE', `${relPath} existe pero su estado sigue pending en documents.`, relPath, `${key}.status`);
+    }
+
+    if (phaseStatus === 'needs_revision' && doc.status === 'approved') {
+      addError('DOC_APPROVED_PHASE_NEEDS_REVISION', `La fase ${phaseKey} está needs_revision pero ${relPath} sigue approved. El documento debe marcarse como needs_revision.`, relPath, `${key}.status`);
     }
   }
 }

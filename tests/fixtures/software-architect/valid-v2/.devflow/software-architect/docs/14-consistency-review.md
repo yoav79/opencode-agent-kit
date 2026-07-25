@@ -1,22 +1,49 @@
 # 14. Consistency Review
 
+## Veredicto
+
+**Veredicto:** `APPROVED`
+
+## Resumen de hallazgos
+
+| Severidad | Conteo |
+|-----------|--------|
+| BLOCKING  | 0 |
+| WARNING   | 0 |
+| INFO      | 0 |
+
+## Hallazgos bloqueantes (BLOCKING)
+
+_No hay hallazgos bloqueantes._
+
+## Hallazgos menores (WARNING)
+
+_No hay hallazgos menores._
+
+## Observaciones (INFO)
+
+_No hay observaciones._
+
 ## Contradicciones detectadas
 
-_Content for Contradicciones detectadas._
+_No se detectaron contradicciones._
 
 ## Omisiones
 
-_Content for Omisiones._
+_No se detectaron omisiones._
 
 ## Elementos sin trazabilidad
 
-_Content for Elementos sin trazabilidad._
+_Requisitos no vinculados a módulos, decisiones sin ADR._
 
 ## Decisiones faltantes
 
-_Content for Decisiones faltantes._
+_Decisiones que deberían haberse registrado y no lo están._
 
 ## Acciones correctivas
 
-_Content for Acciones correctivas._
+_Qué se necesita corregir antes de la versión final._
 
+---
+
+> Checklist: todas las contradicciones resueltas, trazabilidad completa.

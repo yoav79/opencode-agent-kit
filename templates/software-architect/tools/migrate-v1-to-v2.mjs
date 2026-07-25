@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { access, copyFile, readFile, rename, writeFile, readdir } from 'node:fs/promises';
+import { access, copyFile, readFile, rename, writeFile, readdir, mkdir } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import process from 'node:process';
@@ -252,7 +252,7 @@ async function main() {
   await writeFile(stateFile, JSON.stringify(newState, null, 2) + '\n', 'utf8');
   console.log('project-state.json actualizado a schemaVersion 2');
 
-  // Rename docs using explicit filename mapping
+  // Backup and rename docs using explicit filename mapping
   if (await fileExists(docsDir)) {
     const files = await readdir(docsDir);
     for (const file of files) {
@@ -262,9 +262,16 @@ async function main() {
       if (!newFilename || newFilename === file) continue;
 
       const oldPath = path.join(docsDir, file);
+      const backupPath = path.join(docsDir, file + '.v1');
       const newPath = path.join(docsDir, newFilename);
+      if (await fileExists(backupPath)) {
+        console.log(`  ${file} → ${newFilename} (backup ya existe, saltando)`);
+      } else {
+        await copyFile(oldPath, backupPath);
+        console.log(`  Backup creado: ${file}.v1`);
+      }
       if (await fileExists(newPath)) {
-        console.log(`  ${file} → ${newFilename} (ya existe, saltando)`);
+        console.log(`  ${file} → ${newFilename} (destino ya existe, saltando rename)`);
       } else {
         await rename(oldPath, newPath);
         console.log(`  ${file} → ${newFilename}`);
@@ -272,7 +279,7 @@ async function main() {
     }
   }
 
-  console.log('\nMigración completada. Los archivos originales tienen sufijo .v1');
+  console.log('\nMigración completada.\nRespaldo creado: project-state.json.v1\nBackups de documentos: <archivo>.md.v1\nLos documentos han sido renombrados a sus nombres v2.');
 }
 
 main().catch((err) => {

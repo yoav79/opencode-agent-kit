@@ -1,5 +1,36 @@
 # 14. Consistency Review
 
+## Veredicto
+
+<!-- Una de: APPROVED | MINOR_ISSUES | BLOCKED -->
+**Veredicto:** `PENDING`
+
+## Resumen de hallazgos
+
+| Severidad | Conteo |
+|-----------|--------|
+| BLOCKING  | 0 |
+| WARNING   | 0 |
+| INFO      | 0 |
+
+## Hallazgos bloqueantes (BLOCKING)
+
+_Problemas que impiden la aprobación. Deben resolverse antes de continuar._
+
+_Formato: - [BLOCKING] Descripción del hallazgo (referencia al documento o sección)._
+
+## Hallazgos menores (WARNING)
+
+_Problemas que deberían corregirse pero no bloquean la aprobación._
+
+_Formato: - [WARNING] Descripción (referencia)._
+
+## Observaciones (INFO)
+
+_Notas informativas sin impacto en la aprobación._
+
+_Formato: - [INFO] Descripción (referencia)._
+
 ## Contradicciones detectadas
 
 _Entre documentos, entre requisitos, entre decisiones._
