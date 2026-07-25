@@ -213,6 +213,152 @@ fi
 rm -rf "$MIG_TEST_DIR"
 rm -rf "$MIG_CONFIG_HOME"
 
+PUBLISH_SCRIPT="$REPO_ROOT/scripts/publish-blueprint.sh"
+
+echo ""
+echo "--- Publish Script Syntax ---"
+if bash -n "$PUBLISH_SCRIPT" 2>/dev/null; then
+  echo "PASS: publish script syntax OK"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: publish script syntax error"
+  FAIL=$((FAIL + 1))
+fi
+
+echo ""
+echo "--- Publish with complete blueprint (valid-v2) ---"
+PUBLISH_DIR=$(mktemp -d)
+cp -r "$FIXTURES_DIR/valid-v2/." "$PUBLISH_DIR/"
+# Remove docs/software-architect if it exists from previous test
+rm -rf "$PUBLISH_DIR/docs/software-architect"
+
+set +e
+bash "$PUBLISH_SCRIPT" "$PUBLISH_DIR" 2>&1
+PUBLISH_EXIT=$?
+set -e
+
+if [ "$PUBLISH_EXIT" -eq 0 ]; then
+  echo "PASS: publish with valid-v2 exits 0"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: publish with valid-v2 exits $PUBLISH_EXIT"
+  FAIL=$((FAIL + 1))
+fi
+
+# Verify published files exist
+if [ -d "$PUBLISH_DIR/docs/software-architect" ]; then
+  PUBLISHED_COUNT=$(find "$PUBLISH_DIR/docs/software-architect" -maxdepth 1 -name '*.md' | wc -l)
+  if [ "$PUBLISHED_COUNT" -eq 14 ]; then
+    echo "PASS: published 14 documents"
+    PASS=$((PASS + 1))
+  else
+    echo "FAIL: published $PUBLISHED_COUNT documents, expected 14"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  echo "FAIL: docs/software-architect directory not created"
+  FAIL=$((FAIL + 1))
+fi
+
+# Verify decisions published
+if [ -d "$PUBLISH_DIR/docs/software-architect/decisions" ]; then
+  echo "PASS: decisions directory created"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: decisions directory not created"
+  FAIL=$((FAIL + 1))
+fi
+
+rm -rf "$PUBLISH_DIR"
+
+echo ""
+echo "--- Publish with incomplete blueprint (missing-docs) ---"
+PUBLISH_DIR=$(mktemp -d)
+cp -r "$FIXTURES_DIR/missing-docs/." "$PUBLISH_DIR/"
+rm -rf "$PUBLISH_DIR/docs/software-architect"
+
+set +e
+bash "$PUBLISH_SCRIPT" "$PUBLISH_DIR" 2>&1
+PUBLISH_EXIT=$?
+set -e
+
+if [ "$PUBLISH_EXIT" -eq 1 ]; then
+  echo "PASS: publish with missing-docs exits 1"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: publish with missing-docs exits $PUBLISH_EXIT, expected 1"
+  FAIL=$((FAIL + 1))
+fi
+
+# Verify no files were published
+if [ ! -d "$PUBLISH_DIR/docs/software-architect" ]; then
+  echo "PASS: no directory created for incomplete blueprint"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: directory created despite incomplete blueprint"
+  FAIL=$((FAIL + 1))
+fi
+
+rm -rf "$PUBLISH_DIR"
+
+echo ""
+echo "--- Publish dry-run ---"
+PUBLISH_DIR=$(mktemp -d)
+cp -r "$FIXTURES_DIR/valid-v2/." "$PUBLISH_DIR/"
+rm -rf "$PUBLISH_DIR/docs/software-architect"
+
+set +e
+DRY_OUTPUT=$(bash "$PUBLISH_SCRIPT" --dry-run "$PUBLISH_DIR" 2>&1)
+DRY_EXIT=$?
+set -e
+
+if [ "$DRY_EXIT" -eq 0 ]; then
+  echo "PASS: publish dry-run exits 0"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: publish dry-run exits $DRY_EXIT"
+  FAIL=$((FAIL + 1))
+fi
+
+if [ ! -d "$PUBLISH_DIR/docs/software-architect" ]; then
+  echo "PASS: dry-run does not create directory"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: dry-run created directory"
+  FAIL=$((FAIL + 1))
+fi
+
+if echo "$DRY_OUTPUT" | grep -q "dry-run"; then
+  echo "PASS: dry-run output contains dry-run indicator"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: dry-run output missing dry-run indicator"
+  FAIL=$((FAIL + 1))
+fi
+
+rm -rf "$PUBLISH_DIR"
+
+echo ""
+echo "--- Publish force flag ---"
+PUBLISH_DIR=$(mktemp -d)
+cp -r "$FIXTURES_DIR/missing-docs/." "$PUBLISH_DIR/"
+rm -rf "$PUBLISH_DIR/docs/software-architect"
+
+set +e
+bash "$PUBLISH_SCRIPT" --force "$PUBLISH_DIR" 2>&1
+PUBLISH_EXIT=$?
+set -e
+
+if [ "$PUBLISH_EXIT" -eq 0 ]; then
+  echo "PASS: publish --force exits 0 even with incomplete blueprint"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL: publish --force exits $PUBLISH_EXIT"
+  FAIL=$((FAIL + 1))
+fi
+
+rm -rf "$PUBLISH_DIR"
+
 echo ""
 echo "--- DocKey→PhaseKey Consistency Test ---"
 # Create a fixture where phase 2 is approved but doc 02 is missing

@@ -1,4 +1,4 @@
-.PHONY: help validate test test-repository test-software-architect-tools install uninstall dry-run
+.PHONY: help validate test test-repository test-software-architect-tools install uninstall dry-run publish
 
 .DEFAULT_GOAL := help
 
@@ -29,3 +29,6 @@ uninstall: ## Elimina symlinks instalados de ~/.config/opencode
 
 dry-run: ## Muestra que se instalaria sin modificar nada
 	./scripts/install.sh --dry-run
+
+publish: ## Publica el blueprint completo a docs/software-architect/
+	./scripts/publish-blueprint.sh .

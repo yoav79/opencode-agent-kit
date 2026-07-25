@@ -55,6 +55,7 @@ required_paths = [
     "scripts/uninstall.sh",
     "scripts/create-project.sh",
     "scripts/validate.sh",
+    "scripts/publish-blueprint.sh",
 ]
 
 for relative in required_paths:

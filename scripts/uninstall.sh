@@ -65,6 +65,7 @@ for path in \
   "$CONFIG_DIR/commands/init-software-architect.md" \
   "$CONFIG_DIR/commands/compile-blueprint.md" \
   "$CONFIG_DIR/commands/review-consistency.md" \
+  "$CONFIG_DIR/commands/publish-blueprint.md" \
   "$CONFIG_DIR/commands/init-task-planner.md" \
   "$CONFIG_DIR/templates/software-architect" \
   "$CONFIG_DIR/templates/task-planner" \
