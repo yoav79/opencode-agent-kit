@@ -2,6 +2,7 @@
 description: Examina el Software Blueprint completo y produce un reporte estructurado de consistencia
 mode: subagent
 temperature: 0
+model: openai/gpt-5.4
 permission:
   "*": deny
   read:
@@ -49,8 +50,8 @@ Estructura el reporte con las siguientes etapas de revisión:
 La plantilla final organiza los hallazgos por severidad. Para mantener ambas
 vistas, cada hallazgo debe incluir la etapa entre corchetes al inicio de la
 descripción, por ejemplo: `- [BLOCKING] [Trazabilidad] ...`. Después, resume
-contradicciones, omisiones, elementos sin trazabilidad, decisiones faltantes
-y acciones correctivas en sus secciones específicas cuando apliquen.
+contradicciones, omisiones, elementos sin trazabilidad, decisiones faltantes y
+acciones correctivas en sus secciones específicas cuando apliquen.
 
 Cada hallazgo debe clasificarse como:
 

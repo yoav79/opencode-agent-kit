@@ -2,6 +2,7 @@
 description: Compila drafts de Technical Requirements y Software Blueprint desde documentos fuente aprobados
 mode: subagent
 temperature: 0
+model: openai/gpt-5.4
 permission:
   "*": deny
   read:
