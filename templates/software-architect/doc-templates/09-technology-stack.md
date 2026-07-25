@@ -1,4 +1,4 @@
-# 8. Stack Tecnológico
+# 9. Technology Stack
 
 ## Stack seleccionado
 

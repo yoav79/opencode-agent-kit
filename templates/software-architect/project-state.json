@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "project": {
     "name": null,
     "workingTitle": null,
@@ -11,17 +11,19 @@
   },
   "phases": {
     "1_discovery": "in_progress",
-    "2_executive_definition": "pending",
-    "3_users_and_processes": "pending",
-    "4_module_catalog": "pending",
-    "5_functional_requirements": "pending",
-    "6_data_and_integrations": "pending",
-    "7_architecture": "pending",
-    "8_technology_stack": "pending",
-    "9_security_and_nfr": "pending",
-    "10_delivery_roadmap": "pending",
-    "11_consistency_review": "pending",
-    "12_final_document": "pending"
+    "2_product_requirements": "pending",
+    "3_application_flow": "pending",
+    "4_uiux_brief": "pending",
+    "5_module_catalog": "pending",
+    "6_functional_requirements": "pending",
+    "7_backend_schema": "pending",
+    "8_solution_architecture": "pending",
+    "9_technology_stack": "pending",
+    "10_security_and_nfr": "pending",
+    "11_technical_requirements": "pending",
+    "12_delivery_roadmap": "pending",
+    "13_software_blueprint": "pending",
+    "14_consistency_review": "pending"
   },
   "confirmed": {
     "problem": null,
@@ -35,12 +37,36 @@
     "scope": [],
     "outOfScope": []
   },
-  "actors": [],
-  "processes": [],
+  "productRequirements": {
+    "vision": null,
+    "valueProposition": null,
+    "objectives": [],
+    "mvpScope": [],
+    "postMvpScope": [],
+    "outOfScope": []
+  },
+  "applicationFlow": {
+    "actors": [],
+    "processes": [],
+    "exceptions": [],
+    "controlPoints": []
+  },
+  "uiuxBrief": {
+    "designSystem": null,
+    "brandColors": [],
+    "typography": null,
+    "targetDevices": [],
+    "accessibility": null,
+    "keyScreens": []
+  },
   "modules": [],
   "functionalRequirements": [],
-  "entities": [],
-  "integrations": [],
+  "backendSchema": {
+    "entities": [],
+    "sensitiveData": [],
+    "integrations": [],
+    "volumeEstimates": null
+  },
   "architecture": {
     "status": "pending",
     "style": null,
@@ -52,9 +78,13 @@
     "status": "pending",
     "approvedStack": {}
   },
-  "backendContract": {
-    "description": null,
-    "operations": []
+  "technicalRequirements": {
+    "performance": null,
+    "scalability": null,
+    "availability": null,
+    "compliance": null,
+    "security": null,
+    "monitoring": null
   },
   "approvedDecisions": [],
   "assumptions": [],
@@ -63,17 +93,19 @@
   "pendingApprovals": [],
   "documents": {
     "01_discovery": { "status": "pending", "approvedAt": null },
-    "02_executive_definition": { "status": "pending", "approvedAt": null },
-    "03_users_and_processes": { "status": "pending", "approvedAt": null },
-    "04_module_catalog": { "status": "pending", "approvedAt": null },
-    "05_functional_requirements": { "status": "pending", "approvedAt": null },
-    "06_data_and_integrations": { "status": "pending", "approvedAt": null },
-    "07_solution_architecture": { "status": "pending", "approvedAt": null },
-    "08_technology_stack": { "status": "pending", "approvedAt": null },
-    "09_security_and_nfr": { "status": "pending", "approvedAt": null },
-    "10_delivery_roadmap": { "status": "pending", "approvedAt": null },
-    "11_consistency_review": { "status": "pending", "approvedAt": null },
-    "12_final_document": { "status": "pending", "approvedAt": null }
+    "02_product_requirements": { "status": "pending", "approvedAt": null },
+    "03_application_flow": { "status": "pending", "approvedAt": null },
+    "04_uiux_brief": { "status": "pending", "approvedAt": null },
+    "05_module_catalog": { "status": "pending", "approvedAt": null },
+    "06_functional_requirements": { "status": "pending", "approvedAt": null },
+    "07_backend_schema": { "status": "pending", "approvedAt": null },
+    "08_solution_architecture": { "status": "pending", "approvedAt": null },
+    "09_technology_stack": { "status": "pending", "approvedAt": null },
+    "10_security_and_nfr": { "status": "pending", "approvedAt": null },
+    "11_technical_requirements": { "status": "pending", "approvedAt": null },
+    "12_delivery_roadmap": { "status": "pending", "approvedAt": null },
+    "13_software_blueprint": { "status": "pending", "approvedAt": null },
+    "14_consistency_review": { "status": "pending", "approvedAt": null }
   },
   "changeLog": [
     {

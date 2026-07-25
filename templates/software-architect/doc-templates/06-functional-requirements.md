@@ -1,4 +1,4 @@
-# 5. Requisitos Funcionales
+# 6. Functional Requirements
 
 ## Requisitos
 

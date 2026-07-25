@@ -1,4 +1,4 @@
-# 7. Arquitectura
+# 8. Solution Architecture
 
 ## Alternativas consideradas
 

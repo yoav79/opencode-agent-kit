@@ -2,45 +2,53 @@
 
 > Documento consolidado. No introduce información nueva.
 
-## 1. Descubrimiento
+## 1. Discovery
 
 _Vínculo a 01-discovery.md y resumen ejecutivo._
 
-## 2. Definición Ejecutiva
+## 2. Product Requirements
 
-_Vínculo a 02-executive-definition.md y resumen._
+_Vínculo a 02-product-requirements.md y resumen._
 
-## 3. Usuarios y Procesos
+## 3. Application Flow
 
-_Vínculo a 03-users-and-processes.md y resumen._
+_Vínculo a 03-application-flow.md y resumen._
 
-## 4. Catálogo de Módulos
+## 4. UI/UX Brief
 
-_Vínculo a 04-module-catalog.md y resumen._
+_Vínculo a 04-uiux-brief.md y resumen._
 
-## 5. Requisitos Funcionales
+## 5. Module Catalog
 
-_Vínculo a 05-functional-requirements.md y resumen._
+_Vínculo a 05-module-catalog.md y resumen._
 
-## 6. Información e Integraciones
+## 6. Functional Requirements
 
-_Vínculo a 06-data-and-integrations.md y resumen._
+_Vínculo a 06-functional-requirements.md y resumen._
 
-## 7. Arquitectura
+## 7. Backend Schema
 
-_Vínculo a 07-solution-architecture.md y resumen._
+_Vínculo a 07-backend-schema.md y resumen._
 
-## 8. Stack Tecnológico
+## 8. Solution Architecture
 
-_Vínculo a 08-technology-stack.md y resumen._
+_Vínculo a 08-solution-architecture.md y resumen._
 
-## 9. Seguridad y NFR
+## 9. Technology Stack
 
-_Vínculo a 09-security-and-nfr.md y resumen._
+_Vínculo a 09-technology-stack.md y resumen._
 
-## 10. Plan de Construcción
+## 10. Security & NFR
 
-_Vínculo a 10-delivery-roadmap.md y resumen._
+_Vínculo a 10-security-and-nfr.md y resumen._
+
+## 11. Technical Requirements
+
+_Vínculo a 11-technical-requirements.md y resumen._
+
+## 12. Delivery Roadmap
+
+_Vínculo a 12-delivery-roadmap.md y resumen._
 
 ## Decisiones arquitectónicas
 

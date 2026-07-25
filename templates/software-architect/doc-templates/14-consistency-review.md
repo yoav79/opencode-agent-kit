@@ -1,4 +1,4 @@
-# 11. Revisión de Consistencia
+# 14. Consistency Review
 
 ## Contradicciones detectadas
 

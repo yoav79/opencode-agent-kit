@@ -1,4 +1,4 @@
-# 9. Seguridad y Requisitos No Funcionales
+# 10. Security & NFR
 
 ## Rendimiento
 

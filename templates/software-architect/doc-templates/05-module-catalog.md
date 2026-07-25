@@ -1,4 +1,4 @@
-# 4. Catálogo de Módulos
+# 5. Module Catalog
 
 ## Módulos
 
