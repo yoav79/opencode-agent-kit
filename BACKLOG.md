@@ -54,22 +54,7 @@ directorios vacíos como `archive/` o `decisions/`.
 
 ## Alto
 
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Alto] El flujo recomendado deja timestamps en null
-**[software-architect]**
-
-`create-project.sh` copia `project-state.json` y después recomienda ejecutar
-`/init-software-architect`. El comando solo inicializa timestamps cuando él
-mismo crea el estado, por lo que `createdAt`, `updatedAt` y
-`changeLog[0].date` permanecen en `null` en el flujo recomendado.
-
-- **P:** alta | **E:** S | **A:** comando, script, estado
-- **Referencias:** `scripts/create-project.sh:102-128`, `scripts/create-project.sh:139-144`, `opencode/commands/init-software-architect.md:79-87`
-- **Criterio de salida:** cualquier estado recién creado recibe timestamps deterministas exactamente una vez, independientemente del punto de entrada
-- **Depende de:** Ninguna
-
-</div>
 
 <div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
@@ -769,6 +754,24 @@ funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
 ---
 
 ## <span style="color:#155724">&#x2713; Done</span>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El flujo recomendado deja timestamps en null
+**[software-architect]**
+
+`create-project.sh` copia `project-state.json` y después recomienda ejecutar
+`/init-software-architect`. El comando ahora siempre verifica timestamps y los
+asigna si están en `null`, sin necesidad de que él mismo haya creado el archivo.
+Corregido en `opencode/commands/init-software-architect.md` paso 6.
+
+- **P:** alta | **E:** S | **A:** comando, script, estado
+- **Referencias:** `opencode/commands/init-software-architect.md:79-88`
+- **Criterio de salida:** cualquier estado recién creado recibe timestamps deterministas exactamente una vez, independientemente del punto de entrada
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 

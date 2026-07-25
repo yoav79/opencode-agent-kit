@@ -76,14 +76,17 @@ archivo falta.
      global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
-6. Cuando se cree `.devflow/software-architect/project-state.json` por primera vez:
+6. Siempre que `.devflow/software-architect/project-state.json` exista (recién copiado
+   o preexistente), verifica sus timestamps:
 
    - Obtén el timestamp actual ejecutando:
      ```
      node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
      ```
-   - Asigna ese valor a `project.createdAt`, `project.updatedAt` y `changeLog[0].date`.
-   - Conserva el resto de la estructura sin modificaciones.
+   - Si `project.createdAt` es `null` o no existe, asígnale ese valor.
+   - Si `project.updatedAt` es `null` o no existe, asígnale ese valor.
+   - Si `changeLog[0].date` es `null` o no existe, asígnale ese valor.
+   - Nunca sobrescribas timestamps que ya tengan un valor distinto de `null`.
    - No escribas fechas manualmente. Usa siempre el timestamp tool.
 
 7. Si `.devflow/software-architect/` ya existe:

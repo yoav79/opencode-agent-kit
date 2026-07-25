@@ -42,14 +42,24 @@ cada hito.
   con mappings 14 phases/docs, gates 8/12/14, schemaVersion 2 y validación
   cruzada de secciones. Reglas de drafts vs docs en workflow.md y agente.
   (024b5a0)
-- **Fase 5: Cierre** — Migración v1→v2 (política + script). Tests e2e con
-  3 fixtures y 7 tests. init-software-architect, README y scaffold
+- **Fase 5: Cierre** — Migración v1→v2 (política + script). Tests
+  deterministas de validator y migración con 3 fixtures y 7 checks.
+  init-software-architect, README y scaffold
   sincronizados. Sin v1 references operativas. (3aa0a4b)
 - **Fase 6: Corrección integral de coherencia** — Deadlock fase 11 eliminado
   (blueprint-compiler por modo). Fase 14 unificada en drafts/. Permisos
   restringidos a .devflow/architecture/**. Validator corregido con mapping
   docKey→phaseKey y await. Migración v1→v2 corregida. 15 tests. README,
   scripts, scaffold y contratos alineados. (este commit)
+- **Taxonomía de tests** — Suite de software-architect renombrada como tests
+   deterministas de herramientas; `make test` ejecuta ambas suites. Alcance y
+   exclusiones de runtime documentados en `tests/README.md`. (este commit)
+
+### Fixed
+
+- **Timestamps en null** — `init-software-architect.md` ahora siempre verifica y
+  asigna timestamps aunque el archivo ya exista (ej: copiado por
+  `create-project.sh`). (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 
