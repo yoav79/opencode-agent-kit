@@ -39,22 +39,6 @@ Prioridades: `[Crítico]` `[Alto]` `[Medio]` `[Bajo]`
 
 <div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Alto] El gate humano final contradice el comportamiento del agente
-**[software-architect]**
-
-Workflow y comando exigen aprobación humana explícita en fase 14, pero el
-agente declara terminado el blueprint inmediatamente cuando el revisor devuelve
-`APPROVED`. Falta solicitar y registrar la aprobación humana final.
-
-- **P:** alta | **E:** S | **A:** agente, workflow, estado
-- **Referencias:** `templates/software-architect/workflow.md:40-47`, `opencode/commands/init-software-architect.md:117-123`, `opencode/agents/software-architect.md:140-146`
-- **Criterio de salida:** el veredicto técnico habilita la solicitud del gate, pero solo la aprobación explícita del usuario completa la fase 14
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
 ### [Alto] Invocación de subagentes ambigua o no ejecutable
 **[software-architect]**
 
@@ -735,6 +719,26 @@ funciona porque usa `mkdir -p`, pero verificar que el `AGENTS.md` y
 ---
 
 ## <span style="color:#155724">&#x2713; Done</span>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El gate humano final contradice el comportamiento del agente
+**[software-architect]**
+
+Workflow y comando exigen aprobación humana explícita en fase 14, pero el
+agente declara terminado el blueprint inmediatamente cuando el revisor devuelve
+`APPROVED`. Falta solicitar y registrar la aprobación humana final.
+
+Corregido en `opencode/agents/software-architect.md:146`: ahora solicita
+aprobación humana explícita antes de cerrar fase 14.
+
+- **P:** alta | **E:** S | **A:** agente, workflow, estado
+- **Referencias:** `opencode/agents/software-architect.md:146`
+- **Criterio de salida:** el veredicto técnico habilita la solicitud del gate, pero solo la aprobación explícita del usuario completa la fase 14
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 

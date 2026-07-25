@@ -19,6 +19,8 @@ permission:
     "*": deny
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
     "node $HOME/.config/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
+    "mkdir -p .devflow/software-architect/*": allow
+    "cp * .devflow/software-architect/*": allow
   task: allow
   webfetch: ask
   websearch: ask
@@ -141,7 +143,7 @@ no es "Principal":
 |-----------|---------|----------------------|
 | blueprint-compiler | GENERATED | Revisa el draft en drafts/. Si cumple el checklist de la plantilla, promuévelo a docs/ y marca la fase como approved. |
 | blueprint-compiler | BLOCKED | Informa al usuario qué inputs faltan o qué contradicciones impidieron la compilación. No avances. |
-| consistency-reviewer | APPROVED | Promueve drafts/14-consistency-review.md a docs/14-consistency-review.md. Marca fase 14 como approved. El blueprint está terminado. |
+| consistency-reviewer | APPROVED | Promueve drafts/14-consistency-review.md a docs/14-consistency-review.md. Solicita aprobación humana explícita para cerrar el gate de fase 14. Solo después de la confirmación del usuario, marca fase 14 como approved. |
 | consistency-reviewer | MINOR_ISSUES | Corrige los hallazgos WARNING en los documentos correspondientes. Re-invoca al revisor. Si ahora es APPROVED, continúa. |
 | consistency-reviewer | BLOCKED | Informa al usuario los hallazgos bloqueantes. Marca fase 14 como blocked. No avances. |
 

@@ -62,6 +62,9 @@ cada hito.
   `create-project.sh`). (este commit)
 - **Init bloqueado por permisos** — `software-architect.md` ahora permite
   `mkdir` y `cp` dentro de `.devflow/software-architect/`. (este commit)
+- **Gate humano fase 14** — `software-architect.md` ya no cierra la fase 14
+  automáticamente al recibir APPROVED del revisor; ahora solicita aprobación
+  humana explícita. (este commit)
 
 ## [0.1.0] — Estado inicial del repositorio
 
