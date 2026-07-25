@@ -70,6 +70,21 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 1 — Cimientos (software-architect)
+
+Workflow v2 definido con tabla canónica de 14 fases, tipos, entregables,
+gates y dependencias. Contratos de interfaz para blueprint-compiler y
+consistency-reviewer publicados.
+
+- **1a.** `templates/software-architect/workflow.md` — 14 fases v2
+- **1b.** `templates/software-architect/contracts/blueprint-compiler.md`
+- **1b.** `templates/software-architect/contracts/consistency-reviewer.md`
+- Implementado en: `1cdccc3`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Integración de consistency-reviewer con fase 11 (software-architect)
 
 `software-architect` ahora invoca automáticamente al `consistency-reviewer`
@@ -84,43 +99,6 @@ agente, más condición de salida en `workflow.md`.
 ---
 
 ## software-architect
-
-> Los ítems están ordenados por cadena de dependencia. Cada fase solo se puede
-> iniciar cuando todos los ítems de fases anteriores están completos.
-
-### Fase 1 — Cimientos
-
-Pueden ejecutarse en paralelo. Todo lo demás depende de estos dos.
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 1a. Definir contrato canónico del workflow v2
-
-Formalizar las 14 fases, sus nombres, entradas, entregables, dependencias,
-aprobaciones y criterios de salida. La aprobación final debe ser un gate de la
-última fase, no una fase adicional sin artefacto.
-
-- **P:** alta | **E:** M | **A:** workflow, docs
-- **Criterio de salida:** existe una tabla canónica que sirve como única
-  referencia para estado, schema, scaffold, agentes y validador.
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 1b. Definir contrato de interfaz para subagentes
-
-Antes de construir compilador y revisor, formalizar un contrato escrito que
-defina para cada uno: documentos de entrada, formato de salida, códigos de
-retorno (`GENERATED`/`BLOCKED`), límite de permisos, y qué zonas del sistema
-de archivos puede modificar. Esto evita contratos incompatibles entre
-componentes.
-
-- **P:** alta | **E:** S | **A:** workflow, docs
-- **Criterio de salida:** existe un documento de interfaz que sirve como
-  especificación para construir ambos subagentes sin ambigüedad.
-
-</div>
 
 ### Fase 2 — Datos y templates
 

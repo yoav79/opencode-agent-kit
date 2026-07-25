@@ -27,6 +27,11 @@ cada hito.
   cadena de dependencia (5 fases). (este commit)
 - **CHANGELOG sincronizado** — descripciones corregidas y commits faltantes
   agregados. (este commit)
+- **Workflow v2 (14 fases)** — Tabla canónica en `workflow.md` con tipos,
+  entregables, gates y dependencias. (1cdccc3)
+- **Contratos de subagentes** — `contracts/blueprint-compiler.md` y
+  `contracts/consistency-reviewer.md` con inputs, outputs y return codes.
+  (1cdccc3)
 
 ## [0.1.0] — Estado inicial del repositorio
 
