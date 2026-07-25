@@ -32,6 +32,9 @@ cada hito.
 - **Contratos de subagentes** — `contracts/blueprint-compiler.md` y
   `contracts/consistency-reviewer.md` con inputs, outputs y return codes.
   (1cdccc3)
+- **Fase 2: Datos y templates** — project-state schema v2 con 14 fases,
+  14 documentos y 5 secciones nuevas. Templates v2 creados/renombrados.
+  Scaffold con `review/` y tests actualizados. (fde4110)
 
 ## [0.1.0] — Estado inicial del repositorio
 

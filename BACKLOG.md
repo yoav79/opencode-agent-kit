@@ -70,6 +70,22 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 2 — Datos y templates (software-architect)
+
+project-state actualizado a schemaVersion 2 con 14 fases, 14 documentos y
+5 nuevas secciones de datos. Templates de documento creados/renombrados
+para los 14 artefactos del workflow v2. Scaffold y tests actualizados con
+directorio `review/`.
+
+- **2a.** `templates/software-architect/project-state.json` + `project-state.schema.json`
+- **2b.** 14 templates en `templates/software-architect/doc-templates/`
+- **2c.** `scaffold.json` (review/ en dirs) + `test-scripts.sh` (≥14 phases check)
+- Implementado en: `fde4110`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Fase 1 — Cimientos (software-architect)
 
 Workflow v2 definido con tabla canónica de 14 fases, tipos, entregables,
@@ -99,53 +115,6 @@ agente, más condición de salida en `workflow.md`.
 ---
 
 ## software-architect
-
-### Fase 2 — Datos y templates
-
-Dependen del contrato canónico. Pueden ejecutarse en paralelo entre sí.
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 2a. Refactorizar project-state a schemaVersion 2
-
-Actualizar `project-state.json` y `project-state.schema.json` con las nuevas
-fases, documentos, estados y datos estructurados para Product Requirements,
-Application Flow, UI/UX Brief, Backend Schema y Technical Requirements.
-
-- **P:** alta | **E:** L | **A:** template, schema
-- **Criterio de salida:** el estado inicial valida contra el schema y ambos
-  representan exactamente el contrato canónico de 14 fases.
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 2b. Crear templates de documentos del workflow v2
-
-Crear o reemplazar los templates para Product Requirements, Application Flow,
-UI/UX Brief, Backend Schema, Technical Requirements, Consistency Review y el
-Software Blueprint consolidado. Ajustar los templates existentes al nuevo
-orden y contrato de trazabilidad.
-
-- **P:** alta | **E:** L | **A:** template
-- **Criterio de salida:** cada fase tiene un template con entradas, secciones
-  obligatorias, checklist y entregable inequívoco.
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 2c. Agregar directorio `review/` al scaffold
-
-Actualmente el revisor crea `review/` manualmente si no existe. Debe ser
-parte de los directorios explícitos del scaffold junto con `drafts/`,
-`decisions/` y `archive/`.
-
-- **P:** media | **E:** S | **A:** template, script
-- **Criterio de salida:** el scaffold lista `review` en `dirs`, el comando
-  init lo crea, y `test-scripts.sh` lo verifica.
-
-</div>
 
 ### Fase 3 — Agentes
 
