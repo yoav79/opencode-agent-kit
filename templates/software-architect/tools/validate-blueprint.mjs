@@ -175,6 +175,7 @@ function parseArgs(argv) {
   const options = {
     root: process.cwd(),
     templates: null,
+    gate: null,
     json: false,
     quiet: false,
   };
@@ -188,6 +189,10 @@ function parseArgs(argv) {
       const val = argv[++i];
       if (!val) throw new Error('Falta valor para --templates.');
       options.templates = path.resolve(val);
+    } else if (arg === '--gate') {
+      const val = Number(argv[++i]);
+      if (!APPROVAL_PHASES.has(val)) throw new Error('Valor inválido para --gate. Usa 8, 12 o 14.');
+      options.gate = val;
     } else if (arg === '--json') {
       options.json = true;
     } else if (arg === '--quiet') {
@@ -203,7 +208,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.error(`Uso: node ${VALIDATOR_NAME} [--root RUTA] [--templates RUTA] [--json] [--quiet]`);
+  console.error(`Uso: node ${VALIDATOR_NAME} [--root RUTA] [--templates RUTA] [--gate 8|12|14] [--json] [--quiet]`);
 }
 
 function formatIssue(issue) {
@@ -272,11 +277,20 @@ function validateProjectState(state, statePath, root) {
   }
 }
 
-async function validateDocExistence(state, root) {
+function docPhaseNumber(docKey) {
+  const phaseKey = DOC_KEY_TO_PHASE_KEY[docKey];
+  const index = PHASE_KEYS.indexOf(phaseKey);
+  return index === -1 ? null : index + 1;
+}
+
+async function validateDocExistence(state, root, gatePhase = null) {
   if (!isObject(state?.documents)) return;
 
   const checks = [];
   for (const key of Object.keys(state.documents)) {
+    const phaseNumber = docPhaseNumber(key);
+    if (gatePhase !== null && phaseNumber !== null && phaseNumber > gatePhase) continue;
+
     const filePath = docFile(root, key);
     if (!filePath) continue;
     checks.push(
@@ -302,8 +316,98 @@ async function resolveSchemaPath(bpDir, root) {
   return null;
 }
 
+function schemaPath(context) {
+  return context || '<root>';
+}
+
+function schemaTypeMatches(value, type) {
+  if (Array.isArray(type)) return type.some((entry) => schemaTypeMatches(value, entry));
+  if (type === 'null') return value === null;
+  if (type === 'array') return Array.isArray(value);
+  if (type === 'object') return isObject(value);
+  if (type === 'integer') return Number.isInteger(value);
+  if (type === 'number') return typeof value === 'number' && Number.isFinite(value);
+  return typeof value === type;
+}
+
+function resolveRefSchema(schema, defs) {
+  if (!isObject(schema) || !schema.$ref || !schema.$ref.startsWith('#/$defs/')) return schema;
+  return defs[schema.$ref.replace('#/$defs/', '')] || schema;
+}
+
+function schemaMatches(value, schema, defs) {
+  schema = resolveRefSchema(schema, defs);
+  if (!isObject(schema)) return true;
+
+  if (Array.isArray(schema.oneOf)) {
+    return schema.oneOf.some((entry) => schemaMatches(value, entry, defs));
+  }
+  if ('const' in schema && !Object.is(value, schema.const)) return false;
+  if (Array.isArray(schema.enum) && !schema.enum.some((entry) => Object.is(value, entry))) return false;
+  if (schema.type && !schemaTypeMatches(value, schema.type)) return false;
+
+  if (schema.type === 'object' && isObject(value)) {
+    const required = schema.required || [];
+    for (const key of required) {
+      if (!(key in value)) return false;
+    }
+
+    const props = schema.properties || {};
+    if (schema.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!(key in props)) return false;
+      }
+    }
+
+    for (const [key, propSchema] of Object.entries(props)) {
+      if (key in value && !schemaMatches(value[key], propSchema, defs)) return false;
+    }
+  }
+
+  if (schema.type === 'array' && Array.isArray(value) && schema.items) {
+    for (const item of value) {
+      if (!schemaMatches(item, schema.items, defs)) return false;
+    }
+  }
+
+  return true;
+}
+
 function matchSchema(state, schema, defs, context, root) {
   if (!isObject(schema)) return;
+
+  schema = resolveRefSchema(schema, defs);
+
+  if (Array.isArray(schema.oneOf)) {
+    if (!schema.oneOf.some((entry) => schemaMatches(state, entry, defs))) {
+      addError('SCHEMA_ONE_OF_INVALID', `Campo "${schemaPath(context)}" no coincide con ninguna variante permitida por project-state.schema.json.`, null, schemaPath(context));
+    }
+    return;
+  }
+
+  if ('const' in schema && !Object.is(state, schema.const)) {
+    addError('SCHEMA_CONST_INVALID', `Campo "${schemaPath(context)}" debe ser ${JSON.stringify(schema.const)} según project-state.schema.json.`, null, schemaPath(context));
+  }
+
+  if (Array.isArray(schema.enum) && !schema.enum.some((entry) => Object.is(state, entry))) {
+    addError('SCHEMA_ENUM_INVALID', `Campo "${schemaPath(context)}" tiene un valor no permitido por project-state.schema.json.`, null, schemaPath(context));
+  }
+
+  if (schema.type && !schemaTypeMatches(state, schema.type)) {
+    addError('SCHEMA_TYPE_INVALID', `Campo "${schemaPath(context)}" debe ser de tipo ${JSON.stringify(schema.type)} según project-state.schema.json.`, null, schemaPath(context));
+    return;
+  }
+
+  if (schema.type === 'array') {
+    if (!Array.isArray(state) || !schema.items) return;
+    for (let i = 0; i < state.length; i++) {
+      matchSchema(state[i], schema.items, defs, `${context}[${i}]`, root);
+    }
+    return;
+  }
+
+  if (!isObject(state)) return;
+
   const required = schema.required || [];
   const props = schema.properties;
   const addl = schema.additionalProperties !== false;
@@ -327,31 +431,7 @@ function matchSchema(state, schema, defs, context, root) {
   for (const [key, value] of Object.entries(props)) {
     if (!(key in state)) continue;
     const val = state[key];
-    const ref = value.$ref;
-    if (ref && ref.startsWith('#/$defs/')) {
-      const defName = ref.replace('#/$defs/', '');
-      const def = defs[defName];
-      if (def && isObject(val)) {
-        matchSchema(val, def, defs, context ? `${context}.${key}` : key, root);
-      }
-      if (def && def.type === 'object' && def.properties && Array.isArray(val)) {
-        for (let i = 0; i < val.length; i++) {
-          matchSchema(val[i], def, defs, `${key}[${i}]`, root);
-        }
-      }
-    }
-    if (value.type === 'array' && Array.isArray(val) && value.items && value.items.$ref) {
-      const ref = value.items.$ref;
-      if (ref && ref.startsWith('#/$defs/')) {
-        const defName = ref.replace('#/$defs/', '');
-        const def = defs[defName];
-        if (def) {
-          for (let i = 0; i < val.length; i++) {
-            matchSchema(val[i], def, defs, `${key}[${i}]`, root);
-          }
-        }
-      }
-    }
+    matchSchema(val, value, defs, context ? `${context}.${key}` : key, root);
   }
 }
 
@@ -448,13 +528,17 @@ async function validatePhase14FinalDoc(state, root) {
   }
 }
 
-async function validateApprovalGates(state) {
+async function validateApprovalGates(state, gatePhase = null) {
   if (!isObject(state?.phases) || !isObject(state?.documents)) return;
 
-  const phase14Status = state.phases['14_consistency_review'];
-  if (!phase14Status || phase14Status === 'pending') return;
+  if (gatePhase === null) {
+    const phase14Status = state.phases['14_consistency_review'];
+    if (!phase14Status || phase14Status === 'pending') return;
+  }
 
   for (const phaseNum of APPROVAL_PHASES) {
+    if (gatePhase !== null && phaseNum >= gatePhase) continue;
+
     const key = PHASE_KEYS[phaseNum - 1];
     const phaseStatus = state.phases[key];
     const docKey = PHASE_KEY_TO_DOC_KEY[key];
@@ -620,12 +704,12 @@ async function main() {
     }
   }
 
-  await validateDocExistence(state, root);
+  await validateDocExistence(state, root, options.gate);
   await validateDocHeadings(state, root, templatesDir);
   await validatePhaseConsistency(state, root);
   await validatePhase13FinalDoc(state, root);
   await validatePhase14FinalDoc(state, root);
-  await validateApprovalGates(state);
+  await validateApprovalGates(state, options.gate);
   await validateADRs(state, root);
   await validateNoOrphanDocs(state, root);
   await validateUniqueReqIds(state, root);

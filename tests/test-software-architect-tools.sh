@@ -18,7 +18,7 @@ test_validator() {
   shift 3
 
   set +e
-  node "$VALIDATOR" --root "$fixture" --templates "$TEMPLATES_DIR/software-architect/doc-templates" --quiet --json 2>/dev/null
+  node "$VALIDATOR" --root "$fixture" --templates "$TEMPLATES_DIR/software-architect/doc-templates" --quiet --json "$@" 2>/dev/null
   local exit_code=$?
   set -e
 
@@ -38,6 +38,58 @@ echo "--- Validator Tests ---"
 test_validator "valid-v2 passes" "$FIXTURES_DIR/valid-v2" 0
 test_validator "missing-docs fails" "$FIXTURES_DIR/missing-docs" 1
 test_validator "blocked-review fails" "$FIXTURES_DIR/blocked-review" 1
+
+echo ""
+echo "--- Validator Gate Mode Tests ---"
+GATE8_DIR=$(mktemp -d)
+cp -r "$FIXTURES_DIR/valid-v2/." "$GATE8_DIR/"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/09-technology-stack.md"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/10-security-and-nfr.md"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/11-technical-requirements.md"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/12-delivery-roadmap.md"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md"
+rm -f "$GATE8_DIR/.devflow/software-architect/docs/14-consistency-review.md"
+python3 - "$GATE8_DIR/.devflow/software-architect/project-state.json" <<'PY'
+import json
+import sys
+
+state_path = sys.argv[1]
+with open(state_path, 'r', encoding='utf-8') as f:
+    state = json.load(f)
+
+state['project']['currentPhase'] = 8
+state['phases']['8_solution_architecture'] = 'waiting_for_user'
+state['documents']['08_solution_architecture']['status'] = 'pending'
+state['documents']['08_solution_architecture']['approvedAt'] = None
+
+for phase in [
+    '9_technology_stack',
+    '10_security_and_nfr',
+    '11_technical_requirements',
+    '12_delivery_roadmap',
+    '13_software_blueprint',
+    '14_consistency_review',
+]:
+    state['phases'][phase] = 'pending'
+
+for doc in [
+    '09_technology_stack',
+    '10_security_and_nfr',
+    '11_technical_requirements',
+    '12_delivery_roadmap',
+    '13_software_blueprint',
+    '14_consistency_review',
+]:
+    state['documents'][doc]['status'] = 'pending'
+    state['documents'][doc]['approvedAt'] = None
+
+with open(state_path, 'w', encoding='utf-8') as f:
+    json.dump(state, f, indent=2)
+    f.write('\n')
+PY
+test_validator "gate 8 partial passes" "$GATE8_DIR" 0 --gate 8
+test_validator "gate 8 final mode fails" "$GATE8_DIR" 1
+rm -rf "$GATE8_DIR"
 
 echo ""
 echo "--- Migration Script Syntax ---"

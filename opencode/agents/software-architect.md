@@ -242,13 +242,27 @@ corrígelos antes de declarar la finalización.
 
 ### Validación parcial por gates
 
-También debes ejecutar el validador antes de solicitar aprobación en los
-gates de las fases 8, 12 y 14. Esto asegura que no haya inconsistencias
-acumuladas antes de pedir la aprobación humana.
+También debes ejecutar el validador en modo gate antes de solicitar aprobación
+en las fases 8, 12 y 14. El modo gate valida el estado acumulado hasta esa
+fase sin exigir documentos futuros que todavía no existen por diseño.
 
 - En fase 8: ejecuta validación antes de presentar `08-solution-architecture.md`
-  para aprobación.
+  para aprobación:
+
+  ```
+  node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs --gate 8
+  ```
+
 - En fase 12: ejecuta validación antes de presentar `12-delivery-roadmap.md`
-  para aprobación.
+  para aprobación:
+
+  ```
+  node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs --gate 12
+  ```
+
 - En fase 14: ejecuta validación antes de presentar `14-consistency-review.md`
-  para aprobación final.
+  para aprobación final:
+
+  ```
+  node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs --gate 14
+  ```

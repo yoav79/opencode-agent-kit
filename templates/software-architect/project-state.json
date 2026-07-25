@@ -118,29 +118,29 @@
     "phases": []
   },
   "privacy": {
-    "dataClassification": null,
+    "dataClassification": "",
     "piiEntities": [],
-    "retentionPolicy": null,
+    "retentionPolicy": "",
     "regulatoryCompliance": []
   },
   "backups": {
-    "strategy": null,
-    "frequency": null,
-    "retention": null,
-    "disasterRecovery": null
+    "strategy": "",
+    "frequency": "",
+    "retention": "",
+    "disasterRecovery": ""
   },
   "maintainability": {
-    "codingStandards": null,
-    "documentationPolicy": null,
-    "testingStrategy": null,
-    "ciCd": null,
-    "monitoring": null
+    "codingStandards": "",
+    "documentationPolicy": "",
+    "testingStrategy": "",
+    "ciCd": "",
+    "monitoring": ""
   },
   "deploymentRequirements": {
-    "infrastructure": null,
+    "infrastructure": "",
     "environments": [],
-    "scalability": null,
-    "availability": null,
+    "scalability": "",
+    "availability": "",
     "securityRequirements": []
   }
 }

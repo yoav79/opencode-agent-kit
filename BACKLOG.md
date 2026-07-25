@@ -480,6 +480,49 @@ las 14 claves de `DOC_KEY_TO_FILENAME` existan en `state.documents`.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### [Alto] Validación de gates contradice el validador final
+**[software-architect]**
+
+El agente exigía ejecutar `validate-blueprint.mjs` antes de aprobar fases 8, 12
+y 14, pero el validador exigía la existencia física de los 14 documentos. En
+fases intermedias los documentos futuros no existen por diseño.
+
+Corregido en `validate-blueprint.mjs` y `software-architect.md`: nuevo modo
+`--gate 8|12|14` que valida solo documentos acumulados hasta la fase indicada.
+El modo sin `--gate` conserva semántica de validador final.
+
+- **P:** alta | **E:** M | **A:** agente, validator, test
+- **Referencias:** `opencode/agents/software-architect.md:260-285`, `templates/software-architect/tools/validate-blueprint.mjs:174-211`, `templates/software-architect/tools/validate-blueprint.mjs:280-306`, `templates/software-architect/tools/validate-blueprint.mjs:531-554`
+- **Criterio de salida:** los gates 8/12/14 pueden validarse sin exigir documentos futuros, y la validación final sigue exigiendo el blueprint completo
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] Scaffold inicial incompatible con el schema real
+**[software-architect]**
+
+`project-state.json` usaba `null` en `privacy`, `backups`, `maintainability` y
+`deploymentRequirements`, pero `project-state.schema.json` define esos campos
+como `string`. El validador no lo detectaba porque no validaba tipos primitivos
+completos del schema.
+
+Corregido en `project-state.json` y `validate-blueprint.mjs`: el scaffold usa
+strings vacíos donde el schema exige `string`, y `matchSchema` valida tipos
+primitivos, `const`, `enum`, `oneOf`, arrays y objetos básicos.
+
+- **P:** alta | **E:** M | **A:** scaffold, schema, validator, test
+- **Referencias:** `templates/software-architect/project-state.json:120-145`, `templates/software-architect/project-state.schema.json:549-600`, `templates/software-architect/tools/validate-blueprint.mjs:319-436`
+- **Criterio de salida:** el scaffold inicial cumple el schema real y el validador detecta incompatibilidades de tipo primitivas
+- **Depende de:** Ninguna
+- **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### [Alto] La validación de gates acepta estados no aprobados
 **[software-architect]**
 

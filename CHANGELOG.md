@@ -57,6 +57,14 @@ cada hito.
 
 ### Fixed
 
+- **Validación parcial por gates 8/12/14** — `validate-blueprint.mjs` ahora
+  soporta `--gate 8|12|14`, validando solo documentos acumulados hasta esa
+  fase. El agente usa ese modo antes de solicitar aprobación humana y mantiene
+  el modo sin flags como validador final. (este commit)
+- **Schema aplicado a tipos primitivos** — `matchSchema` ahora valida tipos
+  primitivos, `const`, `enum`, `oneOf`, arrays y objetos básicos; el scaffold
+  inicial reemplaza `null` por strings vacíos donde el schema exige `string`.
+  (este commit)
 - **Backups de documentos en migración** — `migrate-v1-to-v2.mjs` ahora copia
   cada documento a `.md.v1` antes de renombrarlo. Mensaje final preciso sobre
   qué se respaldó. (este commit)
