@@ -81,9 +81,19 @@ link_item() {
       printf "${YELLOW}Already installed:${NC} %s\n" "$destination"
       return
     else
-      printf "${RED}Different version:${NC} %s\n" "$destination"
+      printf "${RED}Different symlink:${NC} %s\n" "$destination"
       printf "  Current: ${CYAN}%s${NC}\n" "$current"
       printf "  New:     ${GREEN}%s${NC}\n" "$source"
+    fi
+  elif [ -f "$destination" ]; then
+    local src_hash dst_hash
+    src_hash=$(sha256sum "$source" | cut -d' ' -f1)
+    dst_hash=$(sha256sum "$destination" | cut -d' ' -f1)
+    if [ "$src_hash" = "$dst_hash" ]; then
+      printf "${YELLOW}Already installed (same content):${NC} %s\n" "$destination"
+      return
+    else
+      printf "${RED}Different content:${NC} %s\n" "$destination"
     fi
   fi
 
