@@ -178,6 +178,343 @@ agente, más condición de salida en `workflow.md`.
 
 ---
 
+## software-architect
+
+<div style="background:#f5c6cb; border-left:4px solid #bd2130; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Crítico] `/init-software-architect` no puede ejecutar su propia inicialización
+
+El comando debe crear directorios y copiar plantillas, pero el agente deniega
+todo `bash` salvo dos comandos Node y solo permite editar dentro de
+`.devflow/software-architect/**`. No puede ejecutar `mkdir` ni `cp`, ni crear
+directorios vacíos como `archive/` o `decisions/`.
+
+- **P:** crítica | **E:** M | **A:** agente, comando, permisos
+- **Referencias:** `opencode/commands/init-software-architect.md:54-76`,
+  `opencode/agents/software-architect.md:6-22`
+- **Criterio de salida:** el agente puede inicializar y reparar de forma segura
+  toda la estructura declarada sin obtener permisos de escritura fuera de
+  `.devflow/software-architect/`.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El flujo recomendado deja timestamps en null
+
+`create-project.sh` copia `project-state.json` y después recomienda ejecutar
+`/init-software-architect`. El comando solo inicializa timestamps cuando él
+mismo crea el estado, por lo que `createdAt`, `updatedAt` y
+`changeLog[0].date` permanecen en `null` en el flujo recomendado.
+
+- **P:** alta | **E:** S | **A:** comando, script, estado
+- **Referencias:** `scripts/create-project.sh:102-128`,
+  `scripts/create-project.sh:139-144`,
+  `opencode/commands/init-software-architect.md:79-87`
+- **Criterio de salida:** cualquier estado recién creado recibe timestamps
+  deterministas exactamente una vez, independientemente del punto de entrada.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El gate humano final contradice el comportamiento del agente
+
+Workflow y comando exigen aprobación humana explícita en fase 14, pero el
+agente declara terminado el blueprint inmediatamente cuando el revisor devuelve
+`APPROVED`. Falta solicitar y registrar la aprobación humana final.
+
+- **P:** alta | **E:** S | **A:** agente, workflow, estado
+- **Referencias:** `templates/software-architect/workflow.md:40-47`,
+  `opencode/commands/init-software-architect.md:117-123`,
+  `opencode/agents/software-architect.md:140-146`
+- **Criterio de salida:** el veredicto técnico habilita la solicitud del gate,
+  pero solo la aprobación explícita del usuario completa la fase 14.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] Invocación de subagentes ambigua o no ejecutable
+
+El agente ordena usar `task`, pero después describe nombres de slash commands
+como `compile-blueprint technical-requirements` y `review-consistency`. `task`
+debe seleccionar explícitamente el subagente y proporcionarle un prompt; no
+ejecuta automáticamente un slash command.
+
+- **P:** alta | **E:** S | **A:** agente, contratos, comandos
+- **Referencias:** `opencode/agents/software-architect.md:127-135`
+- **Criterio de salida:** cada delegación define subagente, prompt, modo,
+  inputs esperados y códigos de retorno sin depender de semántica implícita.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] project-state no almacena toda la información exigida
+
+El agente exige registrar cada decisión confirmada y 17 atributos por módulo,
+pero el schema de módulos prohíbe propiedades adicionales y omite reglas de
+negocio, notificaciones, reportes, criterios de aceptación y clasificación
+MVP. También faltan secciones estructuradas para roadmap, privacidad, backups,
+mantenibilidad y requisitos de despliegue.
+
+- **P:** alta | **E:** L | **A:** agente, schema, estado, templates
+- **Referencias:** `opencode/agents/software-architect.md:62`,
+  `opencode/agents/software-architect.md:106`,
+  `opencode/agents/software-architect.md:161-177`,
+  `templates/software-architect/project-state.schema.json:283-309`
+- **Criterio de salida:** toda información que el agente debe registrar tiene
+  representación válida y trazable en `project-state.json` y su schema.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El JSON Schema distribuido nunca se aplica
+
+El comando copia `project-state.schema.json`, pero `validate-blueprint.mjs` no
+lo carga y realiza validaciones manuales parciales. Además, el schema permite
+un objeto `phases` vacío y hace opcionales secciones que el agente considera
+canónicas.
+
+- **P:** alta | **E:** M | **A:** schema, validator, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:510-537`,
+  `templates/software-architect/project-state.schema.json:8-14`,
+  `templates/software-architect/project-state.schema.json:126-159`
+- **Criterio de salida:** el validador aplica el schema distribuido y el schema
+  exige todas las fases y secciones canónicas del estado v2.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] El validador acepta documentos obligatorios no registrados
+
+La validación recorre solo las entradas presentes en `state.documents`. Si se
+elimina una clave obligatoria junto con su archivo, no detecta la ausencia;
+solo fases 13 y 14 tienen comprobaciones especiales.
+
+- **P:** alta | **E:** S | **A:** validator, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:249-260`,
+  `templates/software-architect/tools/validate-blueprint.mjs:263-279`,
+  `templates/software-architect/tools/validate-blueprint.mjs:319-338`
+- **Criterio de salida:** el validador exige exactamente las 14 claves de
+  documentos y detecta claves faltantes aunque tampoco exista el archivo.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La validación de gates acepta estados no aprobados
+
+Para fases 8, 12 y 14 solo se rechazan `pending` e `in_progress`. Estados como
+`blocked`, `waiting_for_user` o `needs_revision` pasan aunque no representan
+aprobación humana.
+
+- **P:** alta | **E:** S | **A:** validator, workflow, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:371-383`
+- **Criterio de salida:** cada gate se considera superado únicamente cuando su
+  fase y documento están `approved` y existe evidencia de aprobación humana.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La detección de IDs REQ duplicados no funciona con la plantilla
+
+La plantilla oficial usa tablas con líneas como `| REQ-001 |`, pero el
+validador busca IDs al comienzo exacto de la línea mediante `^REQ-`, por lo que
+no encuentra requisitos dentro de tablas Markdown.
+
+- **P:** alta | **E:** S | **A:** validator, template, test
+- **Referencias:** `templates/software-architect/doc-templates/06-functional-requirements.md:7-9`,
+  `templates/software-architect/tools/validate-blueprint.mjs:158-166`
+- **Criterio de salida:** se detectan IDs válidos y duplicados en el formato de
+  tabla oficial, con pruebas positivas y negativas.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Alto] La migración puede producir un proyecto v2 inválido
+
+Las fases nuevas 4 y 11 se crean como `pending`, pero se preservan aprobaciones
+posteriores de v1, `project.status` y un `currentPhase` calculado desde la fase
+antigua. Un proyecto v1 completado puede terminar con fases 13/14 aprobadas y
+fases 4/11 pendientes.
+
+- **P:** alta | **E:** M | **A:** migración, estado, test
+- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:152-180`,
+  `templates/software-architect/tools/migrate-v1-to-v2.mjs:186-240`
+- **Criterio de salida:** la migración invalida o reabre fases dependientes,
+  recalcula `currentPhase`/`project.status` y siempre produce una secuencia v2
+  lógicamente consistente.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] La migración promete backups que no crea
+
+Solo se respalda `project-state.json`. Los documentos se renombran sin copia,
+pero el mensaje final afirma que todos los archivos originales tienen sufijo
+`.v1`.
+
+- **P:** media | **E:** S | **A:** migración, docs, test
+- **Referencias:** `templates/software-architect/tools/migrate-v1-to-v2.mjs:148-150`,
+  `templates/software-architect/tools/migrate-v1-to-v2.mjs:254-274`
+- **Criterio de salida:** la herramienta crea los backups prometidos o comunica
+  con precisión qué respalda y cómo revertir cada rename.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Soporte inconsistente de XDG_CONFIG_HOME
+
+El instalador y parte del comando respetan XDG, pero agente, permisos bash,
+timestamp y política de migración fijan `$HOME/.config`. Una instalación con
+`XDG_CONFIG_HOME` personalizado rompe esas rutas.
+
+- **P:** media | **E:** M | **A:** agente, comando, migración, docs
+- **Referencias:** `scripts/install.sh:7`,
+  `opencode/commands/init-software-architect.md:19-50`,
+  `opencode/agents/software-architect.md:20-21`,
+  `opencode/agents/software-architect.md:85`,
+  `opencode/agents/software-architect.md:102`,
+  `opencode/agents/software-architect.md:129`,
+  `templates/software-architect/migration/v1-to-v2-policy.md:12`
+- **Criterio de salida:** todas las rutas globales usan una única convención
+  compatible con `XDG_CONFIG_HOME` y con el fallback `$HOME/.config`.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] El agente no puede explorar adecuadamente el proyecto
+
+`glob` y `grep` están restringidos a `.devflow/software-architect/**`, pero el
+comando ordena revisar información existente del proyecto. Puede leer rutas
+conocidas, pero no descubrir estructura, código, documentación o configuración.
+
+- **P:** media | **E:** S | **A:** agente, permisos
+- **Referencias:** `opencode/agents/software-architect.md:12-17`,
+  `opencode/commands/init-software-architect.md:105-108`
+- **Criterio de salida:** el agente puede descubrir archivos del proyecto en
+  solo lectura sin ampliar sus permisos de edición.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Rutas iniciales ambiguas
+
+El agente indica leer `workflow.md` y `project-state.json` sin la ruta
+`.devflow/software-architect/`, mientras el comando sí define las ubicaciones
+completas.
+
+- **P:** media | **E:** S | **A:** agente, docs
+- **Referencias:** `opencode/agents/software-architect.md:41-44`,
+  `opencode/commands/init-software-architect.md:41-44`
+- **Criterio de salida:** todas las instrucciones usan rutas canónicas y no
+  dependen del directorio actual implícito.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Fase 14 no tiene formato para el veredicto contractual
+
+El contrato calcula resultados desde `BLOCKING` y `WARNING`, pero la plantilla
+de fase 14 no contiene secciones de veredicto, severidad ni conteos.
+
+- **P:** media | **E:** S | **A:** template, contrato, test
+- **Referencias:** `templates/software-architect/contracts/consistency-reviewer.md:17-21`,
+  `templates/software-architect/doc-templates/14-consistency-review.md:3-21`
+- **Criterio de salida:** la plantilla representa hallazgos por severidad,
+  conteos y un veredicto inequívoco compatible con el contrato.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Revisiones posteriores dejan documentos indebidamente aprobados
+
+El workflow marca fases dependientes como `needs_revision`, pero los documentos
+solo admiten `pending` o `approved`. El validador tampoco detecta un documento
+`approved` cuya fase está `needs_revision`.
+
+- **P:** media | **E:** M | **A:** workflow, schema, validator, test
+- **Referencias:** `templates/software-architect/workflow.md:81-89`,
+  `templates/software-architect/project-state.schema.json:438-447`
+- **Criterio de salida:** fases y documentos modelan coherentemente la
+  invalidación, revisión y nueva aprobación de artefactos dependientes.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] Reparación incompleta de inicializaciones parciales
+
+Si `.devflow/software-architect/` ya existe, el comando solo asegura `docs/` y
+`drafts/`; no restaura `archive/` ni `decisions/`.
+
+- **P:** media | **E:** S | **A:** comando, test
+- **Referencias:** `opencode/commands/init-software-architect.md:52-76`
+- **Criterio de salida:** reinvocar el comando restaura de forma idempotente
+  todos los archivos y directorios faltantes sin sobrescribir contenido.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] La migración no está conectada al comando de inicio
+
+`/init-software-architect` no comprueba `schemaVersion` ni informa sobre la
+política v1→v2. Puede intentar continuar un estado v1 usando workflow v2.
+
+- **P:** media | **E:** S | **A:** comando, migración
+- **Criterio de salida:** el inicio detecta v1, detiene el workflow v2 y ofrece
+  instrucciones explícitas y no destructivas para migrar.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] generate-scaffold.sh no está alineado con el scaffold actual
+
+El generador trataría `contracts/`, `doc-templates/` y `migration/` como
+directorios del proyecto y copiaría tools, mientras el scaffold actual crea
+solo directorios operativos. Regenerarlo produciría una estructura distinta e
+incorrecta.
+
+- **P:** media | **E:** M | **A:** script, scaffold, test
+- **Referencias:** `scripts/generate-scaffold.sh:102-116`,
+  `templates/software-architect/scaffold.json:3-13`
+- **Criterio de salida:** regenerar el scaffold de software-architect produce
+  exactamente la estructura operativa versionada.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] El validador no forma parte del cierre del agente
+
+El agente tiene permiso para ejecutarlo, pero ninguna instrucción obliga a
+usarlo antes de declarar terminado el blueprint. Además, el validador exige
+todos los documentos aunque estén `pending`, por lo que no está definido en
+qué momentos intermedios puede utilizarse.
+
+- **P:** media | **E:** M | **A:** agente, workflow, validator, test
+- **Referencias:** `templates/software-architect/tools/validate-blueprint.mjs:263-279`
+- **Criterio de salida:** el workflow define cuándo ejecutar validación parcial
+  y final, y la finalización requiere una ejecución exitosa registrada.
+
+</div>
+
+---
+
 ## task-planner
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
