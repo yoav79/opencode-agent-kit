@@ -2,93 +2,136 @@
 
 Todos los cambios notables en este proyecto se documentan en este archivo.
 
-El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el proyecto adherencia a [Semantic Versioning](https://semver.org/).
+El formato se basa en [Keep a Changelog](https://keepachangelog.com/) y el
+proyecto adhiere a [Semantic Versioning](https://semver.org/). No existen tags
+de release; las secciones versionadas describen el estado del repositorio en
+cada hito.
 
 ## [Unreleased]
 
+### Added
+
+- **BACKLOG.md** — Backlog organizado por agente, con prioridad, esfuerzo,
+  área y criterios de salida. (e719e42)
+- **14 items en software-architect** — Refactorización ordenada en 5 fases
+  por cadena de dependencia: cimientos, datos/templates, agentes,
+  validación/reglas y cierre. (e719e42)
+- **2 items restantes en task-planner** — Completan la planificación del
+  agente de planificación. (8e19dd9)
+- **10 items en task-planner** — Plan de trabajo para el agente de
+  planificación. (73e29d4)
+
 ### Changed
 
-- Reemplazado subagente `requirements-analyst` por integracion directa en `software-architect`.
-- Reemplazado subagente `architecture-reviewer` por workflow interno de validacion.
-- Eliminadas skills separadas (`requirements-discovery`, `software-blueprint`, `architecture-review`); su contenido se integro en los agentes y workflow.
-- Reemplazados comandos `new-blueprint`, `continue-blueprint`, `validate-blueprint` por `init-software-architect` y `init-task-planner`.
-- Reemplazada plantilla `software-design-project/` por `software-architect/` y `task-planner/`.
-- `install.sh` ahora tambien instala templates via symlinks.
-- `validate.sh` actualizado para la nueva estructura de archivos.
-- `test-scripts.sh` actualizado para verificar los nuevos agentes y comandos.
-- Directorios de trabajo cambiados de `software-design/` y `task-planning/` a `.devflow/software-architect/` y `.devflow/task-planner/`.
-- `next-task` cambiado de `mode: subagent` a `mode: primary`.
-- README reescrito para reflejar la nueva arquitectura.
-- `workflow.md` paths cambiados de relativos (`docs/`) a absolutos (`.devflow/software-architect/docs/`).
-- Eliminado `path` redundante de `project-state.json.documents`; se computa desde un mapping fijo.
+- **BACKLOG.md reordenado** — items de software-architect reorganizados por
+  cadena de dependencia (5 fases). (este commit)
+- **CHANGELOG sincronizado** — descripciones corregidas y commits faltantes
+  agregados. (este commit)
+
+## [0.1.0] — Estado inicial del repositorio
 
 ### Added
 
-- **`templates/shared/tools/timestamp.mjs`** — Herramienta determinista compartida para timestamps. Todos los agentes deben usarla en lugar de escribir fechas manualmente.
-- **Regla global en AGENTS.md** — Timestamps deterministas: prohibido escribir fechas manualmente, usar siempre `timestamp.mjs`.
-- **`consistency-reviewer`** — Subagente que revisa la consistencia del Software Blueprint completo: estructura, cobertura, contradicciones y trazabilidad. Produce `review-report.md` con clasificación `BLOCKING`/`WARNING`/`INFO`.
-- **`/review-consistency`** — Comando que ejecuta la revisión independiente de consistencia.
-- **`context-builder`** — Subagente que prepara el contexto ejecutable de una tarea ya seleccionada: lee plan, artefactos, predecesores y repo; produce `execution-context.json` y `execution-prompt.md`.
-- **`next-task`** — Agente determinista de selección de tareas, con contratos de estado/selección y validador `validate-next-task.mjs`. Comandos `/init-next-task`, `/select-next-task`, `/prepare-task-run`.
-- **`task-planner`** — Agente de planificacion que transforma un blueprint aprobado en un plan completo de tareas para DevFlow. Workflow de 10 fases con validacion determinista.
-- **`/init-software-architect`** — Comando que inicializa o continua el diseno de arquitectura con workflow de 12 fases y aprobaciones en puertas criticas.
-- **`/init-task-planner`** — Comando que inicializa o continua la planificacion de tareas con contrato de version e integridad.
-- **`/init-next-task`** — Comando que inicializa el espacio de ejecución (`.devflow/execution/`).
-- **`/select-next-task`** — Comando que ejecuta la selección determinista de la siguiente tarea.
-- **`/prepare-task-run`** — Comando que crea el directorio del run y registra la tarea en el estado de ejecución.
-- **`/build-task-context`** — Comando que construye contexto para una tarea e intento explicitos.
-- **`/build-next-task-context`** — Comando que construye contexto para la última tarea seleccionada en un solo paso.
-- **`templates/software-architect/`** — Plantillas del agente de diseno: `project-state.json` (12 fases), `workflow.md`, y `doc-templates/` con templates para cada fase.
-- **`templates/software-architect/tools/validate-blueprint.mjs`** — Validador determinista del Software Blueprint: verifica estructura, documentos, secciones, consistencia de aprobaciones y referencias.
-- **`templates/software-architect/project-state.schema.json`** — Schema JSON formal para `project-state.json`, alineado con los schemas del dominio de ejecución.
-- **`templates/task-planner/`** — Plantillas del agente de planificacion: 9 archivos JSON, `task-template.md`, workflow, y herramientas deterministas (`validate-plan.mjs`, `update-timestamps.mjs`, `build-epic-graph.mjs`).
-- **`templates/next-task/`** — Contratos de ejecución: `execution-state.json`, `selection.json`, schemas, y `validate-next-task.mjs`.
-- **`templates/context-builder/`** — Contratos de contexto: `context-build-request.schema.json`, `execution-context.schema.json`, templates, README.
-- **`.gitignore`** — Archivos ignorados para builds, dependencias, IDE y entorno.
-
-### Removed
-
-- `opencode/agents/requirements-analyst.md` — Integrado en `software-architect`.
-- `opencode/agents/architecture-reviewer.md` — Integrado en workflow de validacion.
-- `opencode/skills/` — Directorio de skills eliminado; contenido integrado en agentes.
-- `opencode/commands/new-blueprint.md` — Reemplazado por `init-software-architect`.
-- `opencode/commands/continue-blueprint.md` — Reemplazado por `init-software-architect`.
-- `opencode/commands/validate-blueprint.md` — Reemplazado por workflow interno.
-
-## [0.1.0] — 2026-07-23
-
-### Agregado
-
 #### Agentes
 
-- **`software-architect`** — Agente principal que convierte ideas incompletas en blueprints coherentes, trazables e implementables.
-- **`requirements-analyst`** — Subagente de solo lectura para diagnostico de requisitos faltantes.
-- **`architecture-reviewer`** — Subagente de solo lectura para revision independiente de arquitectura.
-
-#### Skills
-
-- **`requirements-discovery`** — Skill de 7 pasos para discovery.
-- **`software-blueprint`** — Skill que produce 13 entregables de arquitectura.
-- **`architecture-review`** — Skill de auditoria de 8 pasos.
+- **`software-architect`** — Agente principal que convierte ideas
+  incompletas en blueprints coherentes, trazables e implementables.
+- **`requirements-analyst`** — Subagente de solo lectura para diagnóstico
+  de requisitos faltantes.
+- **`architecture-reviewer`** — Subagente de solo lectura para revisión
+  independiente de arquitectura.
+- **`consistency-reviewer`** — Subagente determinista que revisa
+  consistencia del Software Blueprint. (0ed14cc)
+- **`context-builder`** — Subagente que prepara contexto ejecutable de una
+  tarea. (ec348d0, 398a509)
+- **`next-task`** — Agente determinista de selección de tareas.
+  (1e19e0a, 8742282)
+- **`task-planner`** — Agente de planificación que transforma un blueprint
+  en tareas DevFlow. (51bb221)
 
 #### Comandos
 
-- **`/new-blueprint`** — Inicia un flujo de blueprint.
-- **`/continue-blueprint`** — Reanuda un blueprint existente.
-- **`/validate-blueprint`** — Audita un blueprint.
+- **`/init-software-architect`** — Inicializa o continúa el diseño de
+  arquitectura con workflow de 12 fases. (1e19e0a)
+- **`/init-task-planner`** — Inicializa o continúa la planificación.
+- **`/init-next-task`** — Inicializa espacio de ejecución. (1e19e0a)
+- **`/select-next-task`** — Selección determinista de la siguiente tarea.
+  (8742282)
+- **`/prepare-task-run`** — Crea directorio del run y registra tarea.
+  (a27b1e6)
+- **`/build-task-context`** — Construye contexto para tarea explícita.
+- **`/build-next-task-context`** — Construye contexto para última tarea
+  seleccionada. (ebd61df)
+- **`/review-consistency`** — Revisión independiente de consistencia.
+  (0ed14cc)
+
+#### Templates y herramientas
+
+- **`templates/shared/tools/timestamp.mjs`** — Herramienta determinista
+  compartida para timestamps. (faccc5d)
+- **`templates/software-architect/`** — project-state.json (12 fases),
+  workflow.md, doc-templates/ (12 templates). (600b7fc, 0ed88a7)
+- **`templates/software-architect/tools/validate-blueprint.mjs`** —
+  Validador determinista del Software Blueprint. (282402a)
+- **`templates/software-architect/project-state.schema.json`** — Schema
+  formal para project-state.json. (3241aa7)
+- **`templates/task-planner/`** — 9 archivos JSON, task-template.md,
+  workflow, validate-plan.mjs, update-timestamps.mjs,
+  build-epic-graph.mjs.
+- **`templates/next-task/`** — execution-state.json, selection.json,
+  schemas, validate-next-task.mjs.
+- **`templates/context-builder/`** — Schemas de contexto, templates, README.
+
+#### Scripts
+
+- **`install.sh`** — Instala agentes, comandos y templates via symlinks.
+- **`uninstall.sh`** — Revierte la instalación.
+- **`create-project.sh`** — Crea proyectos desde scaffold.json.
+- **`validate.sh`** — Validación estructural del repositorio.
+- **`generate-scaffold.sh`** — Genera scaffold.json desde templates.
+  (28b3f57, cd68241)
 
 #### Reglas Compartidas
 
 - **`general.md`**, **`git-policy.md`**, **`documentation-policy.md`**.
 
-#### Plantilla de Proyecto
-
-- **`software-design-project/`** — Scaffold con 5 fases.
-
-#### Scripts
-
-- **`install.sh`**, **`uninstall.sh`**, **`create-project.sh`**, **`validate.sh`**.
-
 #### Infraestructura
 
-- **`Makefile`**, **`tests/test-scripts.sh`**, **`opencode.example.json`**.
+- **Makefile**, **tests/test-scripts.sh**, **opencode.example.json**,
+  **.gitignore**, **LICENSE**, **CONTRIBUTING.md**.
+
+### Changed
+
+- **Estructura del repositorio** — Agentes, comandos y plantillas movidos
+  a `opencode/` y `templates/`. Directorios de trabajo cambiados a
+  `.devflow/[agente]/`. (0b6b924, 51bb221)
+- **`install.sh`** — Ahora instala templates via symlinks.
+- **`validate.sh`** — Validación de estructura, JSON, frontmatter y
+  consistencia.
+- **`test-scripts.sh`** — Verifica symlinks, creación de proyectos y estado
+  inicial.
+- **README reescrito** — Documenta arquitectura actual con todos los
+  agentes, comandos y estructura. (92b85dd)
+- **`workflow.md`** — Paths cambiados de relativos a absolutos
+  (`.devflow/software-architect/docs/`). (28bf30c)
+- **`project-state.json.documents.path`** — Eliminado; las rutas se
+  computan desde un mapping fijo. (28bf30c)
+- **BACKLOG.md** — Creado con items iniciales y formato color-coded.
+  (7a13121, 92b85dd)
+- **`consistency-reviewer` integrado en fase 11** — software-architect lo
+  invoca automáticamente; veredicto BLOCKED impide avanzar. (a43953c)
+- **`next-task`** — Cambiado de `mode: subagent` a `mode: primary`.
+- **README, CHANGELOG y BACKLOG** — Creados y actualizados. (92b85dd)
+
+### Removed
+
+- `opencode/agents/requirements-analyst.md` — Eliminado (no integrado en
+  otro agente).
+- `opencode/agents/architecture-reviewer.md` — Eliminado; reemplazado por
+  `consistency-reviewer`.
+- `opencode/skills/` — Directorio de skills eliminado.
+- `opencode/commands/new-blueprint.md` — Reemplazado por
+  `init-software-architect`.
+- `opencode/commands/continue-blueprint.md` — Reemplazado por
+  `init-software-architect`.
+- `opencode/commands/validate-blueprint.md` — Sin reemplazo directo.
