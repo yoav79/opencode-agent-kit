@@ -105,7 +105,7 @@ Convierte una idea incompleta en un blueprint coherente, trazable y listo para e
   13. Software Blueprint — Documento consolidado (sintesis)
   14. Consistency Review — Revision final, veredicto (gate final)
 
-**Permisos:** Puede editar archivos en `.devflow/software-architect/`. **No puede** hacer `git commit` ni `git push`.
+**Permisos:** Edición restringida a `.devflow/software-architect/`. Puede ejecutar el validador determinista y el timestamp tool. **No puede** hacer `git commit` ni `git push`.
 
 ### `task-planner` — Agente de Planificacion
 
@@ -167,23 +167,24 @@ manualmente.
 
 - **Modo:** subagent
 - **Temperatura:** 0
-- **Entrada:** `.devflow/software-architect/` (solo lectura)
-- **Salida:** `.devflow/software-architect/review/review-report.md`
+- **Entrada:** `.devflow/software-architect/docs/` (solo lectura, docs 1-13)
+- **Salida:** `.devflow/software-architect/drafts/14-consistency-review.md` (promovido a docs/ por el orquestador si es APPROVED)
 
-Permisos: Solo lectura sobre el blueprint. No modifica documentos.
+Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 
 ## Comandos
 
 | Comando | Agente | Descripcion |
 |---------|--------|-------------|
 | `/init-software-architect` | software-architect | Inicializa o continua el diseno de arquitectura del proyecto |
+| `/compile-blueprint` | blueprint-compiler | Compila drafts de Technical Requirements o Software Blueprint |
+| `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
 | `/init-next-task` | next-task | Inicializa el espacio de ejecucion (`.devflow/execution/`) |
 | `/select-next-task` | next-task | Selecciona la siguiente tarea disponible |
 | `/prepare-task-run` | next-task | Crea el directorio del run y registra la tarea en el estado |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
 | `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
-| `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 
 ## Estructura del Repositorio
 

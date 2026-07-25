@@ -21,6 +21,7 @@ Las plantillas globales están en:
 Archivos requeridos:
 
 - `project-state.json`
+- `project-state.schema.json`
 - `workflow.md`
 
 Plantillas de documento disponibles en:
@@ -39,9 +40,12 @@ archivo falta.
 
    - Directorio destino: `.devflow/software-architect/`
    - Estado destino: `.devflow/software-architect/project-state.json`
+   - Schema destino: `.devflow/software-architect/project-state.schema.json`
    - Workflow destino: `.devflow/software-architect/workflow.md`
    - Plantilla de estado:
      `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.json`
+   - Plantilla de schema:
+     `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.schema.json`
    - Plantilla de workflow:
      `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/workflow.md`
 
@@ -52,6 +56,7 @@ archivo falta.
    ```text
    .devflow/software-architect/
    ├── project-state.json
+   ├── project-state.schema.json
    ├── workflow.md
    ├── archive/
    ├── decisions/
@@ -65,16 +70,19 @@ archivo falta.
    - Crea `.devflow/software-architect/docs/` si no existe.
    - Si `.devflow/software-architect/project-state.json` no existe, cópialo desde la
      plantilla global.
+   - Si `.devflow/software-architect/project-state.schema.json` no existe, cópialo desde la
+     plantilla global.
    - Si `.devflow/software-architect/workflow.md` no existe, cópialo desde la plantilla
      global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
 6. Cuando se cree `.devflow/software-architect/project-state.json` por primera vez:
 
-   - Sustituye `changeLog[0].date` ejecutando:
+   - Obtén el timestamp actual ejecutando:
      ```
-     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/software-architect/project-state.json
+     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
      ```
+   - Asigna ese valor a `project.createdAt`, `project.updatedAt` y `changeLog[0].date`.
    - Conserva el resto de la estructura sin modificaciones.
    - No escribas fechas manualmente. Usa siempre el timestamp tool.
 

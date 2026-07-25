@@ -29,7 +29,6 @@ echo "=== Testing create-project ==="
 [ -d "$PROJECT_DIR/.devflow/software-architect/decisions" ] || { echo "FAIL: decisions/ not created"; exit 1; }
 [ -d "$PROJECT_DIR/.devflow/software-architect/docs" ] || { echo "FAIL: docs/ not created"; exit 1; }
 [ -d "$PROJECT_DIR/.devflow/software-architect/drafts" ] || { echo "FAIL: drafts/ not created"; exit 1; }
-[ -d "$PROJECT_DIR/.devflow/software-architect/review" ] || { echo "FAIL: review/ not created"; exit 1; }
 [ -d "$PROJECT_DIR/.devflow/software-architect/archive" ] || { echo "FAIL: archive/ not created"; exit 1; }
 [ -f "$PROJECT_DIR/.devflow/software-architect/workflow.md" ] || { echo "FAIL: workflow.md not created"; exit 1; }
 

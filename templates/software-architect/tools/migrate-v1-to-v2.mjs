@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { access, copyFile, readFile, rename, writeFile, readdir } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -51,7 +52,68 @@ const DOC_KEY_TO_FILENAME = {
   '14_consistency_review': '14-consistency-review.md',
 };
 
+const V1_TO_V2_FILENAME = {
+  '02-executive-definition.md': '02-product-requirements.md',
+  '03-users-and-processes.md': '03-application-flow.md',
+  '04-module-catalog.md': '05-module-catalog.md',
+  '05-functional-requirements.md': '06-functional-requirements.md',
+  '06-data-and-integrations.md': '07-backend-schema.md',
+  '07-solution-architecture.md': '08-solution-architecture.md',
+  '08-technology-stack.md': '09-technology-stack.md',
+  '09-security-and-nfr.md': '10-security-and-nfr.md',
+  '10-delivery-roadmap.md': '12-delivery-roadmap.md',
+  '11-consistency-review.md': '14-consistency-review.md',
+};
+
+const ALL_V2_PHASE_KEYS = [
+  '1_discovery',
+  '2_product_requirements',
+  '3_application_flow',
+  '4_uiux_brief',
+  '5_module_catalog',
+  '6_functional_requirements',
+  '7_backend_schema',
+  '8_solution_architecture',
+  '9_technology_stack',
+  '10_security_and_nfr',
+  '11_technical_requirements',
+  '12_delivery_roadmap',
+  '13_software_blueprint',
+  '14_consistency_review',
+];
+
 const NEW_DOC_KEYS = ['04_uiux_brief', '11_technical_requirements'];
+
+const V1_PHASE_ORDER = [
+  '1_discovery',
+  '2_executive_definition',
+  '3_users_and_processes',
+  '4_module_catalog',
+  '5_functional_requirements',
+  '6_data_and_integrations',
+  '7_architecture',
+  '8_technology_stack',
+  '9_security_and_nfr',
+  '10_delivery_roadmap',
+  '11_consistency_review',
+  '12_final_document',
+];
+
+function v1PhaseIndex(oldKey) {
+  return V1_PHASE_ORDER.indexOf(oldKey);
+}
+
+function getNow() {
+  const timestampTool = path.join(
+    process.env.XDG_CONFIG_HOME || path.join(process.env.HOME || '~', '.config'),
+    'opencode', 'templates', 'shared', 'tools', 'timestamp.mjs'
+  );
+  try {
+    return execSync(`node "${timestampTool}" now`, { encoding: 'utf8', timeout: 5000 }).trim();
+  } catch {
+    return new Date().toISOString();
+  }
+}
 
 async function fileExists(p) {
   try { await access(p); return true; } catch { return false; }
@@ -87,15 +149,15 @@ async function main() {
   await copyFile(stateFile, stateFile + '.v1');
   console.log('Backup creado: project-state.json.v1');
 
-  // Map phases
+  // Initialize all v2 phases as pending
   const newPhases = {};
+  for (const key of ALL_V2_PHASE_KEYS) {
+    newPhases[key] = 'pending';
+  }
+  // Map old phases over the new ones
   for (const [oldKey, status] of Object.entries(state.phases || {})) {
     const newKey = PHASE_MAP[oldKey];
     if (newKey) newPhases[newKey] = status;
-  }
-  // Add new phases with pending
-  for (const key of Object.values(PHASE_MAP)) {
-    if (!(key in newPhases)) newPhases[key] = 'pending';
   }
 
   // Map documents
@@ -108,12 +170,25 @@ async function main() {
     if (!(key in newDocs)) newDocs[key] = { status: 'pending', approvedAt: null };
   }
 
+  // Map currentPhase intelligently
+  let v1CurrentPhase = state.project?.currentPhase || 1;
+  const v1PhaseName = V1_PHASE_ORDER[v1CurrentPhase - 1];
+  let newCurrentPhase = 1;
+  if (v1PhaseName && PHASE_MAP[v1PhaseName]) {
+    const v2Name = PHASE_MAP[v1PhaseName];
+    newCurrentPhase = ALL_V2_PHASE_KEYS.indexOf(v2Name) + 1;
+  }
+  if (newCurrentPhase < 1) newCurrentPhase = 1;
+  if (newCurrentPhase > 14) newCurrentPhase = 14;
+
+  const now = getNow();
+
   // Build new state
   const newState = {
     schemaVersion: 2,
     project: {
       ...state.project,
-      currentPhase: Math.min(state.project?.currentPhase || 1, 14),
+      currentPhase: newCurrentPhase,
     },
     phases: newPhases,
     confirmed: state.confirmed || {},
@@ -166,7 +241,7 @@ async function main() {
     changeLog: [
       ...(state.changeLog || []),
       {
-        date: new Date().toISOString(),
+        date: now,
         action: 'Migración v1 → v2 completada',
         details: 'schemaVersion actualizado a 2, fases re-mapeadas a 14, nuevas secciones agregadas.',
       },
@@ -176,25 +251,22 @@ async function main() {
   await writeFile(stateFile, JSON.stringify(newState, null, 2) + '\n', 'utf8');
   console.log('project-state.json actualizado a schemaVersion 2');
 
-  // Rename docs
+  // Rename docs using explicit filename mapping
   if (await fileExists(docsDir)) {
     const files = await readdir(docsDir);
     for (const file of files) {
       if (!file.endsWith('.md')) continue;
-      const oldKey = Object.entries(DOC_KEY_TO_FILENAME).find(([, v]) => v === file)?.[0];
-      if (oldKey) continue;
-      const oldDocKey = Object.entries(DOC_MAP).find(([, v]) => DOC_KEY_TO_FILENAME[v] === file)?.[0];
-      if (!oldDocKey) continue;
-      const newFilename = DOC_KEY_TO_FILENAME[DOC_MAP[oldDocKey]];
-      if (newFilename && newFilename !== file) {
-        const oldPath = path.join(docsDir, file);
-        const newPath = path.join(docsDir, newFilename);
-        if (await fileExists(newPath)) {
-          console.log(`  ${file} → ${newFilename} (ya existe, saltando)`);
-        } else {
-          await rename(oldPath, newPath);
-          console.log(`  ${file} → ${newFilename}`);
-        }
+
+      const newFilename = V1_TO_V2_FILENAME[file];
+      if (!newFilename || newFilename === file) continue;
+
+      const oldPath = path.join(docsDir, file);
+      const newPath = path.join(docsDir, newFilename);
+      if (await fileExists(newPath)) {
+        console.log(`  ${file} → ${newFilename} (ya existe, saltando)`);
+      } else {
+        await rename(oldPath, newPath);
+        console.log(`  ${file} → ${newFilename}`);
       }
     }
   }

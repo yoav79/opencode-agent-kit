@@ -6,13 +6,13 @@
 
 ## Inputs (solo lectura)
 
-- `.devflow/software-architect/docs/*.md` (todos los aprobados)
-- `.devflow/software-architect/drafts/SOFTWARE-BLUEPRINT.md` (candidato)
+- `.devflow/software-architect/docs/*.md` (todos los aprobados, 1-13)
+- `.devflow/software-architect/docs/SOFTWARE-BLUEPRINT.md` (entregable fase 13)
 - `.devflow/software-architect/project-state.json`
 
 ## Outputs
 
-- `.devflow/software-architect/review/review-report.md`
+- `.devflow/software-architect/drafts/14-consistency-review.md`
 
 ## Return codes
 
@@ -23,7 +23,7 @@
 ## Correcciones respecto a v1
 
 - Ya NO exige `14-consistency-review.md` como input (era circular)
-- Ya NO exige `SOFTWARE-BLUEPRINT.md` en `docs/` (está en `drafts/` como candidato)
+- Ya NO exige `SOFTWARE-BLUEPRINT.md` en `drafts/` (está en `docs/` como aprobado)
 - Ya NO busca `documents.*.path` (campo eliminado del estado)
 
 ## Prohibiciones

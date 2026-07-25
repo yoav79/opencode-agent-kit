@@ -21,15 +21,24 @@ required_paths = [
     "Makefile",
     "opencode/AGENTS.md",
     "opencode/agents/software-architect.md",
+    "opencode/agents/blueprint-compiler.md",
+    "opencode/agents/consistency-reviewer.md",
     "opencode/agents/task-planner.md",
     "opencode/commands/init-software-architect.md",
+    "opencode/commands/compile-blueprint.md",
+    "opencode/commands/review-consistency.md",
     "opencode/commands/init-task-planner.md",
     "opencode/rules/general.md",
     "opencode/rules/git-policy.md",
     "opencode/rules/documentation-policy.md",
     "templates/software-architect/project-state.json",
+    "templates/software-architect/project-state.schema.json",
     "templates/software-architect/workflow.md",
     "templates/software-architect/scaffold.json",
+    "templates/software-architect/tools/validate-blueprint.mjs",
+    "templates/software-architect/tools/migrate-v1-to-v2.mjs",
+    "templates/software-architect/contracts/blueprint-compiler.md",
+    "templates/software-architect/contracts/consistency-reviewer.md",
     "templates/task-planner/project-state.json",
     "templates/task-planner/workflow.md",
     "templates/task-planner/scaffold.json",
@@ -127,6 +136,11 @@ for agent_dir in sorted(root.glob("templates/*/")):
                 errors.append(f"scaffold.json references missing file {f}: {scaffold_file.relative_to(root)}")
     except Exception as exc:
         errors.append(f"Error reading {scaffold_file.relative_to(root)}: {exc}")
+
+sa_doc_templates = list((root / "templates/software-architect/doc-templates").glob("*.md"))
+main_templates = [t for t in sa_doc_templates if t.name not in ("SKILL.md",)]
+if len(main_templates) != 14:
+    errors.append(f"software-architect doc-templates has {len(main_templates)} files, expected 14")
 
 if errors:
     print("Validation failed:")

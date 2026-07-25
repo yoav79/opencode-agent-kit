@@ -2,13 +2,13 @@
   "directory": ".devflow/software-architect",
   "files": [
     "project-state.json",
+    "project-state.schema.json",
     "workflow.md"
   ],
   "dirs": [
     "docs",
     "drafts",
     "decisions",
-    "review",
     "archive"
   ],
   "command": "/init-software-architect",

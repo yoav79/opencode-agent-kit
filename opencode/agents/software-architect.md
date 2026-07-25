@@ -6,12 +6,19 @@ steps: 50
 permission:
   "*": deny
   read: allow
-  edit: allow
-  glob: allow
-  grep: allow
+  edit:
+    ".devflow/software-architect/**": allow
+    "*": deny
+  glob:
+    ".devflow/software-architect/**": allow
+    "*": deny
+  grep:
+    ".devflow/software-architect/**": allow
+    "*": deny
   bash:
     "*": deny
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
+    "node $HOME/.config/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
   task: allow
   webfetch: ask
   websearch: ask
@@ -123,17 +130,18 @@ no es "Principal":
 3. Verifica que los inputs requeridos por el contrato existen y están approved
    en project-state.json.
 4. Invoca al subagente mediante `task`:
-   - Para `blueprint-compiler`: invoca la tarea `compile-blueprint`
-   - Para `consistency-reviewer`: invoca la tarea `review-consistency`
+    - Para `blueprint-compiler` en fase 11: invoca `compile-blueprint technical-requirements`
+    - Para `blueprint-compiler` en fase 13: invoca `compile-blueprint software-blueprint`
+    - Para `consistency-reviewer`: invoca la tarea `review-consistency`
 5. Lee la salida del subagente.
 
 ### Manejo de resultados
 
 | Subagente | Códigos | Acción del orquestador |
 |-----------|---------|----------------------|
-| blueprint-compiler | GENERATED | Revisa los drafts en drafts/. Si cumplen el checklist de la plantilla, promuévelos a docs/ y marca la fase como approved. |
+| blueprint-compiler | GENERATED | Revisa el draft en drafts/. Si cumple el checklist de la plantilla, promuévelo a docs/ y marca la fase como approved. |
 | blueprint-compiler | BLOCKED | Informa al usuario qué inputs faltan o qué contradicciones impidieron la compilación. No avances. |
-| consistency-reviewer | APPROVED | Promueve drafts/SOFTWARE-BLUEPRINT.md a docs/. Crea docs/14-consistency-review.md con resumen del veredicto. Marca fase 14 como approved. El blueprint está terminado. |
+| consistency-reviewer | APPROVED | Promueve drafts/14-consistency-review.md a docs/14-consistency-review.md. Marca fase 14 como approved. El blueprint está terminado. |
 | consistency-reviewer | MINOR_ISSUES | Corrige los hallazgos WARNING en los documentos correspondientes. Re-invoca al revisor. Si ahora es APPROVED, continúa. |
 | consistency-reviewer | BLOCKED | Informa al usuario los hallazgos bloqueantes. Marca fase 14 como blocked. No avances. |
 

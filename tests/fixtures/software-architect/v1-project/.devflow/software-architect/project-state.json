@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "v1-test-project",
+    "workingTitle": "v1-test-project",
+    "description": "Test project for v1 migration",
+    "status": "in_progress",
+    "currentPhase": 5,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  "phases": {
+    "1_discovery": "approved",
+    "2_executive_definition": "approved",
+    "3_users_and_processes": "approved",
+    "4_module_catalog": "approved",
+    "5_functional_requirements": "approved",
+    "6_data_and_integrations": "pending",
+    "7_architecture": "pending",
+    "8_technology_stack": "pending",
+    "9_security_and_nfr": "pending",
+    "10_delivery_roadmap": "pending",
+    "11_consistency_review": "pending",
+    "12_final_document": "pending"
+  },
+  "confirmed": {
+    "problem": "Test problem",
+    "currentOperation": "Manual process",
+    "targetUsers": ["admin"],
+    "buyer": "CTO",
+    "beneficiaries": ["team"],
+    "objectives": ["Automate X"],
+    "successCriteria": ["X works"],
+    "constraints": ["Budget"],
+    "scope": ["Feature A"],
+    "outOfScope": ["Feature B"]
+  },
+  "modules": [{"name": "Core", "objective": "Core module", "users": "admin", "responsibilities": "Auth", "functions": ["login"], "inputs": ["credentials"], "outputs": ["token"], "dependencies": [], "permissions": "admin", "priority": "high"}],
+  "functionalRequirements": [{"id": "REQ-001", "description": "User can login", "module": "Core", "priority": "high", "acceptanceCriteria": ["Login works"]}],
+  "actors": [{"name": "Admin", "role": "user", "description": "System admin"}],
+  "processes": [{"name": "Login", "description": "User logs in", "actors": ["Admin"]}],
+  "entities": [{"name": "User", "description": "User entity", "attributes": ["email"], "relations": []}],
+  "integrations": [{"system": "Email", "type": "API", "protocol": "REST", "frequency": "real-time", "volume": "low"}],
+  "architecture": {"status": "pending", "style": null, "description": null, "layers": [], "principles": []},
+  "technologyStack": {"status": "pending", "approvedStack": {}},
+  "approvedDecisions": ["Use PostgreSQL"],
+  "assumptions": [{"assumption": "Cloud available", "status": "approved"}],
+  "risks": [{"risk": "Budget", "impact": "high", "mitigation": "Weekly review"}],
+  "openQuestions": ["What cloud provider?"],
+  "pendingApprovals": [],
+  "documents": {
+    "01_discovery": {"status": "approved", "approvedAt": "2024-01-10T00:00:00.000Z"},
+    "02_executive_definition": {"status": "approved", "approvedAt": "2024-01-12T00:00:00.000Z"},
+    "03_users_and_processes": {"status": "approved", "approvedAt": "2024-01-14T00:00:00.000Z"},
+    "04_module_catalog": {"status": "approved", "approvedAt": "2024-01-15T00:00:00.000Z"},
+    "05_functional_requirements": {"status": "approved", "approvedAt": "2024-01-15T00:00:00.000Z"},
+    "06_data_and_integrations": {"status": "pending", "approvedAt": null},
+    "07_solution_architecture": {"status": "pending", "approvedAt": null},
+    "08_technology_stack": {"status": "pending", "approvedAt": null},
+    "09_security_and_nfr": {"status": "pending", "approvedAt": null},
+    "10_delivery_roadmap": {"status": "pending", "approvedAt": null},
+    "11_consistency_review": {"status": "pending", "approvedAt": null},
+    "12_final_document": {"status": "pending", "approvedAt": null}
+  },
+  "changeLog": [
+    {"date": "2024-01-01T00:00:00.000Z", "action": "Blueprint inicializado", "details": "Estructura inicial creada."}
+  ]
+}

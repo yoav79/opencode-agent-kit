@@ -59,8 +59,12 @@ remove_managed_link() {
 
 for path in \
   "$CONFIG_DIR/agents/software-architect.md" \
+  "$CONFIG_DIR/agents/blueprint-compiler.md" \
+  "$CONFIG_DIR/agents/consistency-reviewer.md" \
   "$CONFIG_DIR/agents/task-planner.md" \
   "$CONFIG_DIR/commands/init-software-architect.md" \
+  "$CONFIG_DIR/commands/compile-blueprint.md" \
+  "$CONFIG_DIR/commands/review-consistency.md" \
   "$CONFIG_DIR/commands/init-task-planner.md" \
   "$CONFIG_DIR/templates/software-architect" \
   "$CONFIG_DIR/templates/task-planner" \

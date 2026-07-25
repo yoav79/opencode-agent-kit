@@ -13,12 +13,12 @@ ejecutarse manualmente para auditar el blueprint en cualquier momento.
 
 ## Precondiciones
 
-Debe existir `.devflow/software-architect/` con al menos `project-state.json`
-y los documentos de las fases completadas.
+Debe existir `.devflow/software-architect/` con `project-state.json`,
+todos los documentos de las fases 1-13, y `docs/SOFTWARE-BLUEPRINT.md`.
 
 ## Salida
 
-Escribe `.devflow/software-architect/review/review-report.md` con:
+Escribe `.devflow/software-architect/drafts/14-consistency-review.md` con:
 
 - Hallazgos clasificados por gravedad (`BLOCKING`, `WARNING`, `INFO`)
 - Etapas de revisión: estructura, estado, coherencia, contradicciones,
@@ -28,8 +28,7 @@ Escribe `.devflow/software-architect/review/review-report.md` con:
 ## Notas
 
 - Este agente es de solo lectura. No modifica ningún documento fuente.
-- El reporte se escribe en `review/` para no mezclarse con los documentos
-  del blueprint.
+- El reporte se escribe en `drafts/` para que el orquestador lo revise y promueva.
 - El software-architect no debería avanzar a la fase final si el veredicto
   es `BLOCKED`.
 

@@ -35,6 +35,23 @@ const DOC_KEY_TO_FILENAME = {
   '14_consistency_review': '14-consistency-review.md',
 };
 
+const DOC_KEY_TO_PHASE_KEY = {
+  '01_discovery': '1_discovery',
+  '02_product_requirements': '2_product_requirements',
+  '03_application_flow': '3_application_flow',
+  '04_uiux_brief': '4_uiux_brief',
+  '05_module_catalog': '5_module_catalog',
+  '06_functional_requirements': '6_functional_requirements',
+  '07_backend_schema': '7_backend_schema',
+  '08_solution_architecture': '8_solution_architecture',
+  '09_technology_stack': '9_technology_stack',
+  '10_security_and_nfr': '10_security_and_nfr',
+  '11_technical_requirements': '11_technical_requirements',
+  '12_delivery_roadmap': '12_delivery_roadmap',
+  '13_software_blueprint': '13_software_blueprint',
+  '14_consistency_review': '14_consistency_review',
+};
+
 const DOCS_DIR = '.devflow/software-architect/docs';
 
 function docFile(root, docKey) {
@@ -243,19 +260,23 @@ function validateProjectState(state, statePath, root) {
   }
 }
 
-function validateDocExistence(state, root) {
+async function validateDocExistence(state, root) {
   if (!isObject(state?.documents)) return;
 
+  const checks = [];
   for (const key of Object.keys(state.documents)) {
     const filePath = docFile(root, key);
     if (!filePath) continue;
-
-    fileExists(filePath).then((ok) => {
-      if (!ok) {
-        addError('DOCUMENT_MISSING', `Falta ${rel(filePath, root)}.`, rel(filePath, root), key);
-      }
-    });
+    checks.push(
+      fileExists(filePath).then((ok) => {
+        if (!ok) {
+          const filename = DOC_KEY_TO_FILENAME[key] || key;
+          addError('DOCUMENT_MISSING', `Falta ${DOCS_DIR}/${filename}.`, `${DOCS_DIR}/${filename}`, key);
+        }
+      })
+    );
   }
+  await Promise.all(checks);
 }
 
 async function validateDocHeadings(state, root, templatesDir) {
@@ -286,7 +307,7 @@ async function validateDocHeadings(state, root, templatesDir) {
     for (const heading of templateHeadings) {
       if (heading.startsWith('_') && heading.endsWith('_')) continue;
       if (!docHeadings.includes(heading)) {
-        addError('SECTION_MISSING', `${docFile} no contiene la sección requerida "${heading}".`, docFile, heading);
+        addError('SECTION_MISSING', `${DOCS_DIR}/${filename} no contiene la sección requerida "${heading}".`, `${DOCS_DIR}/${filename}`, heading);
       }
     }
   }
@@ -300,9 +321,9 @@ async function validatePhaseConsistency(state, root) {
 
     const filePath = docFile(root, key);
     if (!filePath) continue;
-    const relPath = rel(filePath, root);
+    const relPath = `${DOCS_DIR}/${DOC_KEY_TO_FILENAME[key] || key}`;
 
-    const phaseKey = key;
+    const phaseKey = DOC_KEY_TO_PHASE_KEY[key] || key;
 
     const phaseStatus = state.phases[phaseKey];
     const docExists = await fileExists(filePath);
@@ -313,6 +334,36 @@ async function validatePhaseConsistency(state, root) {
 
     if (docExists && doc.status === 'pending' && phaseStatus === 'approved') {
       addWarning('DOC_STATUS_STALE', `${relPath} existe pero su estado sigue pending en documents.`, relPath, `${key}.status`);
+    }
+  }
+}
+
+async function validatePhase13FinalDoc(state, root) {
+  if (!isObject(state?.phases) || !isObject(state?.documents)) return;
+
+  const phase13Status = state.phases['13_software_blueprint'];
+  if (!phase13Status || phase13Status !== 'approved') return;
+
+  const blueprintPath = docFile(root, '13_software_blueprint');
+  if (blueprintPath) {
+    const exists = await fileExists(blueprintPath);
+    if (!exists) {
+      addError('BLUEPRINT_MISSING', 'Fase 13 está approved pero falta SOFTWARE-BLUEPRINT.md en docs/.', `${DOCS_DIR}/SOFTWARE-BLUEPRINT.md`, '13_software_blueprint');
+    }
+  }
+}
+
+async function validatePhase14FinalDoc(state, root) {
+  if (!isObject(state?.phases) || !isObject(state?.documents)) return;
+
+  const phase14Status = state.phases['14_consistency_review'];
+  if (!phase14Status || phase14Status !== 'approved') return;
+
+  const reviewPath = docFile(root, '14_consistency_review');
+  if (reviewPath) {
+    const exists = await fileExists(reviewPath);
+    if (!exists) {
+      addError('REVIEW_MISSING', 'Fase 14 está approved pero falta 14-consistency-review.md en docs/.', `${DOCS_DIR}/14-consistency-review.md`, '14_consistency_review');
     }
   }
 }
@@ -405,7 +456,7 @@ async function validateUniqueReqIds(state, root) {
   const seen = new Set();
   for (const id of ids) {
     if (seen.has(id)) {
-      addError('REQUIREMENT_ID_DUPLICATED', `ID ${id} aparece más de una vez en 05-functional-requirements.md.`, rel(reqPath, root), id);
+      addError('REQUIREMENT_ID_DUPLICATED', `ID ${id} aparece más de una vez en 06-functional-requirements.md.`, rel(reqPath, root), id);
     }
     seen.add(id);
   }
@@ -474,9 +525,11 @@ async function main() {
   const state = await readJson(stateFile, 'project-state.json', root);
 
   validateProjectState(state, stateFile, root);
-  validateDocExistence(state, root);
+  await validateDocExistence(state, root);
   await validateDocHeadings(state, root, templatesDir);
   await validatePhaseConsistency(state, root);
+  await validatePhase13FinalDoc(state, root);
+  await validatePhase14FinalDoc(state, root);
   await validateApprovalGates(state);
   await validateADRs(state, root);
   await validateNoOrphanDocs(state, root);
