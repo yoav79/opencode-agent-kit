@@ -85,6 +85,201 @@ agente, más condición de salida en `workflow.md`.
 
 ## software-architect
 
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Definir contrato canónico del workflow v2
+
+Formalizar las 14 fases, sus nombres, entradas, entregables, dependencias,
+aprobaciones y criterios de salida. La aprobación final debe ser un gate de la
+última fase, no una fase adicional sin artefacto.
+
+- **P:** alta | **E:** M | **A:** workflow, docs
+- **Criterio de salida:** existe una tabla canónica que sirve como única
+  referencia para estado, schema, scaffold, agentes y validador.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Refactorizar project-state a schemaVersion 2
+
+Actualizar `project-state.json` y `project-state.schema.json` con las nuevas
+fases, documentos, estados y datos estructurados para Product Requirements,
+Application Flow, UI/UX Brief, Backend Schema y Technical Requirements.
+
+- **P:** alta | **E:** L | **A:** template, schema
+- **Criterio de salida:** el estado inicial valida contra el schema y ambos
+  representan exactamente el contrato canónico de 14 fases.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Crear templates de documentos del workflow v2
+
+Crear o reemplazar los templates para Product Requirements, Application Flow,
+UI/UX Brief, Backend Schema, Technical Requirements, Consistency Review y el
+Software Blueprint consolidado. Ajustar los templates existentes al nuevo
+orden y contrato de trazabilidad.
+
+- **P:** alta | **E:** L | **A:** template
+- **Criterio de salida:** cada fase tiene un template con entradas, secciones
+  obligatorias, checklist y entregable inequívoco.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Refactorizar software-architect como orquestador
+
+Conservar en el agente principal la entrevista, continuidad conversacional,
+gestión de decisiones, actualización del estado, aprobaciones y delegación.
+Extraer la compilación semántica y mantener una única autoridad sobre
+`project-state.json`.
+
+- **P:** alta | **E:** L | **A:** agente
+- **Criterio de salida:** el agente principal es la única interfaz con el
+  usuario y el único componente que cambia fases, aprobaciones y estado.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Definir contrato de interfaz para subagentes
+
+Antes de construir compilador y revisor, formalizar un contrato escrito que
+defina para cada uno: documentos de entrada, formato de salida, códigos de
+retorno (`GENERATED`/`BLOCKED`), límite de permisos, y qué zonas del sistema
+de archivos puede modificar. Esto evita contratos incompatibles entre
+componentes.
+
+- **P:** alta | **E:** S | **A:** workflow, docs
+- **Criterio de salida:** existe un documento de interfaz que sirve como
+  especificación para construir ambos subagentes sin ambigüedad.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Crear subagente blueprint-compiler y comando /compile-blueprint
+
+Crear un subagente con temperatura `0` que lea documentos aprobados y genere
+los drafts de `11-technical-requirements.md` y `SOFTWARE-BLUEPRINT.md`. Debe
+responder con `GENERATED` o `BLOCKED`, sin interactuar con el usuario,
+modificar documentos fuente ni actualizar el estado.
+Crear también el comando `/compile-blueprint` para invocación independiente
+y pruebas, análogo a `/review-consistency`.
+
+- **P:** alta | **E:** M | **A:** agente, comando
+- **Criterio de salida:** el compilador solo escribe en los drafts autorizados,
+  se bloquea cuando faltan entradas, y el comando permite probarlo sin el
+  agente principal.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Corregir consistency-reviewer para el workflow v2
+
+Mover la revisión después de generar el Blueprint candidato y eliminar sus
+precondiciones circulares. No debe exigir su propio documento de salida ni
+usar `documents.*.path`, campo eliminado del estado. Debe revisar documentos
+aprobados y el Blueprint candidato sin modificar fuentes.
+
+- **P:** alta | **E:** M | **A:** agente, comando
+- **Criterio de salida:** un veredicto `BLOCKED` impide la aprobación final y
+  el revisor no depende de artefactos que todavía no pueden existir.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Actualizar validate-blueprint.mjs para workflow v2
+
+Actualizar fases, mappings, documentos, gates y reglas de trazabilidad.
+Validar relaciones entre Product Requirements, Application Flow, requisitos
+funcionales, Backend Schema, arquitectura y Technical Requirements.
+
+- **P:** alta | **E:** L | **A:** tool, test
+- **Criterio de salida:** el validador acepta un fixture v2 completo, rechaza
+  fixtures inconsistentes y no conserva mappings del workflow v1.
+
+</div>
+
+<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Agregar pruebas end-to-end del software-architect
+
+Cubrir inicialización, reanudación, aprobación pendiente, compilador
+bloqueado, revisión con warnings, revisión bloqueada y aprobación final.
+Incluir pruebas de permisos para confirmar que los subagentes no modifican
+estado ni documentos fuente.
+
+- **P:** alta | **E:** L | **A:** test
+- **Criterio de salida:** el workflow completo y sus gates se verifican con
+  fixtures reproducibles sin requerir una conversación real.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Definir migración de proyectos schemaVersion 1
+
+Definir si los proyectos existentes con 12 fases se migrarán a v2 o si el
+nuevo workflow aplicará solo a proyectos nuevos. Si se implementa migración,
+debe preservar decisiones, aprobaciones y documentos sin reinterpretarlos
+silenciosamente.
+
+- **P:** media | **E:** M | **A:** tool, schema, docs
+- **Criterio de salida:** existe una política explícita y, cuando corresponda,
+  una migración v1 a v2 validable y reversible.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Agregar directorio `review/` al scaffold
+
+Actualmente el revisor crea `review/` manualmente si no existe. Debe ser
+parte de los directorios explícitos del scaffold junto con `drafts/`,
+`decisions/` y `archive/`.
+
+- **P:** media | **E:** S | **A:** template, script
+- **Criterio de salida:** el scaffold lista `review` en `dirs`, el comando
+  init lo crea, y `test-scripts.sh` lo verifica.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Documentar política de drafts vs docs en workflow v2
+
+Establecer regla explícita: el compilador y el revisor escriben únicamente en
+`drafts/`; el agente principal promueve a `docs/` solo después de aprobación
+humana o veredicto satisfactorio. El workflow y el agente deben reflejar esto
+sin ambigüedad.
+
+- **P:** media | **E:** S | **A:** workflow, docs
+- **Criterio de salida:** existe una regla en workflow.md y en el agente
+  principal que prohíbe escribir en `docs/` sin autorización explícita.
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### Sincronizar comando, scaffold y documentación con workflow v2
+
+Actualizar `init-software-architect.md`, `scaffold.json`, `README.md`,
+`CHANGELOG.md`, instalación y pruebas de symlinks. Corregir todas las
+referencias al workflow de 12 fases y las diferencias de configuración del
+agente.
+
+- **P:** media | **E:** M | **A:** comando, template, script, docs
+- **Criterio de salida:** búsquedas y validaciones no encuentran referencias
+  operativas al workflow v1 fuera de la documentación histórica.
+
+</div>
+
 ---
 
 ## task-planner
@@ -300,18 +495,6 @@ revisión. Verificar que `*` alcanza para los templates.
 ---
 
 ## consistency-reviewer
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-### Integración con fase 11 del software-architect
-
-El `software-architect` debe invocar automáticamente al
-`consistency-reviewer` al llegar a la fase 11 y no avanzar si el
-veredicto es `BLOCKED`.
-
-- **P:** alta | **E:** M | **A:** agente
-
-</div>
 
 <div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
