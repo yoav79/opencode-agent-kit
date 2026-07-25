@@ -7,8 +7,8 @@ permission:
   "*": deny
   read: allow
   edit:
-    ".devflow/task-planner/**": allow
     "*": deny
+    ".devflow/task-planner/**": allow
   glob: allow
   grep: allow
   bash:

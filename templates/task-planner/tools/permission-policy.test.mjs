@@ -24,7 +24,7 @@ test('bash queda deny por defecto y cp genérico requiere aprobación', async ()
 test('edit no queda globalmente abierto; solo permite .devflow/task-planner/**', async () => {
   const text = await agentText();
   assert.doesNotMatch(text, /edit: allow/);
-  assert.match(text, /edit:\n\s+".devflow\/task-planner\/\*\*": allow\n\s+"\*": deny/);
+  assert.match(text, /edit:\n\s+"\*": deny\n\s+".devflow\/task-planner\/\*\*": allow/);
 });
 
 test('solo las copias cp -n de plantillas conocidas quedan permitidas', async () => {
