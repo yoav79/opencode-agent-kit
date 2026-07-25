@@ -78,23 +78,23 @@ link_item() {
     local current
     current=$(readlink "$destination")
     if [ "$current" = "$source" ]; then
-      echo -e "${YELLOW}Already installed:${NC} $destination"
+      printf "${YELLOW}Already installed:${NC} %s\n" "$destination"
       return
     else
-      echo -e "${RED}Different version:${NC} $destination"
-      echo -e "  Current: ${CYAN}$current${NC}"
-      echo -e "  New:     ${GREEN}$source${NC}"
+      printf "${RED}Different version:${NC} %s\n" "$destination"
+      printf "  Current: ${CYAN}%s${NC}\n" "$current"
+      printf "  New:     ${GREEN}%s${NC}\n" "$source"
     fi
   fi
 
   if [ -e "$destination" ] || [ -L "$destination" ]; then
     if [ "$FORCE" -ne 1 ]; then
-      echo -e "${RED}Conflict:${NC} $destination" >&2
+      printf "${RED}Conflict:${NC} %s\n" "$destination" >&2
       echo "Review it or rerun with --force." >&2
       exit 1
     fi
     if [ -d "$destination" ] && [ ! -L "$destination" ]; then
-      echo -e "${RED}Refusing to remove a real directory:${NC} $destination" >&2
+      printf "${RED}Refusing to remove a real directory:${NC} %s\n" "$destination" >&2
       exit 1
     fi
     run rm -f "$destination"
@@ -103,9 +103,9 @@ link_item() {
   run mkdir -p "$(dirname "$destination")"
   run ln -s "$source" "$destination"
   if [ "$DRY_RUN" -eq 1 ]; then
-    echo -e "${CYAN}Would install:${NC} $destination"
+    printf "${CYAN}Would install:${NC} %s\n" "$destination"
   else
-    echo -e "${GREEN}Installed:${NC} $destination"
+    printf "${GREEN}Installed:${NC} %s\n" "$destination"
   fi
 }
 
