@@ -70,6 +70,22 @@ Actualizado schema y validador para computar rutas desde un mapping fijo.
 
 <div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
+### Fase 5 — Cierre (software-architect)
+
+Migración v1→v2 definida (política + script). Tests end-to-end con 3 fixtures
+(valid-v2, missing-docs, blocked-review) y 7 tests pasando. init-software-
+architect.md, README.md y scaffold sincronizados. Sin referencias v1
+operativas en el repositorio.
+
+- **5a.** `templates/software-architect/migration/v1-to-v2-policy.md` + `tools/migrate-v1-to-v2.mjs`
+- **5b.** `tests/fixtures/software-architect/` + `tests/test-software-architect.sh`
+- **5c.** `opencode/commands/init-software-architect.md` + `README.md`
+- Implementado en: `3aa0a4b`
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
 ### Fase 4 — Validación y reglas (software-architect)
 
 validate-blueprint.mjs actualizado a v2: mappings de 14 phases/docs, gates
@@ -140,59 +156,6 @@ Se agregó `task: allow` y un procedimiento especial para la fase 11 en el
 agente, más condición de salida en `workflow.md`.
 
 - Implementado en: `a43953c`
-
-</div>
-
----
-
-## software-architect
-
-### Fase 5 — Cierre
-
-Dependen de todo lo anterior.
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 5a. Definir migración de proyectos schemaVersion 1
-
-Definir si los proyectos existentes con 12 fases se migrarán a v2 o si el
-nuevo workflow aplicará solo a proyectos nuevos. Si se implementa migración,
-debe preservar decisiones, aprobaciones y documentos sin reinterpretarlos
-silenciosamente.
-
-- **P:** media | **E:** M | **A:** tool, schema, docs
-- **Criterio de salida:** existe una política explícita y, cuando corresponda,
-  una migración v1 a v2 validable y reversible.
-
-</div>
-
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 5b. Agregar pruebas end-to-end del software-architect
-
-Cubrir inicialización, reanudación, aprobación pendiente, compilador
-bloqueado, revisión con warnings, revisión bloqueada y aprobación final.
-Incluir pruebas de permisos para confirmar que los subagentes no modifican
-estado ni documentos fuente.
-
-- **P:** alta | **E:** L | **A:** test
-- **Criterio de salida:** el workflow completo y sus gates se verifican con
-  fixtures reproducibles sin requerir una conversación real.
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
-#### 5c. Sincronizar comando, scaffold y documentación con workflow v2
-
-Actualizar `init-software-architect.md`, `scaffold.json`, `README.md`,
-`CHANGELOG.md`, instalación y pruebas de symlinks. Corregir todas las
-referencias al workflow de 12 fases y las diferencias de configuración del
-agente.
-
-- **P:** media | **E:** M | **A:** comando, template, script, docs
-- **Criterio de salida:** búsquedas y validaciones no encuentran referencias
-  operativas al workflow v1 fuera de la documentación histórica.
 
 </div>
 

@@ -42,6 +42,9 @@ cada hito.
   con mappings 14 phases/docs, gates 8/12/14, schemaVersion 2 y validación
   cruzada de secciones. Reglas de drafts vs docs en workflow.md y agente.
   (024b5a0)
+- **Fase 5: Cierre** — Migración v1→v2 (política + script). Tests e2e con
+  3 fixtures y 7 tests. init-software-architect, README y scaffold
+  sincronizados. Sin v1 references operativas. (3aa0a4b)
 
 ## [0.1.0] — Estado inicial del repositorio
 
