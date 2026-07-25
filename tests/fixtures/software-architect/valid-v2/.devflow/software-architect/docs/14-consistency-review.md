@@ -24,6 +24,12 @@ _No hay hallazgos menores._
 
 _No hay observaciones._
 
+## Mapeo de etapas
+
+_Cada hallazgo debe indicar una de estas etapas: Estructura, Estado, Coherencia interna, Contradicciones, Trazabilidad, Documento final._
+
+_No hay hallazgos que mapear._
+
 ## Contradicciones detectadas
 
 _No se detectaron contradicciones._

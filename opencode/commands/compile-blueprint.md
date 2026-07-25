@@ -17,7 +17,7 @@ Genera `.devflow/software-architect/drafts/11-technical-requirements.md`.
 Precondiciones:
 - `.devflow/software-architect/` con project-state.json
 - docs/07-backend-schema.md, 08-solution-architecture.md, 09-technology-stack.md, 10-security-and-nfr.md en estado `approved`
-- El contrato de interfaz en `$CONFIG_DIR/templates/software-architect/contracts/blueprint-compiler.md`
+- El contrato de interfaz en `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/blueprint-compiler.md`
 
 ### software-blueprint
 
@@ -26,7 +26,7 @@ Genera `.devflow/software-architect/drafts/SOFTWARE-BLUEPRINT.md`.
 Precondiciones:
 - `.devflow/software-architect/` con project-state.json
 - Todos los documentos de fases 1-12 en `docs/` en estado `approved`
-- El contrato de interfaz en `$CONFIG_DIR/templates/software-architect/contracts/blueprint-compiler.md`
+- El contrato de interfaz en `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/blueprint-compiler.md`
 
 ## Notas
 

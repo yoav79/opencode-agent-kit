@@ -21,8 +21,20 @@ permission:
     "node $HOME/.config/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
     "node $XDG_CONFIG_HOME/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
     "node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
-    "mkdir -p .devflow/software-architect/*": allow
-    "cp * .devflow/software-architect/*": allow
+    "mkdir -p .devflow/software-architect": allow
+    "mkdir -p .devflow/software-architect/drafts": allow
+    "mkdir -p .devflow/software-architect/docs": allow
+    "mkdir -p .devflow/software-architect/archive": allow
+    "mkdir -p .devflow/software-architect/decisions": allow
+    "cp -n $HOME/.config/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
+    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
+    "cp -n $HOME/.config/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
+    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
+    "cp -n $HOME/.config/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
+    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
   task: allow
   webfetch: ask
   websearch: ask
@@ -144,8 +156,9 @@ no es "Principal":
 1. Identifica el nombre del subagente desde workflow.md.
 2. Lee el contrato del subagente desde:
    `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/contracts/<AGENTE>.md`
-3. Verifica que los inputs requeridos por el contrato existen y están approved
-   en project-state.json.
+3. Verifica los inputs requeridos por el contrato: los documentos fuente deben
+   existir y estar `approved` en project-state.json; `project-state.json` debe
+   existir y ser válido según `project-state.schema.json`.
 4. Invoca al subagente mediante la herramienta `task`:
     - Para `blueprint-compiler` en fase 11: selecciona el subagente
       `blueprint-compiler` con modo `technical-requirements`. El prompt debe
@@ -166,7 +179,7 @@ no es "Principal":
 |-----------|---------|----------------------|
 | blueprint-compiler | GENERATED | Revisa el draft en drafts/. Si cumple el checklist de la plantilla, promuévelo a docs/ y marca la fase como approved. |
 | blueprint-compiler | BLOCKED | Informa al usuario qué inputs faltan o qué contradicciones impidieron la compilación. No avances. |
-| consistency-reviewer | APPROVED | Promueve drafts/14-consistency-review.md a docs/14-consistency-review.md. Solicita aprobación humana explícita para cerrar el gate de fase 14. Solo después de la confirmación del usuario, marca fase 14 como approved. |
+| consistency-reviewer | APPROVED | Presenta drafts/14-consistency-review.md y solicita aprobación humana explícita para cerrar el gate de fase 14. Solo después de la confirmación del usuario, promueve el draft a docs/14-consistency-review.md y marca fase 14 como approved. |
 | consistency-reviewer | MINOR_ISSUES | Corrige los hallazgos WARNING en los documentos correspondientes. Re-invoca al revisor. Si ahora es APPROVED, continúa. |
 | consistency-reviewer | BLOCKED | Informa al usuario los hallazgos bloqueantes. Marca fase 14 como blocked. No avances. |
 
@@ -180,6 +193,10 @@ Cuando promuevas un draft de `drafts/` a `docs/`:
 4. Copia el archivo de `drafts/<ARCHIVO>` a `docs/<ARCHIVO>`.
 5. Actualiza project-state.json: marca el documento como approved con timestamp.
 6. No elimines el draft.
+
+Excepción: para `14-consistency-review.md`, no promociones el draft ni marques
+el documento o la fase como `approved` hasta recibir aprobación humana explícita
+después de un veredicto `APPROVED` del subagente.
 
 ## Módulos
 

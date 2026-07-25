@@ -23,6 +23,9 @@ Escribe `.devflow/software-architect/drafts/14-consistency-review.md` con:
 - Hallazgos clasificados por gravedad (`BLOCKING`, `WARNING`, `INFO`)
 - Etapas de revisión: estructura, estado, coherencia, contradicciones,
   trazabilidad, documento final
+- Cada hallazgo debe mapear la etapa a su severidad con formato
+  `[SEVERIDAD] [Etapa] descripción`, aunque el reporte esté agrupado por
+  severidad según la plantilla.
 - Resumen con veredicto (`APPROVED`, `MINOR_ISSUES`, `BLOCKED`)
 
 ## Notas

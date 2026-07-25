@@ -83,7 +83,7 @@ archivo falta.
 
    - Obtén el timestamp actual ejecutando:
      ```
-     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
+     node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/shared/tools/timestamp.mjs now
      ```
    - Si `project.createdAt` es `null` o no existe, asígnale ese valor.
    - Si `project.updatedAt` es `null` o no existe, asígnale ese valor.

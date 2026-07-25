@@ -20,7 +20,11 @@ permission:
     ".devflow/software-architect/docs/11-technical-requirements.md": allow
     ".devflow/software-architect/project-state.json": allow
     "$HOME/.config/opencode/templates/software-architect/doc-templates/11-technical-requirements.md": allow
+    "$XDG_CONFIG_HOME/opencode/templates/software-architect/doc-templates/11-technical-requirements.md": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/11-technical-requirements.md": allow
     "$HOME/.config/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md": allow
+    "$XDG_CONFIG_HOME/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md": allow
   edit:
     ".devflow/software-architect/drafts/11-technical-requirements.md": allow
     ".devflow/software-architect/drafts/SOFTWARE-BLUEPRINT.md": allow
@@ -38,17 +42,23 @@ Se te invoca con un argumento de modo: `technical-requirements` o
 
 ### technical-requirements
 
-Inputs (deben existir y estar approved en project-state.json):
+Inputs:
+
+Documentos fuente (deben existir y estar `approved` en project-state.json):
 
 - `.devflow/software-architect/docs/07-backend-schema.md`
 - `.devflow/software-architect/docs/08-solution-architecture.md`
 - `.devflow/software-architect/docs/09-technology-stack.md`
 - `.devflow/software-architect/docs/10-security-and-nfr.md`
+
+Estado (debe existir y ser válido según `project-state.schema.json`; no tiene
+estado de aprobación propio):
+
 - `.devflow/software-architect/project-state.json`
 
 Plantilla:
 
-`$HOME/.config/opencode/templates/software-architect/doc-templates/11-technical-requirements.md`
+`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/11-technical-requirements.md`
 
 Output:
 
@@ -56,14 +66,20 @@ Output:
 
 ### software-blueprint
 
-Inputs (todos deben existir y estar approved):
+Inputs:
+
+Documentos fuente (deben existir y estar `approved` en project-state.json):
 
 - Todos los documentos de `.devflow/software-architect/docs/` de fases 1-12
+
+Estado (debe existir y ser válido según `project-state.schema.json`; no tiene
+estado de aprobación propio):
+
 - `.devflow/software-architect/project-state.json`
 
 Plantilla:
 
-`$HOME/.config/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md`
+`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/doc-templates/SOFTWARE-BLUEPRINT.md`
 
 Output:
 
@@ -80,8 +96,9 @@ Output:
 6. No interactúes con el usuario.
 7. No modifiques `project-state.json`.
 8. No modifiques archivos en `docs/`.
-9. Si falta algún input o hay contradicciones explícitas entre inputs,
-   devuelve `BLOCKED` e informa el motivo.
+9. Si falta algún input, algún documento fuente no está `approved`,
+   `project-state.json` no es válido, o hay contradicciones explícitas entre
+   inputs, devuelve `BLOCKED` e informa el motivo.
 10. Si el draft se genera correctamente, devuelve `GENERATED`.
 
 Return codes:

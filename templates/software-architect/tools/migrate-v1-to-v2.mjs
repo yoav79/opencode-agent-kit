@@ -279,7 +279,7 @@ async function main() {
     }
   }
 
-  console.log('\nMigración completada.\nRespaldo creado: project-state.json.v1\nBackups de documentos: <archivo>.md.v1\nLos documentos han sido renombrados a sus nombres v2.');
+  console.log('\nMigración estructural completada.\nRespaldo creado: project-state.json.v1\nBackups de documentos: <archivo>.md.v1\nLos documentos existentes han sido renombrados a sus nombres v2.\nLa migración no crea documentos faltantes ni adapta headings/contenido v1 a las plantillas v2. Ejecuta init-software-architect y validate-blueprint.mjs para identificar la remediación pendiente antes de tratar el blueprint como validable.');
 }
 
 main().catch((err) => {

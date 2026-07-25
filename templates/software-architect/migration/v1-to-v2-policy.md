@@ -67,3 +67,15 @@ node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/too
 - Los documentos aprobados se renombran según el mapping.
 - Las aprobaciones (approvedAt) se preservan.
 - El changeLog se preserva y se agrega entrada de migración.
+
+## Alcance de la migración
+
+La migración es estructural: actualiza `project-state.json` a schemaVersion 2,
+remapea fases/documentos y renombra documentos existentes con backups. No crea
+documentos faltantes (por ejemplo fases nuevas 04 o 11) ni adapta headings o
+contenido v1 a las plantillas v2.
+
+Después de migrar, el proyecto puede requerir remediación manual antes de pasar
+`validate-blueprint.mjs` como blueprint final. Reinicia `init-software-architect`
+y usa el validador para identificar documentos faltantes, secciones incompatibles
+o estados que deban reabrirse.

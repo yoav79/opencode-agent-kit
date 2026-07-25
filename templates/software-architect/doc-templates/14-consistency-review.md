@@ -17,19 +17,25 @@
 
 _Problemas que impiden la aprobación. Deben resolverse antes de continuar._
 
-_Formato: - [BLOCKING] Descripción del hallazgo (referencia al documento o sección)._
+_Formato: - [BLOCKING] [Etapa] Descripción del hallazgo (referencia al documento o sección)._
 
 ## Hallazgos menores (WARNING)
 
 _Problemas que deberían corregirse pero no bloquean la aprobación._
 
-_Formato: - [WARNING] Descripción (referencia)._
+_Formato: - [WARNING] [Etapa] Descripción (referencia)._
 
 ## Observaciones (INFO)
 
 _Notas informativas sin impacto en la aprobación._
 
-_Formato: - [INFO] Descripción (referencia)._
+_Formato: - [INFO] [Etapa] Descripción (referencia)._
+
+## Mapeo de etapas
+
+_Usa una de estas etapas en cada hallazgo: Estructura, Estado, Coherencia interna, Contradicciones, Trazabilidad, Documento final._
+
+_La etapa describe el tipo de revisión; la severidad describe el impacto. El reporte se agrupa por severidad y preserva la etapa dentro de cada hallazgo._
 
 ## Contradicciones detectadas
 

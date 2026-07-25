@@ -8,13 +8,17 @@
 
 ### technical-requirements
 
-Inputs (todos deben existir y estar `approved` en project-state.json):
+Documentos fuente (deben existir y estar `approved` en project-state.json):
 
 - `.devflow/software-architect/docs/07-backend-schema.md`
 - `.devflow/software-architect/docs/08-solution-architecture.md`
 - `.devflow/software-architect/docs/09-technology-stack.md`
 - `.devflow/software-architect/docs/10-security-and-nfr.md`
-- `.devflow/software-architect/project-state.json`
+
+Estado requerido:
+
+- `.devflow/software-architect/project-state.json` debe existir y ser válido
+  según `project-state.schema.json`. No tiene estado `approved` propio.
 
 Output:
 
@@ -26,7 +30,7 @@ Return codes:
 
 ### software-blueprint
 
-Inputs (todos deben existir y estar `approved` en project-state.json):
+Documentos fuente (deben existir y estar `approved` en project-state.json):
 
 - `.devflow/software-architect/docs/01-discovery.md`
 - `.devflow/software-architect/docs/02-product-requirements.md`
@@ -40,7 +44,11 @@ Inputs (todos deben existir y estar `approved` en project-state.json):
 - `.devflow/software-architect/docs/10-security-and-nfr.md`
 - `.devflow/software-architect/docs/11-technical-requirements.md`
 - `.devflow/software-architect/docs/12-delivery-roadmap.md`
-- `.devflow/software-architect/project-state.json`
+
+Estado requerido:
+
+- `.devflow/software-architect/project-state.json` debe existir y ser válido
+  según `project-state.schema.json`. No tiene estado `approved` propio.
 
 Output:
 
@@ -62,4 +70,5 @@ Return codes:
 
 - Falta uno o más inputs (reportar cuáles)
 - Contradicción explícita entre dos o más inputs
-- Algún input no está en estado `approved`
+- Algún documento fuente no está en estado `approved`
+- `project-state.json` no existe o no es válido según `project-state.schema.json`

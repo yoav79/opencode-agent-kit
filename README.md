@@ -168,7 +168,7 @@ manualmente.
 - **Modo:** subagent
 - **Temperatura:** 0
 - **Entrada:** `.devflow/software-architect/docs/` (solo lectura, docs 1-13)
-- **Salida:** `.devflow/software-architect/drafts/14-consistency-review.md` (promovido a docs/ por el orquestador si es APPROVED)
+- **Salida:** `.devflow/software-architect/drafts/14-consistency-review.md` (promovido a docs/ solo tras veredicto APPROVED y aprobación humana final)
 
 Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 

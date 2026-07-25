@@ -25,11 +25,11 @@ proyecto deben vivir en el `AGENTS.md` de ese proyecto.
 - No escribas fechas, timestamps ni hashes manualmente.
 - Toda fecha debe provenir de:
   ```
-  node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs now
+node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/shared/tools/timestamp.mjs now
   ```
 - Todo JSON con campo `timestamps` debe actualizarse con:
   ```
-  node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch <archivo.json>
+node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/shared/tools/timestamp.mjs touch <archivo.json>
   ```
 
 ## Decisiones

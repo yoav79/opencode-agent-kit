@@ -47,6 +47,12 @@ Estructura el reporte con las siguientes etapas de revisión:
 5. **Trazabilidad** — ¿Los requisitos funcionales tienen IDs únicos y están trazados en el blueprint?
 6. **Documento final** — ¿SOFTWARE-BLUEPRINT.md refleja fielmente los documentos fuente?
 
+La plantilla final organiza los hallazgos por severidad. Para mantener ambas
+vistas, cada hallazgo debe incluir la etapa entre corchetes al inicio de la
+descripción, por ejemplo: `- [BLOCKING] [Trazabilidad] ...`. Después, resume
+contradicciones, omisiones, elementos sin trazabilidad, decisiones faltantes y
+acciones correctivas en sus secciones específicas cuando apliquen.
+
 Cada hallazgo debe clasificarse como:
 
 - `BLOCKING` — impide aprobar el blueprint

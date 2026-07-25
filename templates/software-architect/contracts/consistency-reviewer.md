@@ -20,6 +20,14 @@
 - `MINOR_ISSUES` — cero `BLOCKING`
 - `BLOCKED` — uno o más `BLOCKING`
 
+## Formato de hallazgos
+
+- El reporte se organiza por severidad según la plantilla de fase 14.
+- Cada hallazgo debe conservar la etapa revisada con formato
+  `[SEVERIDAD] [Etapa] descripción`.
+- Etapas válidas: Estructura, Estado, Coherencia interna, Contradicciones,
+  Trazabilidad, Documento final.
+
 ## Correcciones respecto a v1
 
 - Ya NO exige `14-consistency-review.md` como input (era circular)
