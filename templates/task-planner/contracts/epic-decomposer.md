@@ -12,23 +12,26 @@ El task-planner debe proveer los siguientes inputs en el prompt de invocación:
 |-------|------|
 | `currentEpicId` | Identificador de la épica a descomponer |
 | Archivo de la épica actual | `.devflow/task-planner/epics/<EPIC-ID>.md` |
+| Skeleton semántico preconstruido | `.devflow/task-planner/drafts/<EPIC-ID>.task-batch.json` (behaviorIds, semanticKeys, requirementCoverage, IDs SCOPE-* y AC-* ya resueltos por `assemble-epic-task-batch.mjs`) |
 | Capacidades de la épica | Las entradas de `capability-map.json` cuyo `ownerEpicId = currentEpicId` |
 | Contrato semántico | `.devflow/task-planner/semantic-contract.json` |
 | Requisitos | `.devflow/task-planner/requirements.json` |
 | Blueprint resuelto | `.devflow/task-planner/SOFTWARE-BLUEPRINT-RESOLVED.md` |
 | Estrategia de construcción | `.devflow/task-planner/construction-strategy.md` |
 | Decisiones | `.devflow/task-planner/decisions.json` |
-| Plan de tareas existente | `.devflow/task-planner/task-plan.json` |
-| Mapa preasignado | `capabilityId -> taskId` para mantener identidades estables entre invocaciones |
+| Mapa preasignado | `capabilityId -> taskId` (persistido por `reserve-task-ids.mjs`) |
 
 ## Outputs
 
-Todos los outputs se escriben dentro de `.devflow/task-planner/drafts/`:
+Todos los outputs se escriben dentro de `.devflow/task-planner/drafts/`.
+
+El archivo `task-plan.partial.json` ya fue generado por
+`assemble-epic-task-batch.mjs` antes de la invocación del subagente. El
+subagente solo escribe los siguientes archivos:
 
 | Output | Descripción |
 |--------|-------------|
-| `drafts/TASK-<ID>.md` | Un archivo Markdown por tarea generada |
-| `drafts/<EPIC-ID>.task-plan.partial.json` | Fragmento de `task-plan.json` con las tareas de esta épica (array `tasks`) |
+| `drafts/TASK-<ID>.md` | Un archivo Markdown por tarea. Copia `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y `backendBindings` exactamente desde el skeleton del `task-batch.json` |
 | `drafts/<EPIC-ID>.result.json` | Resumen estructurado para que el orquestador promueva: `{ epicId, createdTaskIds, capabilityAssignments: { [capabilityId]: taskId }, epicUpdates: { taskIds, decomposed } }` |
 
 ## Return codes
@@ -106,12 +109,12 @@ Los IDs `SCOPE-*` y `AC-*` deben existir literalmente en el Markdown.
 
 El task-planner (orquestador) es responsable de:
 
-1. Proveer todos los inputs requeridos
-2. Leer `result.json` después de `GENERATED`
-3. Promover cada `TASK-*.md` de `drafts/` a `tasks/`
-4. Fusionar `task-plan.partial.json` en `task-plan.json`
-5. Actualizar `epic-plan.json` (taskIds, decomposed)
-6. Actualizar `capability-map.json` (ownerTaskId)
-7. Actualizar `project-state.json`
-8. Ejecutar `build-epic-graph.mjs` tras cada promoción
+1. Ejecutar `reserve-task-ids.mjs` y `assemble-epic-task-batch.mjs` antes de invocar al subagente
+2. Proveer todos los inputs requeridos, incluyendo el `task-batch.json`
+3. Leer `result.json` después de `GENERATED`
+4. Promover cada `TASK-*.md` de `drafts/` a `tasks/`
+5. Fusionar `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado por la herramienta) en `task-plan.json`
+6. Actualizar `epic-plan.json` (taskIds, decomposed)
+7. Actualizar `capability-map.json` (ownerTaskId)
+8. Actualizar `project-state.json`
 9. Manejar `BLOCKED` informando al usuario

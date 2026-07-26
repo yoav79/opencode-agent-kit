@@ -1097,24 +1097,49 @@ El subagente `epic-decomposer` no puede:
 ## Proceso obligatorio por épica
 
 0. Establecer `task-plan.json.status = in_progress` si el estado actual es `initialized`.
-1. El agente principal verifica los inputs según el contrato de `epic-decomposer`.
-2. El agente principal invoca al subagente con `currentEpicId` y los inputs.
-3. El subagente genera los drafts (TASK-*.md, partial JSON, result.json).
-4. El subagente devuelve `GENERATED` o `BLOCKED`.
-5. Si `GENERATED`, el agente principal:
+
+1. **Reservar TASK-###**: el agente principal ejecuta:
+   ```
+   node .devflow/task-planner/tools/reserve-task-ids.mjs --epic <currentEpicId>
+   ```
+   Lee `drafts/<EPIC-ID>.task-ids.json` para obtener el mapa `capabilityId -> taskId`.
+
+2. **Preconstruir skeleton semántico**: el agente principal ejecuta:
+   ```
+   node .devflow/task-planner/tools/assemble-epic-task-batch.mjs --epic <currentEpicId>
+   ```
+   Verifica que `drafts/<EPIC-ID>.task-plan.partial.json` y
+   `drafts/<EPIC-ID>.task-batch.json` existan. El skeleton semántico
+   (behaviorIds, semanticKeys, requirementCoverage) queda congelado antes de
+   la invocación al subagente.
+
+3. El agente principal verifica los inputs según el contrato de `epic-decomposer`,
+   incluyendo `drafts/<EPIC-ID>.task-batch.json`.
+
+4. El agente principal invoca al subagente con `currentEpicId`, los inputs y el
+   skeleton semántico preconstruido.
+
+5. El subagente genera los drafts: escribe `TASK-*.md` (Markdown) y
+   `<EPIC-ID>.result.json`. El archivo `task-plan.partial.json` ya fue generado
+   por `assemble-epic-task-batch.mjs` en el paso 2; el subagente no lo regenera.
+
+6. El subagente devuelve `GENERATED` o `BLOCKED`.
+
+7. Si `GENERATED`, el agente principal:
    a. Lee `drafts/<EPIC-ID>.result.json`.
    b. Verifica que `epicId = currentEpicId` y que todos los outputs draft
       pertenecen exclusivamente a esa épica.
    c. Verifica que cada `createdTaskId`, `capabilityAssignment` y `epicUpdate`
-      sea consistente con la épica, sus capacidades y el contrato semántico.
+      coincida con los IDs reservados en el paso 1.
    d. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/`.
-   e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` en `task-plan.json`.
+   e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado en paso 2)
+      en `task-plan.json`.
    f. Actualiza `ownerTaskId` en `capability-map.json`.
    g. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
    h. Actualiza contadores y `project-state.json`.
-   i. Ejecuta `build-epic-graph.mjs`.
-   j. Si quedan épicas, continúa; si no, avanza a `plan_validation`.
-6. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
+   i. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
+      `build-epic-graph.mjs`.
+8. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
 ## Regla de promoción
 

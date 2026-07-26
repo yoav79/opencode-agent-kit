@@ -10,10 +10,19 @@ Descompone exactamente una epica en tareas draft ejecutables para DevFlow.
 Trabaja en modo determinista, sin interactuar con el usuario y sin modificar
 indices globales del plan.
 
+El orquestador ya ejecuto `reserve-task-ids.mjs` y
+`assemble-epic-task-batch.mjs` antes de invocarte. Tu recibes el esqueleto
+semantico congelado (behaviorIds, semanticKeys, requirementCoverage, IDs
+SCOPE-* y AC-*) dentro del `task-batch.json`.
+
+No compones semantica libre. Lees el skeleton desde el `task-batch.json` y
+escribes los Markdown.
+
 ## Inputs de esta invocacion
 
 - `currentEpicId`: `<CURRENT_EPIC_ID>`
 - Archivo Markdown de la epica: `<EPIC_MARKDOWN_PATH>`
+- Skeleton semantico preconstruido: `<TASK_BATCH_PATH>` (`drafts/<EPIC-ID>.task-batch.json`)
 - Capacidades reservadas de la epica: `<EPIC_CAPABILITIES_JSON>`
 - Mapa reservado `capabilityId -> taskId`: `<CAPABILITY_TASK_MAP_JSON>`
 
@@ -21,10 +30,9 @@ indices globales del plan.
 
 Lee solo las rutas necesarias de esta lista:
 
+- `<TASK_BATCH_PATH>` — fuente unica del skeleton semantico
 - `<EPIC_MARKDOWN_PATH>`
 - `<CAPABILITY_MAP_PATH>`
-- `<EPIC_PLAN_PATH>`
-- `<TASK_PLAN_PATH>`
 - `<SEMANTIC_CONTRACT_PATH>`
 - `<REQUIREMENTS_PATH>`
 - `<BLUEPRINT_RESOLVED_PATH>`
@@ -37,8 +45,10 @@ Escribe solo dentro de `drafts/` y unicamente estos archivos para la epica
 actual:
 
 - `<DRAFTS_DIR>/<TASK_ID>.md` para cada `taskId` reservado
-- `<DRAFTS_DIR>/<CURRENT_EPIC_ID>.task-plan.partial.json`
 - `<DRAFTS_DIR>/<CURRENT_EPIC_ID>.result.json`
+
+El archivo `<DRAFTS_DIR>/<CURRENT_EPIC_ID>.task-plan.partial.json` ya fue
+generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 
 ## Prohibiciones explicitas
 
@@ -49,19 +59,25 @@ actual:
 - No promociones drafts, no cambies estados, no apruebes fases y no recalcules indices globales.
 - No inventes capacidades, `taskId`, `behaviorIds`, `semanticKeys`, `requirementId`, `SCOPE-*` ni `AC-*` que no puedan trazarse a los inputs.
 - No generes mas de una tarea por capacidad reservada ni menos de una tarea por capacidad reservada.
+- No regeneres `task-plan.partial.json` ni `requirementCoverage`; ambos ya fueron preconstruidos.
 
 ## Reglas obligatorias de descomposicion
 
 1. Trabaja solo sobre `currentEpicId = <CURRENT_EPIC_ID>`.
-2. Considera como universo exacto de descomposicion las capacidades incluidas en `<EPIC_CAPABILITIES_JSON>`.
-3. Genera exactamente una tarea por cada capacidad principal reservada presente en `<EPIC_CAPABILITIES_JSON>`.
-4. Usa exactamente el `taskId` ya asignado para cada `capabilityId` en `<CAPABILITY_TASK_MAP_JSON>`.
-5. Para una capacidad funcional, copia `behaviorIds` y `semanticKeys` exactamente como aparecen en la capacidad, sin reinterpretacion, renombre ni expansion.
-6. Para una capacidad habilitadora, no funcional o externa, usa `behaviorIds = []` y `semanticKeys = []`.
-7. Genera `requirementCoverage` en cada tarea. Cada elemento debe incluir `requirementId`, `behaviorIds`, `scopeItemIds` y `acceptanceCriterionIds`.
-8. La union de `requirementCoverage[*].behaviorIds` debe coincidir exactamente con `task.behaviorIds` para tareas funcionales.
-9. Declara IDs `SCOPE-*` y `AC-*` literales en el Markdown de cada tarea y reflejalos en `requirementCoverage.scopeItemIds` y `requirementCoverage.acceptanceCriterionIds`.
-10. Cada `TASK-*.md` debe incluir exactamente estas secciones:
+2. Lee `<TASK_BATCH_PATH>` como fuente unica del skeleton semantico de cada
+   tarea. El archivo contiene `taskSkeletons` con `taskId`, `capabilityId`,
+   `task`, `sourceFunctionIds`, `backendBindings`, `scopeItemIds` y
+   `acceptanceCriterionIds`.
+3. Genera exactamente una tarea (un `TASK-*.md`) por cada `taskSkeleton`
+   presente en `<TASK_BATCH_PATH>.taskSkeletons`.
+4. Usa exactamente el `taskId` del skeleton para el nombre del archivo.
+5. Copia `behaviorIds` y `semanticKeys` desde el `task` del skeleton, sin
+   reinterpretacion, renombre ni expansion.
+6. Para una tarea habilitadora, no funcional o externa, usa `behaviorIds = []`
+   y `semanticKeys = []` (ya reflejado en el skeleton).
+7. Declara los IDs `SCOPE-*` y `AC-*` del skeleton como encabezados literales
+   en las secciones `## Alcance` y `## Criterios de aceptacion` del Markdown.
+8. Cada `TASK-*.md` debe incluir exactamente estas secciones:
 
 ```md
 ## Objetivo
@@ -72,7 +88,9 @@ actual:
 ## Contrato semántico
 ```
 
-11. La sección `## Contrato semántico` debe contener JSON valido con esta forma exacta:
+9. La seccion `## Contrato semantico` debe contener JSON valido copiando
+   exactamente `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y
+   `backendBindings` desde el skeleton:
 
 ```json
 {
@@ -83,49 +101,19 @@ actual:
 }
 ```
 
-12. Copia `behaviorIds` y `semanticKeys` al bloque `## Contrato semántico` sin reinterpretacion.
-13. Ordena las tareas, `createdTaskIds` y asignaciones por `taskId` ascendente para mantener estabilidad.
-14. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta o un contrato semantico no aprobado, no escribas outputs parciales inconsistentes y devuelve `BLOCKED`.
+10. Ordena los `createdTaskIds` y asignaciones por `taskId` ascendente.
+11. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta
+    o un contrato semantico no aprobado, no escribas outputs parciales
+    inconsistentes y devuelve `BLOCKED`.
 
 ## Formato de outputs requeridos
 
 ### 1. Draft Markdown por tarea
 
-Cada archivo `<DRAFTS_DIR>/<TASK_ID>.md` debe corresponder a una sola capacidad y
-usar el `taskId` reservado.
+Cada archivo `<DRAFTS_DIR>/<TASK_ID>.md` debe corresponder a un solo skeleton y
+usar el `taskId` del mismo.
 
-### 2. Partial JSON
-
-Escribe `<DRAFTS_DIR>/<CURRENT_EPIC_ID>.task-plan.partial.json` con este schema:
-
-```json
-{
-  "tasks": [
-    {
-      "id": "TASK-...",
-      "title": "...",
-      "file": ".devflow/task-planner/tasks/TASK-001.md",
-      "epicId": "EPIC-...",
-      "type": "functional",
-      "dependencyIds": [],
-      "createsCapabilityIds": ["CAP-..."],
-      "consumesCapabilityIds": [],
-      "behaviorIds": ["BEH-..."],
-      "semanticKeys": ["..."],
-      "requirementCoverage": [
-        {
-          "requirementId": "REQ-...",
-          "behaviorIds": ["BEH-..."],
-          "scopeItemIds": ["SCOPE-..."],
-          "acceptanceCriterionIds": ["AC-..."]
-        }
-      ]
-    }
-  ]
-}
-```
-
-### 3. Result JSON
+### 2. Result JSON
 
 Escribe `<DRAFTS_DIR>/<CURRENT_EPIC_ID>.result.json` con este schema:
 
@@ -160,7 +148,6 @@ Si todo fue generado:
 RETURN_CODE: GENERATED
 EPIC_ID: <CURRENT_EPIC_ID>
 RESULT_PATH: <DRAFTS_DIR>/<CURRENT_EPIC_ID>.result.json
-PARTIAL_PATH: <DRAFTS_DIR>/<CURRENT_EPIC_ID>.task-plan.partial.json
 TASK_FILES: <TASK_FILES_JSON>
 ```
 

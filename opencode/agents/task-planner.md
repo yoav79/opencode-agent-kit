@@ -337,18 +337,56 @@ define cómo el agente principal invoca al subagente y promueve sus resultados.
 4. Calcula el número de capacidades principales (funcionales o habilitadoras
    que no sean dependencias internas) que generarán tareas.
 
-### Paso 2 — Reservar TASK-### antes de delegar
+### Paso 2 — Reservar TASK-### persistido via reserve-task-ids.mjs
 
-1. Lee `task-plan.json.tasks` y determina el próximo `TASK-###` disponible:
-   - Extrae todos los `id` que siguen el patrón `TASK-NNN`.
-   - Calcula `nextId = max(NNN) + 1` formateado a tres dígitos.
-2. Para cada capacidad que generará una tarea, reserva un `TASK-###`
-   incrementando `nextId`.
-3. Construye el mapa `capabilityId -> taskId` con las reservas.
-4. Registra internamente el rango reservado; no lo persistas en un archivo.
+Esta herramienta reemplaza la reserva manual. Persiste el mapa en disco para
+garantizar IDs estables entre reintentos, sesiones y subagentes.
 
-Este paso garantiza que el subagente reciba IDs preasignados estables y que
-no existan colisiones entre invocaciones sucesivas.
+1. Ejecuta:
+   ```
+   node .devflow/task-planner/tools/reserve-task-ids.mjs --epic <CURRENT_EPIC_ID>
+   ```
+2. La herramienta:
+   - Lee `task-plan.json.tasks` y determina el próximo `TASK-###` disponible.
+   - Ordena las capacidades topológicamente por dependencias.
+   - Reserva un `TASK-###` por capacidad.
+   - Persiste el mapa en:
+     ```
+     .devflow/task-planner/drafts/<EPIC-ID>.task-ids.json
+     ```
+3. Lee `drafts/<EPIC-ID>.task-ids.json` para obtener el mapa `capabilityId -> taskId`
+   que usarás como entrada del paso siguiente y del subagente.
+
+### Paso 2b — Preconstruir skeleton semántico via assemble-epic-task-batch.mjs
+
+Esta herramienta construye el esqueleto semántico completo de cada tarea
+(behaviorIds, semanticKeys, requirementCoverage, dependencyIds, IDs SCOPE-* y
+AC-*) antes de que el subagente escriba los Markdown.
+
+El subagente recibe el skeleton ya congelado y no compone semántica libre.
+
+1. Ejecuta:
+   ```
+   node .devflow/task-planner/tools/assemble-epic-task-batch.mjs --epic <CURRENT_EPIC_ID>
+   ```
+2. La herramienta:
+   - Lee `drafts/<EPIC-ID>.task-ids.json` (Paso 2).
+   - Lee `capability-map.json`, `semantic-contract.json`, `requirements.json`.
+   - Para cada capacidad, deriva `behaviorIds`, `semanticKeys`,
+     `requirementCoverage`, `dependencyIds`, `createsCapabilityIds`,
+     `consumesCapabilityIds` y la ruta `file`.
+   - Genera:
+     ```
+     .devflow/task-planner/drafts/<EPIC-ID>.task-plan.partial.json
+     .devflow/task-planner/drafts/<EPIC-ID>.task-batch.json
+     ```
+3. Lee `drafts/<EPIC-ID>.task-batch.json` para conocer el skeleton completo de
+   cada tarea. Este archivo contiene `taskSkeletons` con la semántica ya
+   resuelta que el subagente usará como fuente única.
+
+4. Verifica que `drafts/<EPIC-ID>.task-plan.partial.json` exista. Este archivo
+   se fusionará directamente en `task-plan.json` durante la promoción; el
+   subagente no debe regenerarlo.
 
 ### Paso 3 — Verificar inputs y contratos
 
@@ -370,6 +408,9 @@ no existan colisiones entre invocaciones sucesivas.
    - `construction-strategy.md` debe existir
    - `decisions.json` debe existir
    - `task-plan.json` debe existir
+   - `.devflow/task-planner/drafts/<EPIC-ID>.task-ids.json` debe existir (paso 2)
+   - `.devflow/task-planner/drafts/<EPIC-ID>.task-batch.json` debe existir (paso 2b)
+   - `.devflow/task-planner/drafts/<EPIC-ID>.task-plan.partial.json` debe existir (paso 2b)
 4. Si falta algun input, devuelve `BLOCKED` con la lista exacta de faltantes.
 
 ### Paso 4 — Invocar al subagente
@@ -386,6 +427,8 @@ no existan colisiones entre invocaciones sucesivas.
       - La lista de capacidades de la epica
       - Las rutas de todos los inputs requeridos
       - El mapa `capabilityId -> taskId` preasignado (paso 2)
+      - La ruta del skeleton semantico preconstruido
+        `drafts/<EPIC-ID>.task-batch.json` (paso 2b)
       - Las rutas autorizadas de lectura
       - Las rutas autorizadas de escritura en `.devflow/task-planner/drafts/`
       - Las prohibiciones explicitas, el formato de salida requerido y los
@@ -424,7 +467,8 @@ Cuando el subagente devuelve `GENERATED`:
 ### Pasos de promoción
 
 1. Mueve cada `drafts/TASK-*.md` a `.devflow/task-planner/tasks/TASK-*.md`.
-2. Lee `drafts/<EPIC-ID>.task-plan.partial.json` y fusiona sus tareas en
+2. Lee `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado por
+   `assemble-epic-task-batch.mjs` en el paso 2b) y fusiona sus tareas en
    `task-plan.json.tasks`. No duplices tareas que ya existan.
 3. Para cada asignación en `result.json.capabilityAssignments`, establece
    `ownerTaskId` en la capacidad correspondiente dentro de
@@ -1137,32 +1181,44 @@ Procesa las épicas **secuencialmente**, una por iteración:
       `ownerEpicId = currentEpicId`. Cada capacidad filtrada generará una
       tarea.
 
-   c. **Reserva TASK-###**: determina el próximo ID disponible desde
-      `task-plan.json.tasks`, reserva un `TASK-###` por capacidad, y
-      construye el mapa `capabilityId -> taskId`.
+    c. **Reserva TASK-### persistido**: ejecuta:
+       ```
+       node .devflow/task-planner/tools/reserve-task-ids.mjs --epic <currentEpicId>
+       ```
+       Lee `drafts/<EPIC-ID>.task-ids.json` para obtener el mapa
+       `capabilityId -> taskId`.
 
-   d. **Invoca al subagente** siguiendo el procedimiento de
-      **Delegación a subagentes** (pasos 1-4). El prompt debe incluir:
-      - `currentEpicId`
-      - Las rutas de todos los inputs
-      - El mapa `capabilityId -> taskId` preasignado
+    d. **Preconstruye skeleton semántico**: ejecuta:
+       ```
+       node .devflow/task-planner/tools/assemble-epic-task-batch.mjs --epic <currentEpicId>
+       ```
+       Verifica que `drafts/<EPIC-ID>.task-plan.partial.json` y
+       `drafts/<EPIC-ID>.task-batch.json` existan.
 
-   e. **Maneja el resultado**:
-      - Si `GENERATED`: procede con la promoción (paso f).
-      - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
-        la siguiente épica hasta resolver el bloqueo.
+    e. **Invoca al subagente** siguiendo el procedimiento de
+       **Delegación a subagentes** (pasos 1-4). El prompt debe incluir:
+       - `currentEpicId`
+       - Las rutas de todos los inputs
+       - El mapa `capabilityId -> taskId` preasignado
+       - La ruta del skeleton semántico `drafts/<EPIC-ID>.task-batch.json`
 
-   f. **Promueve los drafts** siguiendo el procedimiento de
-      **Promoción de drafts**:
-      - Valida `result.json` contra los IDs reservados (paso c).
-      - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
-      - Fusiona `task-plan.partial.json` en `task-plan.json.tasks`.
-      - Actualiza `ownerTaskId` en `capability-map.json`.
-      - Actualiza `taskIds` y `decomposed = true` en `epic-plan.json`.
-      - Ejecuta `update-timestamps.mjs touch` para cada JSON modificado.
-      - Actualiza contadores en `project-state.json`.
+    f. **Maneja el resultado**:
+       - Si `GENERATED`: procede con la promoción (paso g).
+       - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
+         la siguiente épica hasta resolver el bloqueo.
 
-   g. **Siguiente épica**: si existen épicas con `decomposed = false`:
+    g. **Promueve los drafts** siguiendo el procedimiento de
+       **Promoción de drafts**:
+       - Valida `result.json` contra los IDs reservados (paso c).
+       - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
+       - Fusiona `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado
+         por `assemble-epic-task-batch.mjs`) en `task-plan.json.tasks`.
+       - Actualiza `ownerTaskId` en `capability-map.json`.
+       - Actualiza `taskIds` y `decomposed = true` en `epic-plan.json`.
+       - Ejecuta `update-timestamps.mjs touch` para cada JSON modificado.
+       - Actualiza contadores en `project-state.json`.
+
+    h. **Siguiente épica**: si existen épicas con `decomposed = false`:
       - Establece `currentEpicId` en la siguiente épica pendiente.
       - Ejecuta `update-timestamps.mjs touch` sobre `project-state.json`.
       - Permanece en fase `epic_decomposition`.
