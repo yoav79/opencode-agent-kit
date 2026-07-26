@@ -44,3 +44,6 @@ temp/
 # Local runtime artifacts
 .devflow/
 .codebase-memory/
+
+# Local GitHub workflow artifacts
+.github/workflows/
