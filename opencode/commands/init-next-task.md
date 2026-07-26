@@ -1,40 +1,34 @@
 ---
-description: Inicializa o continúa el espacio de ejecución de DevFlow para el proyecto actual
+description: Instala los contratos de selección determinista de next-task en el espacio de ejecución. Para el estado mutable y herramientas de orquestación, usa /init-execution.
 agent: general
 subtask: true
 ---
 
-Inicializa el espacio de ejecución de DevFlow para el proyecto ubicado en el
-directorio actual. Este comando no usa `next-task`; queda pendiente moverlo a
-un orquestador de ejecución o script determinista dedicado.
+Instala los contratos de selección determinista (`selection.json`,
+`task-selection.schema.json`, `select-next-task.mjs`,
+`validate-next-task.mjs`) en `.devflow/execution/`.
 
-## Objetivo
+Este comando no instala el estado mutable de ejecución ni herramientas de
+orquestación. Usa `/init-execution` para eso.
 
-Preparar el directorio `.devflow/execution/` con el estado inicial de ejecución,
-los contratos JSON Schema y el validador determinista, sin sobrescribir
-información existente.
+## Requisito
+
+Debe existir `.devflow/execution/`. Si no existe, ejecuta `/init-execution`
+primero o este comando creará únicamente el directorio base.
 
 ## Ubicación de plantillas
 
 Las plantillas globales están en:
 
-- `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/` (contratos de selección)
-- `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/execution/` (estado mutable y herramientas de orquestación)
+`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/`
 
-Archivos requeridos de `next-task`:
+Archivos requeridos:
 
 - `task-selection.schema.json`
 - `selection.json`
 - `README.md`
 - `tools/select-next-task.mjs`
 - `tools/validate-next-task.mjs`
-
-Archivos requeridos de `execution`:
-
-- `execution-state.json`
-- `execution-state.schema.json`
-- `README.md`
-- `tools/touch-execution-state.mjs`
 
 No reconstruyas estos archivos desde memoria ni desde contenido embebido en el
 comando. Si una plantilla no existe, detén la inicialización e informa cuál
@@ -44,89 +38,38 @@ archivo falta.
 
 1. Confirma que estás trabajando en la raíz del proyecto actual.
 
-2. Define estas rutas conceptuales:
+2. Verifica que existe el directorio `.devflow/execution/`. Si no existe,
+   créalo.
 
-   - Directorio destino: `.devflow/execution/`
-   - Estado destino: `.devflow/execution/execution-state.json`
-   - Schema de estado:
-     `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/execution-state.schema.json`
-   - Schema de selección:
-     `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/task-selection.schema.json`
+3. Para inicializar archivos faltantes:
 
-3. Revisa si existe el directorio `.devflow/execution/`.
-
-4. Si no existe, crea únicamente esta estructura:
-
-   ```text
-    .devflow/execution/
-    ├── execution-state.json
-    ├── execution-state.schema.json
-    ├── task-selection.schema.json
-    ├── selection.json
-    ├── README.md
-    ├── runs/
-    └── tools/
-        ├── select-next-task.mjs
-        ├── validate-next-task.mjs
-        └── touch-execution-state.mjs
-   ```
-
-5. Para inicializar archivos faltantes:
-
-   - Crea `.devflow/execution/runs/` si no existe.
    - Crea `.devflow/execution/tools/` si no existe.
-   - Si `.devflow/execution/execution-state.json` no existe, cópialo desde la
-     plantilla `execution`.
-   - Si `.devflow/execution/execution-state.schema.json` no existe, cópialo
-     desde la plantilla `execution`.
    - Si `.devflow/execution/task-selection.schema.json` no existe, cópialo
-     desde la plantilla `next-task`.
+     desde la plantilla global.
    - Si `.devflow/execution/selection.json` no existe, cópialo desde la
-     plantilla `next-task`.
+     plantilla global.
    - Si `.devflow/execution/README.md` no existe, cópialo desde la
-     plantilla `next-task`.
+     plantilla global.
    - Si `.devflow/execution/tools/select-next-task.mjs` no existe, cópialo
-     desde la plantilla `next-task`.
+     desde la plantilla global.
    - Si `.devflow/execution/tools/validate-next-task.mjs` no existe, cópialo
-     desde la plantilla `next-task`.
-   - Si `.devflow/execution/tools/touch-execution-state.mjs` no existe,
-     cópialo desde la plantilla `execution`.
+     desde la plantilla global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
-6. Cuando se cree `.devflow/execution/execution-state.json` por primera vez:
+4. Informa al terminar:
 
-   - Sustituye `project.id` por un slug derivado del nombre del proyecto.
-   - Sustituye `project.planningVersion` por `1`.
-   - Conserva el resto de la estructura sin modificaciones.
-   - Después de escribir el JSON, ejecuta:
-     ```
-      node $HOME/.config/opencode/templates/execution/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
-     ```
-   - No escribas fechas manualmente. El timestamp tool actualiza `createdAt` y
-     `updatedAt` sin agregar `timestamps.contentHash`.
-
-7. Si `.devflow/execution/` ya existe:
-
-   - Lee `.devflow/execution/execution-state.json`.
-   - Lee `.devflow/execution/selection.json`.
-   - Identifica si el estado de ejecución está inicializado o en progreso.
-   - No reinicies el estado.
-   - No reemplaces archivos existentes.
-   - Solo crea archivos faltantes.
-
-8. Informa al terminar:
-
-   - Si el espacio fue inicializado o reanudado.
    - Los archivos creados.
-   - Los archivos existentes leídos.
-   - El estado actual de ejecución.
+   - Los archivos existentes.
+   - Sugerencia: si el estado de ejecución no está inicializado, ejecuta
+     `/init-execution`.
 
 ## Notas
 
-- Este comando solo prepara el espacio de ejecución. La selección de tareas
-  se realiza con `/select-next-task`, único comando asociado a `next-task`.
-- El plan de task-planner debe estar publicado antes de seleccionar tareas.
-- Los schemas JSON son contratos inmutables; no los modifiques.
+- Este comando instala únicamente los artefactos del template `next-task`.
+- Para inicializar el estado mutable y las herramientas de orquestación
+  (`execution-state.json`, `touch-execution-state.mjs`, `runs/`), usa
+  `/init-execution`.
+- Lee y escribe archivos, no ejecuta herramientas.
 
 ## Contexto adicional
 

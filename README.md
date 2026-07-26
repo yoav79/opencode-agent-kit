@@ -190,7 +190,8 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/publish-blueprint` | software-architect | Publica el blueprint aprobado hacia `docs/software-architect/` |
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
-| `/init-next-task` | general (temporal) | Inicializa el espacio de ejecucion (`.devflow/execution/`); pendiente de mover a orquestador/script |
+| `/init-execution` | general | Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/` |
+| `/init-next-task` | general | Instala los contratos de selección determinista (`selection.json`, `select-next-task.mjs`, `validate-next-task.mjs`) en `.devflow/execution/` |
 | `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
 | `/prepare-task-run` | general (temporal) | Crea el directorio del run y registra la tarea en el estado; pendiente de mover a orquestador/script |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
@@ -215,6 +216,7 @@ opencode-agent-kit/
 │   │   ├── publish-blueprint.md
 │   │   ├── review-consistency.md
 │   │   ├── init-task-planner.md
+│   │   ├── init-execution.md
 │   │   ├── init-next-task.md
 │   │   ├── select-next-task.md
 │   │   ├── prepare-task-run.md
@@ -392,6 +394,7 @@ Una vez que el plan está publicado, inicializa el espacio de ejecución y
 selecciona la primera tarea:
 
 ```
+/init-execution
 /init-next-task
 /select-next-task
 /prepare-task-run {"taskId":"TASK-006","attempt":1}
@@ -404,8 +407,9 @@ pendiente revisarlo porque duplica parte de la preparación del run dentro de
 
 El flujo canónico:
 
-1. `/init-next-task` — Inicializa `.devflow/execution/` (usa templates `next-task` y `execution`)
-2. `/select-next-task` — Invoca el selector determinista `select-next-task.mjs` para producir `selection.json`
+1. `/init-execution` — Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/`
+2. `/init-next-task` — Instala los contratos de selección determinista en `.devflow/execution/`
+3. `/select-next-task` — Invoca el selector determinista `select-next-task.mjs` para producir `selection.json`
 3. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
    registra la tarea en el estado de ejecución
 4. `/build-task-context` — Construye `execution-context.json` y
