@@ -24,7 +24,7 @@ permission:
   grep: deny
   bash:
     "*": deny
-    "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
+    "node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json": allow
     "cp *": ask
     "mkdir *": ask
     "mkdir -p .devflow/execution .devflow/execution/runs .devflow/execution/tools": allow
@@ -35,6 +35,7 @@ permission:
     "cp -n $HOME/.config/opencode/templates/next-task/selection.json .devflow/execution/selection.json": allow
     "cp -n $HOME/.config/opencode/templates/next-task/README.md .devflow/execution/README.md": allow
     "cp -n $HOME/.config/opencode/templates/next-task/tools/validate-next-task.mjs .devflow/execution/tools/validate-next-task.mjs": allow
+    "cp -n $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/tools/touch-execution-state.mjs": allow
   task: deny
   webfetch: deny
   websearch: deny

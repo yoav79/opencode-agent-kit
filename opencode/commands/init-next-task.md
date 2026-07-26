@@ -27,6 +27,7 @@ Archivos requeridos:
 - `selection.json`
 - `README.md`
 - `tools/validate-next-task.mjs`
+- `tools/touch-execution-state.mjs`
 
 No reconstruyas estos archivos desde memoria ni desde contenido embebido en el
 comando. Si una plantilla no existe, detén la inicialización e informa cuál
@@ -58,7 +59,8 @@ archivo falta.
    ├── README.md
    ├── runs/
    └── tools/
-       └── validate-next-task.mjs
+       ├── validate-next-task.mjs
+       └── touch-execution-state.mjs
    ```
 
 5. Para inicializar archivos faltantes:
@@ -77,6 +79,8 @@ archivo falta.
      global.
    - Si `.devflow/execution/tools/validate-next-task.mjs` no existe, cópialo
      desde la plantilla global.
+   - Si `.devflow/execution/tools/touch-execution-state.mjs` no existe,
+     cópialo desde la plantilla global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
 6. Cuando se cree `.devflow/execution/execution-state.json` por primera vez:
@@ -86,10 +90,10 @@ archivo falta.
    - Conserva el resto de la estructura sin modificaciones.
    - Después de escribir el JSON, ejecuta:
      ```
-     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
      ```
-   - No escribas fechas manualmente. El timestamp tool actualiza
-     `createdAt` y `updatedAt`.
+   - No escribas fechas manualmente. El timestamp tool actualiza `createdAt` y
+     `updatedAt` sin agregar `timestamps.contentHash`.
 
 7. Si `.devflow/execution/` ya existe:
 

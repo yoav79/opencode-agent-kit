@@ -5,10 +5,13 @@
     "execution-state.json",
     "execution-state.schema.json",
     "selection.json",
-    "task-selection.schema.json"
+    "task-selection.schema.json",
+    "tools/validate-next-task.mjs",
+    "tools/touch-execution-state.mjs"
   ],
   "dirs": [
-    "runs"
+    "runs",
+    "tools"
   ],
   "agent": {
     "description": "Selecciona de forma determinista la siguiente tarea ejecutable sin modificar el plan ni el estado de ejecución.",

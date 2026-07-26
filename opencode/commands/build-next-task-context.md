@@ -33,7 +33,7 @@ desde `execution-state.json`. No requiere escribir el `taskId` manualmente.
      `execution-state.json.tasks[]` con `status: reserved`, incrementa
      `revision`, y luego actualiza timestamps con:
      ```
-     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
      ```
 
 8. Continúa con el proceso normal de construcción de contexto usando el

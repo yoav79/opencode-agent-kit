@@ -81,9 +81,10 @@ Ejemplo:
    - Incrementa `revision` en 1.
    - Después de escribir el JSON, ejecuta:
      ```
-     node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs touch .devflow/execution/execution-state.json
+     node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
      ```
-   - No escribas fechas manualmente. El timestamp tool actualiza `updatedAt`.
+   - No escribas fechas manualmente. El timestamp tool actualiza `updatedAt`
+     sin agregar `timestamps.contentHash`.
 
 8. Verifica que el directorio existe y contiene `selection.json`.
 
