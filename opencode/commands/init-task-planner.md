@@ -257,7 +257,8 @@ Primero:
    - informa que el proyecto requiere una migración explícita;
    - detén el proceso;
 8. comprueba que las rutas de `artifacts` sean compatibles con las plantillas
-   oficiales;
+   oficiales, incluyendo `draftsDirectory`, `taskIdReserver` y
+   `epicTaskBatchAssembler`;
 9. lee `.devflow/task-planner/workflow.md`, si existe, y confirma que corresponde al
    workflow versión `7`;
 10. solo después de completar estas comprobaciones, crea los archivos iniciales
@@ -342,7 +343,8 @@ Después de crear archivos iniciales:
    - `planner.epicGraphVersion = 1.0`;
    - `planner.timestampToolVersion = 1.0`;
 3. confirma que existen las rutas iniciales declaradas en
-   `project-state.json.artifacts`;
+   `project-state.json.artifacts`, incluyendo `draftsDirectory`,
+   `taskIdReserver` y `epicTaskBatchAssembler`;
 4. confirma que:
    - `semantic-contract.json.status = initialized`;
    - `requirements.json.status = initialized`;

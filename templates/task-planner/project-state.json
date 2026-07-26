@@ -109,6 +109,10 @@
       "path": ".devflow/task-planner/epics",
       "status": "initialized"
     },
+    "draftsDirectory": {
+      "path": ".devflow/task-planner/drafts",
+      "status": "initialized"
+    },
     "readiness": {
       "path": ".devflow/task-planner/readiness.json",
       "status": "initialized"
@@ -119,6 +123,14 @@
     },
     "planValidator": {
       "path": ".devflow/task-planner/tools/validate-plan.mjs",
+      "status": "available"
+    },
+    "taskIdReserver": {
+      "path": ".devflow/task-planner/tools/reserve-task-ids.mjs",
+      "status": "available"
+    },
+    "epicTaskBatchAssembler": {
+      "path": ".devflow/task-planner/tools/assemble-epic-task-batch.mjs",
       "status": "available"
     },
     "taskPlan": {

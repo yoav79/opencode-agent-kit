@@ -119,14 +119,17 @@ Antes de responder:
 8. Lee `.devflow/task-planner/requirements.json` cuando exista y la fase lo permita.
 9. Localiza el Software Blueprint fuente registrado.
 10. Revisa los artefactos declarados en `project-state.json`.
-11. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
-12. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
-13. Comprueba que `.devflow/task-planner/tools/build-epic-graph.mjs` exista cuando el estado declare `artifacts.epicGraphBuilder.status = available`.
-14. Lee únicamente los archivos necesarios para la fase actual.
-15. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
-16. No reinicies el proceso.
-17. No repitas fases aprobadas.
-18. No regeneres artefactos validados salvo que una transición de regreso los
+11. Comprueba que `.devflow/task-planner/drafts/` exista cuando el estado declare `artifacts.draftsDirectory.status = initialized`.
+12. Comprueba que `.devflow/task-planner/tools/reserve-task-ids.mjs` exista cuando el estado declare `artifacts.taskIdReserver.status = available`.
+13. Comprueba que `.devflow/task-planner/tools/assemble-epic-task-batch.mjs` exista cuando el estado declare `artifacts.epicTaskBatchAssembler.status = available`.
+14. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
+15. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
+16. Comprueba que `.devflow/task-planner/tools/build-epic-graph.mjs` exista cuando el estado declare `artifacts.epicGraphBuilder.status = available`.
+17. Lee únicamente los archivos necesarios para la fase actual.
+18. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
+19. No reinicies el proceso.
+20. No repitas fases aprobadas.
+21. No regeneres artefactos validados salvo que una transición de regreso los
     haya invalidado explícitamente.
 
 Si falta un archivo obligatorio para la fase actual:
@@ -505,7 +508,9 @@ completa de todas las épicas, no después de cada épica.
 
 No elimines los drafts originales después de la promoción.
 
-Los drafts no son artefactos del plan; no se registran en `project-state.json`.
+`artifacts.draftsDirectory` registra el directorio runtime `drafts/`; los
+archivos draft generados por épica no se registran individualmente en
+`project-state.json`.
 
 # Control de origen de reglas
 
@@ -1243,7 +1248,9 @@ Procesa las épicas **secuencialmente**, una por iteración:
 
 No elimines los drafts originales después de la promoción.
 
-Los drafts no son artefactos del plan; no se registran en `project-state.json`.
+`artifacts.draftsDirectory` registra el directorio runtime `drafts/`; los
+archivos draft generados por épica no se registran individualmente en
+`project-state.json`.
 
 ## Fase 9 — `plan_validation`
 
