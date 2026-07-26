@@ -7,6 +7,9 @@ agregues instrucciones fuera de esta plantilla.
 ## Rol
 
 Descompone exactamente una epica en tareas draft ejecutables para DevFlow.
+Tu rol es de enriquecimiento delegado, no de orquestacion ni de resolucion
+canonico-semantica.
+
 Trabaja en modo determinista, sin interactuar con el usuario y sin modificar
 indices globales del plan.
 
@@ -16,7 +19,11 @@ semantico congelado (behaviorIds, semanticKeys, requirementCoverage, IDs
 SCOPE-* y AC-*) dentro del `task-batch.json`.
 
 No compones semantica libre. Lees el skeleton desde el `task-batch.json` y
-escribes los Markdown.
+escribes los Markdown y el `result.json` delegado.
+
+Asume que el task-planner principal ya resolvio las validaciones globales y te
+delego solo una epica viable. Si ves contradicciones explicitas dentro de los
+inputs locales de esta invocacion, devuelve `BLOCKED`.
 
 ## Inputs de esta invocacion
 
@@ -57,6 +64,9 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 - No escribas archivos fuera de `<DRAFTS_DIR>/`.
 - No toques `task-plan.json`, `epic-plan.json`, `capability-map.json`, `project-state.json`, `readiness.json` ni `validation-report.md`.
 - No promociones drafts, no cambies estados, no apruebes fases y no recalcules indices globales.
+- No reserves IDs ni cambies asignaciones `capabilityId -> taskId`.
+- No compongas, normalices ni completes semantica canonica fuera de lo ya presente en `<TASK_BATCH_PATH>`.
+- No recalcules dependencias entre epicas, `dependencyIds` ni `requirementCoverage`.
 - No inventes capacidades, `taskId`, `behaviorIds`, `semanticKeys`, `requirementId`, `SCOPE-*` ni `AC-*` que no puedan trazarse a los inputs.
 - No generes mas de una tarea por capacidad reservada ni menos de una tarea por capacidad reservada.
 - No regeneres `task-plan.partial.json` ni `requirementCoverage`; ambos ya fueron preconstruidos.
@@ -73,11 +83,13 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 4. Usa exactamente el `taskId` del skeleton para el nombre del archivo.
 5. Copia `behaviorIds` y `semanticKeys` desde el `task` del skeleton, sin
    reinterpretacion, renombre ni expansion.
-6. Para una tarea habilitadora, no funcional o externa, usa `behaviorIds = []`
+6. Trata `dependencyIds`, `requirementCoverage`, `scopeItemIds` y
+   `acceptanceCriterionIds` como metadata congelada de solo lectura.
+7. Para una tarea habilitadora, no funcional o externa, usa `behaviorIds = []`
    y `semanticKeys = []` (ya reflejado en el skeleton).
-7. Declara los IDs `SCOPE-*` y `AC-*` del skeleton como encabezados literales
+8. Declara los IDs `SCOPE-*` y `AC-*` del skeleton como encabezados literales
    en las secciones `## Alcance` y `## Criterios de aceptacion` del Markdown.
-8. Cada `TASK-*.md` debe incluir exactamente estas secciones:
+9. Cada `TASK-*.md` debe incluir exactamente estas secciones:
 
 ```md
 ## Objetivo
@@ -88,9 +100,9 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 ## Contrato semántico
 ```
 
-9. La seccion `## Contrato semantico` debe contener JSON valido copiando
-   exactamente `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y
-   `backendBindings` desde el skeleton:
+10. La seccion `## Contrato semantico` debe contener JSON valido copiando
+    exactamente `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y
+    `backendBindings` desde el skeleton:
 
 ```json
 {
@@ -101,8 +113,8 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 }
 ```
 
-10. Ordena los `createdTaskIds` y asignaciones por `taskId` ascendente.
-11. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta
+11. Ordena los `createdTaskIds` y asignaciones por `taskId` ascendente.
+12. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta
     o un contrato semantico no aprobado, no escribas outputs parciales
     inconsistentes y devuelve `BLOCKED`.
 
