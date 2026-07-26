@@ -104,6 +104,7 @@ La estructura inicial válida es:
 ├── readiness.json
 ├── task-plan.json
 ├── task-template.md
+├── drafts/
 ├── epics/
 ├── tasks/
 └── tools/
@@ -123,13 +124,15 @@ No crees durante la inicialización:
 Esos archivos son artefactos derivados y deben generarse únicamente en la fase
 que les corresponde.
 
+`drafts/` sí forma parte del workspace runtime inicial y puede existir vacío.
+
 
 ## Inicialización por Bash autorizada
 
 Para un proyecto nuevo usa exactamente:
 
 ```bash
-mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools
+mkdir -p .devflow/task-planner .devflow/task-planner/drafts .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json .devflow/task-planner/project-state.json
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md .devflow/task-planner/workflow.md
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json .devflow/task-planner/decisions.json
@@ -195,16 +198,17 @@ Revisa si existe `.devflow/task-planner/`.
 Inicializa un proyecto nuevo:
 
 1. crea `.devflow/task-planner/`;
-2. crea `.devflow/task-planner/epics/`;
-3. crea `.devflow/task-planner/tasks/`;
-4. crea `.devflow/task-planner/tools/`;
-5. crea cada archivo inicial usando exactamente su plantilla oficial;
-6. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
-7. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
-8. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
-9. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
-10. no agregues registros de ejemplo;
-11. no ejecutes el validador.
+2. crea `.devflow/task-planner/drafts/`;
+3. crea `.devflow/task-planner/epics/`;
+4. crea `.devflow/task-planner/tasks/`;
+5. crea `.devflow/task-planner/tools/`;
+6. crea cada archivo inicial usando exactamente su plantilla oficial;
+7. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
+8. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
+9. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
+10. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
+11. no agregues registros de ejemplo;
+12. no ejecutes el validador.
 
 #### Caso B — `.devflow/task-planner/` ya existe
 
@@ -266,6 +270,13 @@ falten:
 - `.devflow/task-planner/tools/build-epic-graph.mjs`.
 
 Cada archivo faltante debe crearse exclusivamente desde su plantilla oficial.
+
+Los directorios runtime permitidos son:
+
+- `.devflow/task-planner/drafts/`;
+- `.devflow/task-planner/epics/`;
+- `.devflow/task-planner/tasks/`;
+- `.devflow/task-planner/tools/`.
 
 No copies al proyecto:
 

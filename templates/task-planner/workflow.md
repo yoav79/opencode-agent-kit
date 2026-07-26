@@ -70,6 +70,8 @@ ni avanzar cuando no se cumplen sus condiciones de salida.
 27. Los artefactos y `project-state.json` permanecen sincronizados.
 28. Ningún estado `completed`, `passed` o `published` se registra como intención
     provisional.
+29. `.devflow/task-planner/drafts/` es un workspace runtime de delegación; sus
+    archivos no son artefactos autoritativos ni reemplazan índices globales.
 
 ---
 
@@ -240,6 +242,21 @@ ejecutables por DevFlow.
 ### `.devflow/task-planner/tasks/*.md`
 
 Una solicitud de tarea ejecutable por DevFlow por archivo.
+
+### `.devflow/task-planner/drafts/`
+
+Workspace runtime para outputs delegados del subagente `epic-decomposer`.
+
+Solo contiene borradores promocionables por el agente principal durante
+`epic_decomposition`.
+
+Reglas:
+
+- no sustituye `.devflow/task-planner/tasks/`;
+- no sustituye `task-plan.json`, `epic-plan.json`, `capability-map.json` ni
+  `project-state.json`;
+- el validador no toma un draft como tarea publicada;
+- la existencia de un draft no implica generación ni aprobación del plan.
 
 ### `.devflow/task-planner/validation-report.md`
 
@@ -999,12 +1016,16 @@ identidad semántica de sus capacidades.
 
 ## Ejecutor
 
-`epic-decomposer` (subagente)
+Modelo híbrido:
 
-El agente principal (`task-planner`) invoca al subagente `epic-decomposer` para
-cada épica. El subagente escribe drafts en `.devflow/task-planner/drafts/`;
-el agente principal promueve los drafts, mergea los JSON parciales y actualiza
-el estado global.
+- el agente principal (`task-planner`) orquesta la fase, conserva la autoridad
+  final y es el único responsable del estado global;
+- el subagente `epic-decomposer` produce drafts por épica dentro de
+  `.devflow/task-planner/drafts/`.
+
+La fase no termina por la sola respuesta del subagente. Solo el agente
+principal puede promover drafts, fusionar índices globales y declarar una épica
+como descompuesta.
 
 ## Estado inicial
 
@@ -1014,15 +1035,64 @@ el estado global.
 ## Entradas permitidas
 
 - épica actual (`currentEpicId`);
+- archivo `.devflow/task-planner/epics/<EPIC-ID>.md` de la épica actual;
 - capacidades de la épica (`ownerEpicId = currentEpicId`);
 - `semantic-contract.json` aprobado;
 - `requirements.json`;
 - `capability-map.json`;
+- `epic-plan.json`;
 - `task-plan.json` existente;
 - blueprint resuelto;
 - `construction-strategy.md`;
-- decisiones y estrategia;
+- `decisions.json`;
 - mapa preasignado `capabilityId -> taskId`.
+
+## Inputs obligatorios del subagente
+
+El agente principal solo puede invocar `epic-decomposer` cuando le entrega,
+como mínimo:
+
+- `currentEpicId`;
+- el Markdown de la épica actual;
+- las capacidades filtradas cuya `ownerEpicId = currentEpicId`;
+- `semantic-contract.json` aprobado;
+- `requirements.json`;
+- `capability-map.json`;
+- `epic-plan.json`;
+- `task-plan.json` existente;
+- `SOFTWARE-BLUEPRINT-RESOLVED.md`;
+- `construction-strategy.md`;
+- `decisions.json`;
+- el mapa preasignado `capabilityId -> taskId` para mantener IDs estables entre
+  reintentos.
+
+Si falta cualquiera de esos inputs, el agente principal no debe promover ni
+simular resultados; debe tratar la épica como `BLOCKED`.
+
+## Outputs draft del subagente
+
+Todos los outputs del subagente se escriben exclusivamente dentro de
+`.devflow/task-planner/drafts/`:
+
+- `TASK-<ID>.md`: un draft Markdown por tarea propuesta;
+- `<EPIC-ID>.task-plan.partial.json`: fragmento mergeable con el array `tasks`
+  de esa épica;
+- `<EPIC-ID>.result.json`: resumen estructurado para promoción, con `epicId`,
+  `status`, `createdTaskIds`, `capabilityAssignments` y `epicUpdates`.
+
+Los drafts no cambian por sí mismos el plan global.
+
+## Acciones prohibidas al subagente
+
+El subagente `epic-decomposer` no puede:
+
+- escribir `task-plan.json`, `epic-plan.json`, `capability-map.json` ni
+  `project-state.json`;
+- escribir `readiness.json` o `validation-report.md`;
+- escribir archivos fuera de `.devflow/task-planner/drafts/`;
+- escribir, recalcular o reemplazar índices globales del plan;
+- marcar fases como aprobadas, validadas, descompuestas, publicadas o
+  completadas.
 
 ## Proceso obligatorio por épica
 
@@ -1033,14 +1103,32 @@ el estado global.
 4. El subagente devuelve `GENERATED` o `BLOCKED`.
 5. Si `GENERATED`, el agente principal:
    a. Lee `drafts/<EPIC-ID>.result.json`.
-   b. Promueve cada `TASK-*.md` de `drafts/` a `tasks/`.
-   c. Mergea `task-plan.partial.json` en `task-plan.json`.
-   d. Actualiza `ownerTaskId` en `capability-map.json`.
-   e. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
-   f. Actualiza contadores y `project-state.json`.
-   g. Ejecuta `build-epic-graph.mjs`.
-   h. Si quedan épicas, continúa; si no, avanza a `plan_validation`.
+   b. Verifica que `epicId = currentEpicId` y que todos los outputs draft
+      pertenecen exclusivamente a esa épica.
+   c. Verifica que cada `createdTaskId`, `capabilityAssignment` y `epicUpdate`
+      sea consistente con la épica, sus capacidades y el contrato semántico.
+   d. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/`.
+   e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` en `task-plan.json`.
+   f. Actualiza `ownerTaskId` en `capability-map.json`.
+   g. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
+   h. Actualiza contadores y `project-state.json`.
+   i. Ejecuta `build-epic-graph.mjs`.
+   j. Si quedan épicas, continúa; si no, avanza a `plan_validation`.
 6. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
+
+## Regla de promoción
+
+Un draft solo puede promocionarse cuando el agente principal confirma que:
+
+- el draft pertenece a la épica actual;
+- la cadena semántica sigue siendo exacta entre contrato, capacidad, tarea,
+  cobertura y Markdown;
+- no existe escritura directa previa sobre índices globales;
+- la promoción mantiene una sola tarea propietaria por capacidad.
+
+Si cualquiera de esas comprobaciones falla, prevalece la autoridad del agente
+principal: no se promociona el draft, la épica no se marca como `decomposed` y
+la fase permanece en `epic_decomposition` o `blocked`, según corresponda.
 
 ## Estructura de `task-plan.json`
 
