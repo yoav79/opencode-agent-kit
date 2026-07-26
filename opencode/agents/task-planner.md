@@ -15,7 +15,7 @@ permission:
     "*": deny
     "cp *": ask
     "mkdir *": ask
-    "mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/tools": allow
+    "mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/drafts .devflow/task-planner/tools": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json .devflow/task-planner/project-state.json": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md .devflow/task-planner/workflow.md": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json .devflow/task-planner/decisions.json": allow
@@ -318,21 +318,60 @@ define cómo el agente principal invoca al subagente y promueve sus resultados.
 
 ## Procedimiento de invocación
 
-1. Identifica la épica actual desde `project-state.json.currentEpicId`.
-2. Lee el contrato del subagente desde:
+### Paso 1 — Identificar la épica y capacidades
+
+1. Lee `currentEpicId` desde `project-state.json.workflow.currentEpicId`.
+2. Lee `epic-plan.json` y localiza la entrada cuyo `id = currentEpicId`.
+3. Lee `capability-map.json` y filtra las capacidades cuyo
+   `ownerEpicId = currentEpicId` y `status = planned` (o sin campo `status`,
+   que equivale a planned).
+4. Calcula el número de capacidades principales (funcionales o habilitadoras
+   que no sean dependencias internas) que generarán tareas.
+
+### Paso 2 — Reservar TASK-### antes de delegar
+
+1. Lee `task-plan.json.tasks` y determina el próximo `TASK-###` disponible:
+   - Extrae todos los `id` que siguen el patrón `TASK-NNN`.
+   - Calcula `nextId = max(NNN) + 1` formateado a tres dígitos.
+2. Para cada capacidad que generará una tarea, reserva un `TASK-###`
+   incrementando `nextId`.
+3. Construye el mapa `capabilityId -> taskId` con las reservas.
+4. Registra internamente el rango reservado; no lo persistas en un archivo.
+
+Este paso garantiza que el subagente reciba IDs preasignados estables y que
+no existan colisiones entre invocaciones sucesivas.
+
+### Paso 3 — Verificar inputs y contratos
+
+1. Lee el contrato del subagente desde:
    ```
    ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/contracts/epic-decomposer.md
    ```
-3. Verifica los inputs requeridos según el contrato:
+2. Verifica cada input requerido por el contrato:
    - `.devflow/task-planner/epics/<EPIC-ID>.md` debe existir
-   - Las capacidades de la épica deben existir en `capability-map.json`
-   - `semantic-contract.json` debe estar `approved`
-   - Todos los demás inputs listados en el contrato deben existir
-4. Invoca al subagente mediante la herramienta `task`:
+   - Las capacidades filtradas en el paso 1 deben existir en
+     `capability-map.json`
+   - `semantic-contract.json` debe tener `status = approved`
+   - `requirements.json` debe existir
+   - `SOFTWARE-BLUEPRINT-RESOLVED.md` debe existir
+   - `construction-strategy.md` debe existir
+   - `decisions.json` debe existir
+   - `task-plan.json` debe existir
+3. Si falta algún input, devuelve `BLOCKED` con la lista exacta de faltantes.
+
+### Paso 4 — Invocar al subagente
+
+1. Asegúrate de que `.devflow/task-planner/drafts/` exista
+   (`mkdir -p .devflow/task-planner/drafts`).
+2. Invoca al subagente mediante la herramienta `task`:
    - Selecciona el subagente `epic-decomposer`
-   - Incluye en el prompt: `currentEpicId`, las rutas de todos los inputs
-     requeridos, y el mapa `capabilityId -> taskId` preasignado
-5. Lee el resultado del subagente y su return code.
+   - El prompt debe incluir:
+     - `currentEpicId`
+     - Las rutas de todos los inputs requeridos
+     - El mapa `capabilityId -> taskId` preasignado (paso 2)
+     - Instrucción de que debe escribir los drafts en
+       `.devflow/task-planner/drafts/`
+3. Lee el resultado del subagente y su return code.
 
 ## Manejo de resultados
 
@@ -345,30 +384,61 @@ define cómo el agente principal invoca al subagente y promueve sus resultados.
 
 Cuando el subagente devuelve `GENERATED`:
 
+### Validación pre-promoción
+
 1. Lee `.devflow/task-planner/drafts/<EPIC-ID>.result.json`.
-2. Lee cada draft `TASK-*.md` desde `drafts/`.
-3. Verifica que cada tarea contiene las secciones obligatorias y el bloque
-   semántico `## Contrato semántico`.
-4. Mueve cada `drafts/TASK-*.md` a `.devflow/task-planner/tasks/TASK-*.md`.
-5. Lee `drafts/<EPIC-ID>.task-plan.partial.json` y fusiona sus tareas en
-   `task-plan.json.tasks`.
-6. Para cada asignación en `result.json.capabilityAssignments`, establece
-   `ownerTaskId` en la capacidad correspondiente dentro de `capability-map.json`.
-7. Actualiza la épica en `epic-plan.json`:
+2. Verifica que `result.json.epicId` coincide con `currentEpicId`.
+3. Para cada `TASK-*.md` en `drafts/`:
+   - Verifica que contiene las secciones obligatorias: `## Objetivo`,
+     `## Alcance`, `## Fuera de alcance`, `## Criterios de aceptación`,
+     `## Pruebas`, `## Contrato semántico`.
+   - Verifica que el bloque `## Contrato semántico` contiene JSON válido con
+     `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y `backendBindings`.
+   - Verifica que los IDs `SCOPE-*` y `AC-*` en el Markdown existen
+     literalmente en el texto.
+4. Verifica que cada `taskId` en `result.json.createdTaskIds` coincide con
+   un archivo `TASK-*.md` existente en `drafts/`.
+5. Verifica que cada `taskId` en `result.json.capabilityAssignments` coincide
+   con los IDs reservados en el paso 2 de la invocación (coherencia de IDs).
+6. Si alguna verificación falla, informa al usuario y no promociones.
+
+### Pasos de promoción
+
+1. Mueve cada `drafts/TASK-*.md` a `.devflow/task-planner/tasks/TASK-*.md`.
+2. Lee `drafts/<EPIC-ID>.task-plan.partial.json` y fusiona sus tareas en
+   `task-plan.json.tasks`. No duplices tareas que ya existan.
+3. Para cada asignación en `result.json.capabilityAssignments`, establece
+   `ownerTaskId` en la capacidad correspondiente dentro de
+   `capability-map.json`.
+4. Actualiza la épica en `epic-plan.json`:
    - Agrega los `taskIds` desde `result.json.epicUpdates.taskIds`
    - Establece `decomposed = true` según `result.json.epicUpdates.decomposed`
-8. Actualiza los contadores reales en `project-state.json`.
-9. Ejecuta:
-   ```
-   node .devflow/task-planner/tools/build-epic-graph.mjs
-   ```
-10. Si quedan épicas por descomponer (alguna con `decomposed = false`):
-    - Establece `currentEpicId` en la siguiente épica pendiente
-    - Permanece en fase `epic_decomposition`
-    - Invoca nuevamente al subagente
-11. Si todas las épicas están descompuestas:
-    - Cambia fase a `plan_validation`
-    - Cambia estado a `in_progress`
+5. Ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch`
+   para cada archivo JSON modificado: `task-plan.json`, `epic-plan.json`,
+   `capability-map.json`.
+6. Actualiza los contadores reales en `project-state.json`:
+   - Recalcula `tasksGenerated` desde `task-plan.tasks.length`
+   - Recalcula `epicsDecomposed` contando épicas con `decomposed = true`
+7. Ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch`
+   sobre `project-state.json`.
+
+### Loop de épicas
+
+8. Si quedan épicas por descomponer (alguna con `decomposed = false` en
+   `epic-plan.json`):
+   - Establece `currentEpicId` en la siguiente épica pendiente
+   - Ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch
+     .devflow/task-planner/project-state.json`
+   - Permanece en fase `epic_decomposition`
+   - Repite desde el **Paso 1** del procedimiento de invocación
+9. Si todas las épicas están descompuestas (`epicsDecomposed` =
+   `epicsGenerated`):
+   - Ejecuta `node .devflow/task-planner/tools/build-epic-graph.mjs`
+   - Cambia `workflow.phase` a `plan_validation`
+   - Cambia `workflow.status` a `in_progress`
+
+`build-epic-graph.mjs` se ejecuta una sola vez al terminar la descomposición
+completa de todas las épicas, no después de cada épica.
 
 No elimines los drafts originales después de la promoción.
 
@@ -1017,34 +1087,88 @@ Objetivo operativo:
 - delegar la generación de tareas al subagente `epic-decomposer`;
 - promover los drafts resultantes y fusionar los cambios en el estado global;
 - conservar la identidad semántica de cada capacidad funcional;
-- asignar exactamente una tarea propietaria a cada capacidad `planned`.
+- asignar exactamente una tarea propietaria a cada capacidad `planned`;
+- mantener `task-planner` como único escritor de los índices globales.
 
 No generes tareas directamente. El subagente `epic-decomposer` produce los
 drafts; tú los promueves, mergeas y actualizas el estado.
 
-Procesa cada épica así:
+### Precondiciones de entrada
 
-0. antes de la primera invocación, si `task-plan.json.status = initialized`,
-   establécela en `in_progress`;
-1. sigue el procedimiento de **Delegación a subagentes** descrito arriba:
-   - verifica los inputs requeridos según el contrato;
-   - invoca a `epic-decomposer` con `currentEpicId` y los inputs;
-   - maneja el resultado según la tabla de Manejo de resultados;
-2. si el subagente devuelve `GENERATED`, ejecuta el procedimiento de
-   **Promoción de drafts**:
-   - lee `drafts/<EPIC-ID>.result.json`;
-   - promueve cada `TASK-*.md` de `drafts/` a `tasks/`;
-   - mergea `task-plan.partial.json` en `task-plan.json`;
-   - actualiza `capability-map.json` con `ownerTaskId`;
-   - actualiza `epic-plan.json` con `taskIds` y `decomposed`;
-   - ejecuta `node .devflow/task-planner/tools/build-epic-graph.mjs`;
-3. si el subagente devuelve `BLOCKED`:
-   - informa al usuario la causa;
-   - no avances;
-4. si todas las épicas están descompuestas, avanza a `plan_validation`.
+1. Todas las épicas deben existir en `epic-plan.json` con `decomposed = false`.
+2. `capability-map.json` debe contener capacidades con `ownerEpicId` asignado.
+3. `semantic-contract.json` debe estar `approved`.
+4. `task-plan.json` debe existir (puede tener `status = initialized`).
 
-No edites `readiness.json` ni `validation-report.md` y no ejecutes todavía el
-validador final.
+### Flujo de ejecución
+
+Procesa las épicas **secuencialmente**, una por iteración:
+
+0. Antes de la primera invocación:
+   - Si `task-plan.json.status = initialized`, establécela en `in_progress`.
+   - Ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch
+     .devflow/task-planner/task-plan.json`.
+
+1. Para cada épica pendiente (`decomposed = false`):
+
+   a. **Lee `currentEpicId`** desde
+      `project-state.json.workflow.currentEpicId`.
+
+   b. **Calcula capacidades planificadas**: filtra `capability-map.json` por
+      `ownerEpicId = currentEpicId`. Cada capacidad filtrada generará una
+      tarea.
+
+   c. **Reserva TASK-###**: determina el próximo ID disponible desde
+      `task-plan.json.tasks`, reserva un `TASK-###` por capacidad, y
+      construye el mapa `capabilityId -> taskId`.
+
+   d. **Invoca al subagente** siguiendo el procedimiento de
+      **Delegación a subagentes** (pasos 1-4). El prompt debe incluir:
+      - `currentEpicId`
+      - Las rutas de todos los inputs
+      - El mapa `capabilityId -> taskId` preasignado
+
+   e. **Maneja el resultado**:
+      - Si `GENERATED`: procede con la promoción (paso f).
+      - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
+        la siguiente épica hasta resolver el bloqueo.
+
+   f. **Promueve los drafts** siguiendo el procedimiento de
+      **Promoción de drafts**:
+      - Valida `result.json` contra los IDs reservados (paso c).
+      - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
+      - Fusiona `task-plan.partial.json` en `task-plan.json.tasks`.
+      - Actualiza `ownerTaskId` en `capability-map.json`.
+      - Actualiza `taskIds` y `decomposed = true` en `epic-plan.json`.
+      - Ejecuta `update-timestamps.mjs touch` para cada JSON modificado.
+      - Actualiza contadores en `project-state.json`.
+
+   g. **Siguiente épica**: si existen épicas con `decomposed = false`:
+      - Establece `currentEpicId` en la siguiente épica pendiente.
+      - Ejecuta `update-timestamps.mjs touch` sobre `project-state.json`.
+      - Permanece en fase `epic_decomposition`.
+      - Repite desde el paso 1a.
+
+2. Cuando todas las épicas estén descompuestas
+   (`epicsDecomposed = epicsGenerated`):
+   - Ejecuta `node .devflow/task-planner/tools/build-epic-graph.mjs`.
+   - Cambia `workflow.phase` a `plan_validation`.
+   - Cambia `workflow.status` a `in_progress`.
+
+### Restricciones
+
+- No paralelices invocaciones a `epic-decomposer`. Procesa una épica a la
+  vez.
+- El subagente **nunca** escribe en índices globales (`task-plan.json`,
+  `epic-plan.json`, `capability-map.json`, `project-state.json`).
+- `build-epic-graph.mjs` se ejecuta **una sola vez** al terminar la
+  descomposición completa de todas las épicas, no después de cada épica.
+- No edites `readiness.json` ni `validation-report.md` en esta fase.
+- No ejecutes el validador final en esta fase.
+
+No elimines los drafts originales después de la promoción.
+
+Los drafts no son artefactos del plan; no se registran en `project-state.json`.
 
 ## Fase 9 — `plan_validation`
 
