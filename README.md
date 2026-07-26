@@ -75,10 +75,11 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │                                                                  │
 │  .devflow/execution/                                             │
 │  ├── execution-state.json  (estado mutable del orquestador)     │
-│  ├── selection.json        (salida de Next Task Agent)          │
+│  ├── selection.json        (salida del selector determinista)   │
 │  ├── execution-context.schema.json  (contrato de contexto)      │
 │  ├── context-build-request.schema.json                          │
-│  ├── tools/validate-next-task.mjs                               │
+│  ├── tools/select-next-task.mjs   (selector determinista)       │
+│  ├── tools/validate-next-task.mjs (gate de validación)          │
 │  └── runs/                 (evidencia creada por orquestador)    │
 │      └── TASK-XXX/attempt-NN/                                   │
 │          ├── selection.json    (evidencia de la reserva)        │
@@ -133,22 +134,22 @@ Transforma un Software Blueprint aprobado en un plan completo de tareas para Dev
 
 **Permisos:** Puede editar archivos en `.devflow/task-planner/`. Solo ejecuta herramientas de planificacion Node deterministas autorizadas. No ejecuta codigo del producto, no hace commits ni modifica el producto.
 
-### `next-task` — Selector de Siguiente Tarea
+### `next-task` — Wrapper del Selector Determinista
 
-Consume el plan aprobado y el estado de ejecución para seleccionar exactamente
-una tarea mediante reglas deterministas. Puede ser reemplazado por un scheduler
-sin cambiar los contratos.
+Wrapper operativo mínimo que invoca `select-next-task.mjs` para producir
+`selection.json` mediante reglas deterministas. No contiene lógica de
+selección; delega completamente en la herramienta.
 
 - **Modo:** subagent
 - **Temperatura:** 0
-- **Entrada:** `.devflow/task-planner/*.json` y `.devflow/execution/execution-state.json`
-- **Salida:** `.devflow/execution/selection.json`
+- **Entrada:** Solo verifica existencia de `execution-state.json`; el selector lee los archivos de planificación y estado directamente
+- **Salida:** Clasificación producida por el selector determinista
+- **Selector:** `.devflow/execution/tools/select-next-task.mjs`
 - **Gate:** `.devflow/execution/tools/validate-next-task.mjs`
 
-Permisos: Solo lectura sobre planificación y estado de ejecución. Escribe
-únicamente `.devflow/execution/selection.json`. No ejecuta comandos, no crea
-directorios, no copia plantillas, no modifica `execution-state.json` y no crea
-ni modifica archivos bajo `runs/`.
+Permisos: Lectura mínima (`execution-state.json`). Ejecuta únicamente el
+selector determinista vía bash. No lee, interpreta ni modifica `selection.json`
+directamente.
 
 ### `context-builder` — Constructor de Contexto de Ejecución
 
@@ -190,7 +191,7 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
 | `/init-next-task` | general (temporal) | Inicializa el espacio de ejecucion (`.devflow/execution/`); pendiente de mover a orquestador/script |
-| `/select-next-task` | next-task | Selecciona la siguiente tarea disponible |
+| `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
 | `/prepare-task-run` | general (temporal) | Crea el directorio del run y registra la tarea en el estado; pendiente de mover a orquestador/script |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
 | `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
@@ -264,11 +265,21 @@ opencode-agent-kit/
 │   │       ├── validate-plan.mjs
 │   │       ├── *.test.mjs
 │   │       └── fixtures/
-│   ├── next-task/                 # Contratos y gate de selección
-│   │   ├── execution-state.json
+│   ├── next-task/                 # Contratos, selector determinista y gate de selección
+│   │   ├── README.md
 │   │   ├── selection.json
-│   │   ├── *.schema.json
-│   │   └── tools/validate-next-task.mjs
+│   │   ├── task-selection.schema.json
+│   │   ├── scaffold.json
+│   │   └── tools/
+│   │       ├── select-next-task.mjs
+│   │       └── validate-next-task.mjs
+│   ├── execution/                 # Estado mutable de ejecución y herramientas de orquestación
+│   │   ├── README.md
+│   │   ├── execution-state.json
+│   │   ├── execution-state.schema.json
+│   │   ├── scaffold.json
+│   │   └── tools/
+│   │       └── touch-execution-state.mjs
 │   └── context-builder/           # Contratos de contexto de ejecución
 │       ├── README.md
 │       ├── context-build-request.schema.json
@@ -300,7 +311,7 @@ opencode-agent-kit/
 - [OpenCode](https://opencode.ai) instalado y configurado
 - Bash
 - Python 3 (para validacion)
-- Node.js (para las herramientas deterministas de task-planner y next-task)
+- Node.js (para las herramientas deterministas de task-planner, next-task y execution)
 
 ### Instalacion Global
 
@@ -393,8 +404,8 @@ pendiente revisarlo porque duplica parte de la preparación del run dentro de
 
 El flujo canónico:
 
-1. `/init-next-task` — Crea `.devflow/execution/` con estado y contratos; no usa `next-task`
-2. `/select-next-task` — Evalúa el plan y selecciona una tarea; único comando asociado a `next-task`
+1. `/init-next-task` — Inicializa `.devflow/execution/` (usa templates `next-task` y `execution`)
+2. `/select-next-task` — Invoca el selector determinista `select-next-task.mjs` para producir `selection.json`
 3. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
    registra la tarea en el estado de ejecución
 4. `/build-task-context` — Construye `execution-context.json` y

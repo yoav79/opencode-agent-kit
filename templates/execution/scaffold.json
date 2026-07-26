@@ -1,0 +1,18 @@
+{
+  "directory": ".devflow/execution",
+  "files": [
+    "README.md",
+    "execution-state.json",
+    "execution-state.schema.json",
+    "tools/touch-execution-state.mjs"
+  ],
+  "dirs": [
+    "runs",
+    "tools"
+  ],
+  "agent": {
+    "description": "Estado mutable de ejecución y herramientas de orquestación para DevFlow.",
+    "mode": "subagent",
+    "temperature": "0"
+  }
+}

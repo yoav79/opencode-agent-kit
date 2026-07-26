@@ -1,6 +1,8 @@
 # Next Task
 
-Este template instala el estado y los contratos del dominio de ejecución utilizado por `Next Task Agent`.
+Este template instala los contratos y herramientas de selección determinista de
+la siguiente tarea ejecutable. El estado de ejecución mutable
+(`execution-state.json`) pertenece al template `execution`.
 
 ## Ubicación en el proyecto
 
@@ -8,19 +10,46 @@ El contenido se copia a:
 
 ```text
 .devflow/execution/
-├── README.md
-├── execution-state.json
-├── execution-state.schema.json
 ├── selection.json
 ├── task-selection.schema.json
-└── runs/
+└── tools/
+    ├── select-next-task.mjs
+    └── validate-next-task.mjs
 ```
 
-El nombre del template es `next-task` porque corresponde al agente que inaugura esta capacidad. La ubicación runtime se llama `execution` porque sus archivos serán compartidos posteriormente por el scheduler, el ejecutor, el reviewer y el orquestador.
+El directorio `.devflow/execution/` es compartido con el template `execution`
+(runtime de orquestación). Ambos templates coexisten en el mismo directorio
+porque el selector consume `execution-state.json` y el orquestador consume
+`selection.json`.
+
+## Selector determinista
+
+`tools/select-next-task.mjs` es el productor oficial de `selection.json`. Lee
+las entradas canónicas, aplica el algoritmo determinista y escribe el resultado
+con formato canónico.
+
+Uso:
+
+```bash
+node tools/select-next-task.mjs [--root RUTA]
+```
+
+La salida stdout contiene únicamente la clasificación resultante.
+
+## Validador
+
+`tools/validate-next-task.mjs` es el gate que verifica que `selection.json`
+coincida exactamente con el resultado determinista esperado.
+
+Uso:
+
+```bash
+node tools/validate-next-task.mjs [--root RUTA] [--json] [--quiet]
+```
 
 ## Entradas canónicas
 
-`Next Task Agent` debe consumir únicamente:
+El selector consume únicamente:
 
 - `.devflow/task-planner/project-state.json`
 - `.devflow/task-planner/readiness.json`
@@ -29,15 +58,11 @@ El nombre del template es `next-task` porque corresponde al agente que inaugura 
 - `.devflow/task-planner/capability-map.json`
 - `.devflow/execution/execution-state.json`
 
-El agente no debe modificar ninguno de esos archivos.
-
 ## Salida canónica
 
-El agente escribe exclusivamente:
+El selector escribe exclusivamente:
 
 - `.devflow/execution/selection.json`
-
-El orquestador es responsable de validar la selección, reservar la tarea, crear el run, copiar la selección como evidencia y actualizar `execution-state.json`.
 
 ## Plan listo
 
@@ -91,7 +116,7 @@ La primera tarea es seleccionada. `unlocksTaskIds` es informativo y no modifica 
 
 ## Clasificaciones
 
-- `NOT_EVALUATED`: valor inicial del archivo antes de ejecutar el agente.
+- `NOT_EVALUATED`: valor inicial del archivo antes de ejecutar el selector.
 - `TASK_SELECTED`: se seleccionó exactamente una tarea.
 - `NO_READY_TASK`: el plan es válido, pero no existe una tarea disponible o la concurrencia está agotada.
 - `PLAN_NOT_READY`: el plan aún no está validado, publicado y aprobado.
@@ -104,7 +129,7 @@ La primera tarea es seleccionada. `unlocksTaskIds` es informativo y no modifica 
 
 ## Propiedad de los archivos
 
-- `execution-state.json`: mutable únicamente por el orquestador.
-- `selection.json`: reemplazable únicamente por `Next Task Agent`.
-- `runs/`: creado y administrado únicamente por el orquestador.
-- `*.schema.json`: contratos inmutables durante una ejecución.
+- `selection.json`: reemplazable únicamente por `select-next-task.mjs`.
+- `task-selection.schema.json`: contrato inmutable durante una ejecución.
+- `execution-state.json`: mutable únicamente por el orquestador (template `execution`).
+- `tools/`: herramientas deterministas, no modificables manualmente.

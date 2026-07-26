@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://devflow.local/schemas/next-task/execution-state.schema.json",
+  "$id": "https://devflow.local/schemas/execution/execution-state.schema.json",
   "title": "DevFlow Execution State",
   "description": "Estado canónico y mutable de ejecución consumido en modo de solo lectura por Next Task Agent.",
   "type": "object",

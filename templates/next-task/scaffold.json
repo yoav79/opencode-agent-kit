@@ -2,15 +2,12 @@
   "directory": ".devflow/execution",
   "files": [
     "README.md",
-    "execution-state.json",
-    "execution-state.schema.json",
     "selection.json",
     "task-selection.schema.json",
-    "tools/validate-next-task.mjs",
-    "tools/touch-execution-state.mjs"
+    "tools/select-next-task.mjs",
+    "tools/validate-next-task.mjs"
   ],
   "dirs": [
-    "runs",
     "tools"
   ],
   "agent": {

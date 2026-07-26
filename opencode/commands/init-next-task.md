@@ -18,16 +18,22 @@ información existente.
 
 Las plantillas globales están en:
 
-`${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/`
+- `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/next-task/` (contratos de selección)
+- `${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/execution/` (estado mutable y herramientas de orquestación)
 
-Archivos requeridos:
+Archivos requeridos de `next-task`:
 
-- `execution-state.json`
-- `execution-state.schema.json`
 - `task-selection.schema.json`
 - `selection.json`
 - `README.md`
+- `tools/select-next-task.mjs`
 - `tools/validate-next-task.mjs`
+
+Archivos requeridos de `execution`:
+
+- `execution-state.json`
+- `execution-state.schema.json`
+- `README.md`
 - `tools/touch-execution-state.mjs`
 
 No reconstruyas estos archivos desde memoria ni desde contenido embebido en el
@@ -52,16 +58,17 @@ archivo falta.
 4. Si no existe, crea únicamente esta estructura:
 
    ```text
-   .devflow/execution/
-   ├── execution-state.json
-   ├── execution-state.schema.json
-   ├── task-selection.schema.json
-   ├── selection.json
-   ├── README.md
-   ├── runs/
-   └── tools/
-       ├── validate-next-task.mjs
-       └── touch-execution-state.mjs
+    .devflow/execution/
+    ├── execution-state.json
+    ├── execution-state.schema.json
+    ├── task-selection.schema.json
+    ├── selection.json
+    ├── README.md
+    ├── runs/
+    └── tools/
+        ├── select-next-task.mjs
+        ├── validate-next-task.mjs
+        └── touch-execution-state.mjs
    ```
 
 5. Para inicializar archivos faltantes:
@@ -69,19 +76,21 @@ archivo falta.
    - Crea `.devflow/execution/runs/` si no existe.
    - Crea `.devflow/execution/tools/` si no existe.
    - Si `.devflow/execution/execution-state.json` no existe, cópialo desde la
-     plantilla global.
+     plantilla `execution`.
    - Si `.devflow/execution/execution-state.schema.json` no existe, cópialo
-     desde la plantilla global.
+     desde la plantilla `execution`.
    - Si `.devflow/execution/task-selection.schema.json` no existe, cópialo
-     desde la plantilla global.
+     desde la plantilla `next-task`.
    - Si `.devflow/execution/selection.json` no existe, cópialo desde la
-     plantilla global.
-   - Si `.devflow/execution/README.md` no existe, cópialo desde la plantilla
-     global.
+     plantilla `next-task`.
+   - Si `.devflow/execution/README.md` no existe, cópialo desde la
+     plantilla `next-task`.
+   - Si `.devflow/execution/tools/select-next-task.mjs` no existe, cópialo
+     desde la plantilla `next-task`.
    - Si `.devflow/execution/tools/validate-next-task.mjs` no existe, cópialo
-     desde la plantilla global.
+     desde la plantilla `next-task`.
    - Si `.devflow/execution/tools/touch-execution-state.mjs` no existe,
-     cópialo desde la plantilla global.
+     cópialo desde la plantilla `execution`.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
 6. Cuando se cree `.devflow/execution/execution-state.json` por primera vez:
@@ -91,7 +100,7 @@ archivo falta.
    - Conserva el resto de la estructura sin modificaciones.
    - Después de escribir el JSON, ejecuta:
      ```
-     node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
+      node $HOME/.config/opencode/templates/execution/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
      ```
    - No escribas fechas manualmente. El timestamp tool actualiza `createdAt` y
      `updatedAt` sin agregar `timestamps.contentHash`.
