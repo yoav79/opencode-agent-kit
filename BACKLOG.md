@@ -51,19 +51,18 @@ principal permite reducir pasos y errores.
 
 </div>
 
-<div style="background:#f8d7da; border-left:4px solid #dc3545; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Alto] Subagente para epic_decomposition (fase 8)
+### [Hecho] Subagente para epic_decomposition (fase 8)
 **[task-planner]**
 
-Crear un subagente que descomponga una épica por invocación. El task-planner
-lo invoca N veces (una por épica). Reduce la carga del agente principal y
-permite procesar épicas en paralelo.
+Se creó el subagente `epic-decomposer` que descompone una épica por
+invocación. El task-planner lo invoca secuencialmente, una por épica,
+promueve los drafts y mantiene el control de índices globales.
 
 - **P:** alta | **E:** L | **A:** agente
-- **Referencias:** `opencode/agents/task-planner.md`
-- **Criterio de salida:** subagente que descompone una épica por invocación, invocable N veces en paralelo desde task-planner
-- **Depende de:** Falta task: allow en task-planner
+- **Referencias:** `opencode/agents/epic-decomposer.md`
+- **Completado en:** (anterior)
 
 </div>
 
@@ -90,19 +89,17 @@ publicación.
 
 
 
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Falta task: allow en task-planner
+### [Hecho] task: allow habilitado en task-planner
 **[task-planner]**
 
-Actualmente `task: deny`. Si vamos a crear subagentes para fases 3 y 8,
-necesita `task: allow`. También permitiría invocar al consistency-reviewer
-u otros validadores externos.
+Se agregó `task: allow` al agente task-planner, permitiendo invocar
+subagentes deterministas (epic-decomposer, blueprint-compiler, etc.).
 
 - **P:** media | **E:** S | **A:** agente
 - **Referencias:** `opencode/agents/task-planner.md`
-- **Criterio de salida:** el agente task-planner tiene `task: allow` para invocar subagentes y validadores externos
-- **Depende de:** Ninguna
+- **Completado en:** (este commit)
 
 </div>
 

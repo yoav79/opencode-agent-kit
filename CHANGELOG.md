@@ -11,6 +11,8 @@ cada hito.
 
 ### Added
 
+- **permission-policy.test.mjs** — Tests para `task: allow` en task-planner,
+  `mode: subagent` en epic-decomposer, y restricción de drafts/. (este commit)
 - **BACKLOG.md** — Backlog organizado por agente, con prioridad, esfuerzo,
   área y criterios de salida. (e719e42)
 - **14 items en software-architect** — Refactorización ordenada en 5 fases
@@ -21,6 +23,9 @@ cada hito.
 
 ### Changed
 
+- **Fixture workflow.md sincronizado** — Alineado con el template principal:
+  principio 29 (drafts/), sección drafts/ en documentos, y fase 8 con modelo
+  híbrido task-planner/epic-decomposer. (este commit)
 - **BACKLOG.md reordenado** — items de software-architect reorganizados por
   cadena de dependencia (5 fases). (este commit)
 - **CHANGELOG sincronizado** — descripciones corregidas y commits faltantes
