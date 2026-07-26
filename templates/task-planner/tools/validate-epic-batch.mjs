@@ -221,7 +221,11 @@ function parseSemanticBlock(markdown, taskId) {
     if (!obj(parsed)) {
       throw new Error('la raíz debe ser un objeto');
     }
-    return parsed;
+    return {
+      body,
+      rawBlock: match[0],
+      value: parsed,
+    };
   } catch (error) {
     addError(
       'TASK_SEMANTIC_BLOCK_INVALID',
@@ -433,17 +437,40 @@ async function main() {
       }
     }
 
-    if (task.type === 'functional') {
-      const coverageBehaviorIds = arr(task.requirementCoverage).flatMap(
-        (coverage) => arr(coverage?.behaviorIds),
+    const coverageBehaviorIds = arr(task.requirementCoverage).flatMap((coverage) =>
+      arr(coverage?.behaviorIds),
+    );
+    if (!sameStringSet(coverageBehaviorIds, task.behaviorIds)) {
+      addError(
+        'TASK_REQUIREMENT_COVERAGE_BEHAVIOR_MISMATCH',
+        `${taskId} tiene requirementCoverage.behaviorIds=${JSON.stringify(sortedUniqueStrings(coverageBehaviorIds))}, pero task.behaviorIds=${JSON.stringify(arr(task.behaviorIds))}.`,
+        taskId,
       );
-      if (!sameStringSet(coverageBehaviorIds, task.behaviorIds)) {
-        addError(
-          'TASK_REQUIREMENT_COVERAGE_BEHAVIOR_MISMATCH',
-          `${taskId} tiene requirementCoverage.behaviorIds=${JSON.stringify(sortedUniqueStrings(coverageBehaviorIds))}, pero task.behaviorIds=${JSON.stringify(arr(task.behaviorIds))}.`,
-          taskId,
-        );
-      }
+    }
+
+    const scopeIds = definitionIdsInSection(markdown, '## Alcance', 'SCOPE');
+    const acceptanceIds = definitionIdsInSection(
+      markdown,
+      '## Criterios de aceptación',
+      'AC',
+    );
+
+    if (scopeIds.length === 0) {
+      addError(
+        'TASK_SCOPE_MISSING',
+        `${taskId} no contiene ningún SCOPE-* en ## Alcance.`,
+        taskId,
+      );
+    }
+    if (acceptanceIds.length === 0) {
+      addError(
+        'TASK_ACCEPTANCE_MISSING',
+        `${taskId} no contiene ningún AC-* en ## Criterios de aceptación.`,
+        taskId,
+      );
+    }
+
+    if (task.type === 'functional') {
 
       for (const coverage of arr(task.requirementCoverage)) {
         if (!requirementIndex.has(coverage.requirementId)) {
@@ -461,12 +488,6 @@ async function main() {
       const expectedAcceptanceIds = arr(task.requirementCoverage).flatMap(
         (coverage) => arr(coverage?.acceptanceCriterionIds),
       );
-      const scopeIds = definitionIdsInSection(markdown, '## Alcance', 'SCOPE');
-      const acceptanceIds = definitionIdsInSection(
-        markdown,
-        '## Criterios de aceptación',
-        'AC',
-      );
 
       if (!sameStringSet(scopeIds, expectedScopeIds)) {
         addError(
@@ -482,21 +503,6 @@ async function main() {
           taskId,
         );
       }
-
-      if (scopeIds.length === 0) {
-        addError(
-          'TASK_SCOPE_MISSING',
-          `${taskId} no contiene ningún SCOPE-* en ## Alcance.`,
-          taskId,
-        );
-      }
-      if (acceptanceIds.length === 0) {
-        addError(
-          'TASK_ACCEPTANCE_MISSING',
-          `${taskId} no contiene ningún AC-* en ## Criterios de aceptación.`,
-          taskId,
-        );
-      }
     }
 
     const semanticBlock = parseSemanticBlock(markdown, taskId);
@@ -507,6 +513,25 @@ async function main() {
       const expectedBackendBindings = arr(task.behaviorIds)
         .map((behaviorId) => semanticContractMap.get(behaviorId)?.backendBinding)
         .filter(Boolean);
+      const expectedSemanticFields = [
+        'behaviorIds',
+        'semanticKeys',
+        'sourceFunctionIds',
+        'backendBindings',
+      ];
+
+      if (
+        semanticBlock.body.trim() !== semanticBlock.rawBlock.trim() ||
+        !semanticBlock.rawBlock.startsWith('```json\n') ||
+        JSON.stringify(Object.keys(semanticBlock.value)) !==
+          JSON.stringify(expectedSemanticFields)
+      ) {
+        addError(
+          'TASK_SEMANTIC_BLOCK_MARKDOWN_MISMATCH',
+          `${taskId} no contiene el bloque markdown exacto exigido para ## Contrato semántico.`,
+          taskId,
+        );
+      }
 
       const blockFields = [
         ['behaviorIds', task.behaviorIds],
@@ -517,12 +542,12 @@ async function main() {
 
       for (const [field, expected] of blockFields) {
         if (
-          !Array.isArray(semanticBlock[field]) ||
-          !sameStringSet(semanticBlock[field], expected)
+          !Array.isArray(semanticBlock.value[field]) ||
+          !sameStringSet(semanticBlock.value[field], expected)
         ) {
           addError(
             'TASK_SEMANTIC_BLOCK_MISMATCH',
-            `${taskId}.${field}=${JSON.stringify(semanticBlock[field])}, pero se exige ${JSON.stringify(sortedUniqueStrings(expected))}.`,
+            `${taskId}.${field}=${JSON.stringify(semanticBlock.value[field])}, pero se exige ${JSON.stringify(sortedUniqueStrings(expected))}.`,
             taskId,
           );
         }

@@ -247,6 +247,53 @@ test('rechaza bloque semántico con campos incorrectos', async () => {
   assert(taskCodes(result, 'TASK-003').has('TASK_SEMANTIC_BLOCK_MISMATCH'));
 });
 
+test('rechaza bloque semántico con markdown no canónico', async () => {
+  const result = await withFixture(async (root) => {
+    const file = path.join(
+      root,
+      '.devflow',
+      'task-planner',
+      'tasks',
+      'TASK-003.md',
+    );
+    const text = await readFile(file, 'utf8');
+    await writeFile(
+      file,
+      text.replace(
+        '  "backendBindings": ["mailctl domain create"]\n}',
+        '  "backendBindings": ["mailctl domain create"],\n  "extra": []\n}',
+      ),
+      'utf8',
+    );
+  });
+  assert.equal(result.status, 1);
+  assert(
+    taskCodes(result, 'TASK-003').has(
+      'TASK_SEMANTIC_BLOCK_MARKDOWN_MISMATCH',
+    ),
+  );
+});
+
+test('rechaza SCOPE faltante en tarea habilitante', async () => {
+  const result = await withFixture(async (root) => {
+    const file = path.join(
+      root,
+      '.devflow',
+      'task-planner',
+      'tasks',
+      'TASK-001.md',
+    );
+    const text = await readFile(file, 'utf8');
+    await writeFile(
+      file,
+      text.replace('SCOPE-001', 'SIN-SCOPE'),
+      'utf8',
+    );
+  });
+  assert.equal(result.status, 1);
+  assert(taskCodes(result, 'TASK-001').has('TASK_SCOPE_MISSING'));
+});
+
 test('no toca archivos globales', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'epic-batch-readonly-'));
   await cp(FIXTURE_ROOT, root, { recursive: true });
