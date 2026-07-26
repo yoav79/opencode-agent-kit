@@ -4,6 +4,7 @@
     "README.md",
     "execution-state.json",
     "execution-state.schema.json",
+    "tools/prepare-task-run.mjs",
     "tools/touch-execution-state.mjs"
   ],
   "dirs": [

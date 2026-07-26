@@ -64,6 +64,7 @@ required_paths = [
     "templates/execution/execution-state.json",
     "templates/execution/execution-state.schema.json",
     "templates/execution/scaffold.json",
+    "templates/execution/tools/prepare-task-run.mjs",
     "templates/execution/tools/touch-execution-state.mjs",
     "scripts/install.sh",
     "scripts/uninstall.sh",

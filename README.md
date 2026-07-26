@@ -193,7 +193,7 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/init-execution` | general | Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/` |
 | `/init-next-task` | general | Instala los contratos de selección determinista (`selection.json`, `select-next-task.mjs`, `validate-next-task.mjs`) en `.devflow/execution/` |
 | `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
-| `/prepare-task-run` | general (temporal) | Crea el directorio del run y registra la tarea en el estado; pendiente de mover a orquestador/script |
+| `/prepare-task-run` | general | Invoca `prepare-task-run.mjs` para reservar la tarea seleccionada y crear su directorio de run |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
 | `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
 
@@ -397,7 +397,7 @@ selecciona la primera tarea:
 /init-execution
 /init-next-task
 /select-next-task
-/prepare-task-run {"taskId":"TASK-006","attempt":1}
+/prepare-task-run
 /build-task-context {"taskId":"TASK-006","attempt":1}
 ```
 

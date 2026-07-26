@@ -13,6 +13,7 @@ El contenido se copia a:
 ├── execution-state.json
 ├── execution-state.schema.json
 └── tools/
+    ├── prepare-task-run.mjs
     └── touch-execution-state.mjs
 ```
 
@@ -56,9 +57,32 @@ node tools/touch-execution-state.mjs .devflow/execution/execution-state.json
 
 No calcula ni modifica `timestamps.contentHash`.
 
+### `tools/prepare-task-run.mjs`
+
+Herramienta determinista que:
+
+- lee `.devflow/execution/selection.json`;
+- exige `classification = TASK_SELECTED`;
+- rechaza selecciones stale comparando
+  `sourceSnapshot.executionStateRevision` contra `execution-state.json.revision`;
+- resuelve el intento desde `--attempt` o como `max(existing)+1`;
+- crea `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/`;
+- copia `selection.json` como evidencia inmutable;
+- persiste la reserva en `execution-state.json` sin incrementar `attemptCount`.
+
+Uso:
+
+```bash
+node tools/prepare-task-run.mjs [--root RUTA] [--attempt N]
+```
+
+Si se reejecuta con el mismo `--attempt` y la misma evidencia ya existe, no
+duplica el run ni vuelve a reservar la tarea.
+
 ## Propiedad de los archivos
 
 - `execution-state.json`: mutable únicamente por el orquestador.
 - `*.schema.json`: contratos inmutables durante una ejecución.
 - `runs/`: creado y administrado únicamente por el orquestador.
+- `tools/prepare-task-run.mjs`: herramienta determinista para reservar runs.
 - `tools/touch-execution-state.mjs`: herramienta determinista, no modificable.

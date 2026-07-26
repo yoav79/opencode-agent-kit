@@ -27,6 +27,7 @@ Archivos requeridos:
 - `execution-state.json`
 - `execution-state.schema.json`
 - `README.md`
+- `tools/prepare-task-run.mjs`
 - `tools/touch-execution-state.mjs`
 
 No reconstruyas estos archivos desde memoria ni desde contenido embebido en el
@@ -49,13 +50,14 @@ archivo falta.
 4. Si no existe, crea únicamente esta estructura:
 
    ```text
-   .devflow/execution/
-   ├── execution-state.json
-   ├── execution-state.schema.json
-   ├── README.md
-   ├── runs/
-   └── tools/
-       └── touch-execution-state.mjs
+    .devflow/execution/
+    ├── execution-state.json
+    ├── execution-state.schema.json
+    ├── README.md
+    ├── runs/
+    └── tools/
+        ├── prepare-task-run.mjs
+        └── touch-execution-state.mjs
    ```
 
 5. Para inicializar archivos faltantes:
@@ -66,10 +68,12 @@ archivo falta.
      plantilla global.
    - Si `.devflow/execution/execution-state.schema.json` no existe, cópialo
      desde la plantilla global.
-   - Si `.devflow/execution/README.md` no existe, cópialo desde la
-     plantilla global.
-   - Si `.devflow/execution/tools/touch-execution-state.mjs` no existe,
-     cópialo desde la plantilla global.
+    - Si `.devflow/execution/README.md` no existe, cópialo desde la
+      plantilla global.
+    - Si `.devflow/execution/tools/prepare-task-run.mjs` no existe,
+      cópialo desde la plantilla global.
+    - Si `.devflow/execution/tools/touch-execution-state.mjs` no existe,
+      cópialo desde la plantilla global.
    - Nunca sobrescribas ninguno de estos archivos si ya existe.
 
 6. Cuando se cree `.devflow/execution/execution-state.json` por primera vez:
