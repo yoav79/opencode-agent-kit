@@ -1,12 +1,15 @@
 ---
 description: Prepara un run de ejecución: crea el directorio y registra la tarea en el estado de ejecución
-agent: next-task
+agent: general
 subtask: true
 ---
 
 Prepara un run de ejecución para una tarea ya seleccionada. Crea el directorio
 del intento, copia la selección como evidencia y registra la tarea en
 `execution-state.json`.
+
+Este comando no usa `next-task`; queda pendiente moverlo a un orquestador de
+ejecución, run-preparer o script determinista dedicado.
 
 Este comando es el paso entre `/select-next-task` y `/build-task-context`.
 

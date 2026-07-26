@@ -59,6 +59,7 @@ required_paths = [
     "templates/task-planner/tools/update-timestamps.mjs",
     "templates/task-planner/tools/build-epic-graph.mjs",
     "templates/next-task/tools/validate-next-task.mjs",
+    "templates/next-task/tools/touch-execution-state.mjs",
     "scripts/install.sh",
     "scripts/uninstall.sh",
     "scripts/create-project.sh",

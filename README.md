@@ -146,7 +146,9 @@ sin cambiar los contratos.
 - **Gate:** `.devflow/execution/tools/validate-next-task.mjs`
 
 Permisos: Solo lectura sobre planificación y estado de ejecución. Escribe
-`selection.json` y `execution-state.json`.
+únicamente `.devflow/execution/selection.json`. No ejecuta comandos, no crea
+directorios, no copia plantillas, no modifica `execution-state.json` y no crea
+ni modifica archivos bajo `runs/`.
 
 ### `context-builder` — Constructor de Contexto de Ejecución
 
@@ -187,9 +189,9 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/publish-blueprint` | software-architect | Publica el blueprint aprobado hacia `docs/software-architect/` |
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
-| `/init-next-task` | next-task | Inicializa el espacio de ejecucion (`.devflow/execution/`) |
+| `/init-next-task` | general (temporal) | Inicializa el espacio de ejecucion (`.devflow/execution/`); pendiente de mover a orquestador/script |
 | `/select-next-task` | next-task | Selecciona la siguiente tarea disponible |
-| `/prepare-task-run` | next-task | Crea el directorio del run y registra la tarea en el estado |
+| `/prepare-task-run` | general (temporal) | Crea el directorio del run y registra la tarea en el estado; pendiente de mover a orquestador/script |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
 | `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
 
@@ -385,17 +387,14 @@ selecciona la primera tarea:
 /build-task-context {"taskId":"TASK-006","attempt":1}
 ```
 
-O en un solo paso:
+`/build-next-task-context` existe como conveniencia histórica, pero queda
+pendiente revisarlo porque duplica parte de la preparación del run dentro de
+`context-builder`.
 
-```
-/select-next-task
-/build-next-task-context
-```
+El flujo canónico:
 
-El flujo completo:
-
-1. `/init-next-task` — Crea `.devflow/execution/` con estado y contratos
-2. `/select-next-task` — Evalúa el plan y selecciona una tarea
+1. `/init-next-task` — Crea `.devflow/execution/` con estado y contratos; no usa `next-task`
+2. `/select-next-task` — Evalúa el plan y selecciona una tarea; único comando asociado a `next-task`
 3. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
    registra la tarea en el estado de ejecución
 4. `/build-task-context` — Construye `execution-context.json` y

@@ -1,11 +1,12 @@
 ---
 description: Inicializa o continúa el espacio de ejecución de DevFlow para el proyecto actual
-agent: next-task
+agent: general
 subtask: true
 ---
 
 Inicializa el espacio de ejecución de DevFlow para el proyecto ubicado en el
-directorio actual usando el agente `next-task`.
+directorio actual. Este comando no usa `next-task`; queda pendiente moverlo a
+un orquestador de ejecución o script determinista dedicado.
 
 ## Objetivo
 
@@ -114,8 +115,8 @@ archivo falta.
 ## Notas
 
 - Este comando solo prepara el espacio de ejecución. La selección de tareas
-  se realiza invocando directamente al agente `next-task`.
-- El plan de task-planner debe estar publicado antes de ejecutar el agente.
+  se realiza con `/select-next-task`, único comando asociado a `next-task`.
+- El plan de task-planner debe estar publicado antes de seleccionar tareas.
 - Los schemas JSON son contratos inmutables; no los modifiques.
 
 ## Contexto adicional

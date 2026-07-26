@@ -142,16 +142,18 @@ automática de que las versiones del comando coincidan con las plantillas.
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Mantener next-task invocable solo por comandos
+### [Medio] Crear orquestador de ejecución para init y prepare
 **[next-task]**
 
-`next-task` debe operar como subagente determinista invocado únicamente mediante
-comandos (`/init-next-task`, `/select-next-task`, `/prepare-task-run`). No debe
-presentarse como agente primario de conversación directa.
+`/init-next-task` y `/prepare-task-run` ya no deben usar `next-task`, porque
+inicializar, crear runs, copiar evidencia y modificar `execution-state.json` son
+responsabilidades de orquestación, no de selección. Falta crear un rol dedicado
+(`execution-orchestrator`, `execution-admin`, `run-preparer`) o un script
+determinista externo.
 
-- **P:** media | **E:** S | **A:** agente, comando
-- **Referencias:** `opencode/agents/next-task.md`
-- **Criterio de salida:** next-task usa `mode: subagent` y todos sus comandos lo invocan como subtask
+- **P:** media | **E:** M | **A:** agente, comando
+- **Referencias:** `opencode/commands/init-next-task.md`, `opencode/commands/prepare-task-run.md`, `opencode/agents/next-task.md`
+- **Criterio de salida:** init y prepare usan un orquestador/script dedicado con permisos mínimos para inicialización y reserva, mientras `next-task` sigue asociado solo a `/select-next-task`
 - **Depende de:** Ninguna
 
 </div>

@@ -23,6 +23,11 @@ cada hito.
 
 ### Changed
 
+- **`next-task` como selector puro** — Permisos reducidos a lectura canónica y
+  escritura exclusiva de `.devflow/execution/selection.json`. `/select-next-task`
+  sigue siendo el único comando asociado; `/init-next-task` y
+  `/prepare-task-run` quedan temporalmente en `general` hasta crear un
+  orquestador/script dedicado. (este commit)
 - **`next-task` como subagente** — `next-task` vuelve a `mode: subagent` y sus
   comandos se ejecutan como `subtask: true`; la selección queda accesible solo
   mediante slash commands. (este commit)
@@ -80,6 +85,9 @@ cada hito.
 
 ### Fixed
 
+- **required_paths de next-task** — `scripts/validate.sh` ahora incluye
+  `templates/next-task/tools/touch-execution-state.mjs`, alineando el listado
+  requerido con los runtime tools detectados. (este commit)
 - **Validación parcial por gates 8/12/14** — `validate-blueprint.mjs` ahora
   soporta `--gate 8|12|14`, validando solo documentos acumulados hasta esa
   fase. El agente usa ese modo antes de solicitar aprobación humana y mantiene

@@ -2,7 +2,6 @@
 description: Selecciona exactamente una tarea ejecutable de DevFlow mediante reglas deterministas, sin ejecutar código ni modificar el plan o el estado de ejecución.
 mode: subagent
 temperature: 0
-steps: 12
 permission:
   "*": deny
   read:
@@ -18,30 +17,12 @@ permission:
   edit:
     "*": deny
     ".devflow/execution/selection.json": allow
-    ".devflow/execution/execution-state.json": allow
-    ".devflow/execution/runs/*/attempt-*/selection.json": allow
   glob: deny
   grep: deny
-  bash:
-    "*": deny
-    "node $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/execution-state.json": allow
-    "cp *": ask
-    "mkdir *": ask
-    "mkdir -p .devflow/execution .devflow/execution/runs .devflow/execution/tools": allow
-    "mkdir -p .devflow/execution/runs/TASK-*/attempt-*": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/execution-state.json .devflow/execution/execution-state.json": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/execution-state.schema.json .devflow/execution/execution-state.schema.json": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/task-selection.schema.json .devflow/execution/task-selection.schema.json": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/selection.json .devflow/execution/selection.json": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/README.md .devflow/execution/README.md": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/tools/validate-next-task.mjs .devflow/execution/tools/validate-next-task.mjs": allow
-    "cp -n $HOME/.config/opencode/templates/next-task/tools/touch-execution-state.mjs .devflow/execution/tools/touch-execution-state.mjs": allow
+  bash: deny
   task: deny
   webfetch: deny
   websearch: deny
-  external_directory:
-    "*": deny
-    "$HOME/.config/opencode/templates/next-task/*": allow
 ---
 
 # Next Task Agent
@@ -56,7 +37,9 @@ reemplazar:
 
 Eres una implementación temporal de un futuro scheduler determinista.
 
-No implementas tareas, no reservas tareas y no modificas el estado de ejecución.
+No inicializas el espacio de ejecución, no copias plantillas, no implementas
+tareas, no reservas tareas, no preparas runs y no modificas el estado de
+ejecución.
 
 ## Resultado obligatorio
 
