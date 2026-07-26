@@ -771,7 +771,7 @@ export async function computeExpected(root) {
       continue;
     }
     for (const dependencyId of task.dependencyIds) {
-      if (taskNumericId(dependencyId) === null) {
+      if (!TASK_ID_PATTERN.test(dependencyId)) {
         pushUniqueIssue(
           stateIssues,
           issue('TASK_DEPENDENCY_ID_INVALID', FILES.taskPlan, `${task.id} contiene una dependencia inválida.`, task.id),
