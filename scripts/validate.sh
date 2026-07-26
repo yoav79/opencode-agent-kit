@@ -6,6 +6,7 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 
 python3 - "$REPO_ROOT" <<'PY'
 import json
+import posixpath
 import re
 import sys
 from pathlib import Path
@@ -24,10 +25,18 @@ required_paths = [
     "opencode/agents/blueprint-compiler.md",
     "opencode/agents/consistency-reviewer.md",
     "opencode/agents/task-planner.md",
+    "opencode/agents/next-task.md",
+    "opencode/agents/context-builder.md",
     "opencode/commands/init-software-architect.md",
     "opencode/commands/compile-blueprint.md",
     "opencode/commands/review-consistency.md",
     "opencode/commands/init-task-planner.md",
+    "opencode/commands/init-execution.md",
+    "opencode/commands/init-next-task.md",
+    "opencode/commands/select-next-task.md",
+    "opencode/commands/prepare-task-run.md",
+    "opencode/commands/build-task-context.md",
+    "opencode/commands/build-next-task-context.md",
     "opencode/rules/general.md",
     "opencode/rules/git-policy.md",
     "opencode/rules/documentation-policy.md",
@@ -38,6 +47,8 @@ required_paths = [
     "templates/software-architect/tools/validate-blueprint.mjs",
     "templates/software-architect/tools/migrate-v1-to-v2.mjs",
     "templates/shared/tools/timestamp.mjs",
+    "templates/shared/scaffold.json",
+    "templates/shared/tools/devflow-runtime-helpers.mjs",
     "templates/software-architect/contracts/blueprint-compiler.md",
     "templates/software-architect/contracts/consistency-reviewer.md",
     "templates/task-planner/project-state.json",
@@ -58,16 +69,23 @@ required_paths = [
     "templates/task-planner/tools/validate-plan.mjs",
     "templates/task-planner/tools/update-timestamps.mjs",
     "templates/task-planner/tools/build-epic-graph.mjs",
+    "templates/next-task/README.md",
+    "templates/next-task/selection.json",
+    "templates/next-task/task-selection.schema.json",
+    "templates/next-task/scaffold.json",
     "templates/next-task/tools/select-next-task.mjs",
     "templates/next-task/tools/validate-next-task.mjs",
     "templates/execution/README.md",
     "templates/execution/execution-state.json",
     "templates/execution/execution-state.schema.json",
+    "templates/execution/transition-journal.schema.json",
     "templates/execution/scaffold.json",
     "templates/execution/tools/execution-contract-helpers.mjs",
     "templates/execution/tools/execution-transition-engine.mjs",
+    "templates/execution/tools/migrate-execution-state-v1-to-v2.mjs",
     "templates/execution/tools/prepare-task-run.mjs",
     "templates/execution/tools/touch-execution-state.mjs",
+    "templates/context-builder/tools/inspect-repository-context.mjs",
     "scripts/install.sh",
     "scripts/uninstall.sh",
     "scripts/create-project.sh",
@@ -98,6 +116,47 @@ for path in root.rglob("*.json"):
         errors.append(f"Invalid JSON {path.relative_to(root)}: {exc}")
 
 frontmatter_re = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+section_re = re.compile(r"^(#{2,3} .+?)\n(.*?)(?=^#{2,3} |\Z)", re.MULTILINE | re.DOTALL)
+
+
+def normalize_directory(directory):
+    return directory.rstrip("/")
+
+
+def installed_path(directory, relative):
+    return f"{normalize_directory(directory)}/{relative}"
+
+
+def extract_section_paths(doc_path, heading):
+    text = doc_path.read_text(encoding="utf-8")
+    for matched_heading, body in section_re.findall(text):
+        if matched_heading == heading:
+            return {path for path in re.findall(r"^- `([^`]+)`", body, re.MULTILINE)}
+    errors.append(f"Missing section '{heading}' in {doc_path.relative_to(root)}")
+    return None
+
+
+def compare_doc_paths(doc_relative, heading, expected_paths):
+    doc_path = root / doc_relative
+    actual_paths = extract_section_paths(doc_path, heading)
+    if actual_paths is None:
+        return
+    if actual_paths != expected_paths:
+        errors.append(
+            f"{doc_relative}: section '{heading}' does not match expected paths. "
+            f"expected={sorted(expected_paths)} actual={sorted(actual_paths)}"
+        )
+
+
+def extract_imports(text):
+    imports = []
+    for from_match, bare_match in re.findall(r"from\s+['\"]([^'\"]+)['\"]|import\s+['\"]([^'\"]+)['\"]", text):
+        imports.append(from_match or bare_match)
+    return imports
+
+
+scaffolds = {}
+installed_files_by_directory = {}
 
 for path in sorted((root / "opencode/agents").glob("*.md")):
     text = path.read_text(encoding="utf-8")
@@ -157,15 +216,101 @@ for agent_dir in sorted(root.glob("templates/*/")):
         continue
     try:
         scaffold = json.loads(scaffold_file.read_text(encoding="utf-8"))
+        scaffolds[agent_dir.name] = scaffold
         if "directory" not in scaffold:
             errors.append(f"scaffold.json missing 'directory': {scaffold_file.relative_to(root)}")
         if "files" not in scaffold:
             errors.append(f"scaffold.json missing 'files': {scaffold_file.relative_to(root)}")
+        directory = scaffold.get("directory")
+        if isinstance(directory, str):
+            installed_files_by_directory.setdefault(normalize_directory(directory), set()).update(
+                installed_path(directory, relative)
+                for relative in scaffold.get("files", [])
+            )
         for f in scaffold.get("files", []):
             if not (agent_dir / f).exists():
                 errors.append(f"scaffold.json references missing file {f}: {scaffold_file.relative_to(root)}")
     except Exception as exc:
         errors.append(f"Error reading {scaffold_file.relative_to(root)}: {exc}")
+
+execution_scaffold = scaffolds.get("execution")
+shared_scaffold = scaffolds.get("shared")
+if execution_scaffold:
+    execution_directory = execution_scaffold["directory"]
+    execution_paths = {
+        installed_path(execution_directory, relative)
+        for relative in execution_scaffold.get("files", [])
+    }
+    execution_dirs = {
+        f"{normalize_directory(execution_directory)}/{relative}/"
+        for relative in execution_scaffold.get("dirs", [])
+    }
+    shared_dirs = set()
+    if shared_scaffold and isinstance(shared_scaffold.get("directory"), str):
+        shared_dirs = {
+            f"{normalize_directory(shared_scaffold['directory'])}/{relative}/"
+            for relative in shared_scaffold.get("dirs", [])
+        }
+    for relative in execution_scaffold.get("files", []):
+        source_relative = f"templates/execution/{relative}"
+        if source_relative not in required_path_set:
+            errors.append(f"Execution scaffold file missing from required_paths: {source_relative}")
+    compare_doc_paths("opencode/commands/init-execution.md", "## Runtime instalado", execution_paths)
+    compare_doc_paths("opencode/commands/init-execution.md", "## Directorios instalados", execution_dirs | shared_dirs)
+    compare_doc_paths("templates/execution/README.md", "## Runtime instalado por /init-execution", execution_paths)
+    compare_doc_paths("README.md", "### Runtime instalado por `/init-execution`", execution_paths)
+
+    init_execution_text = (root / "opencode/commands/init-execution.md").read_text(encoding="utf-8")
+    for required_reference in (
+        ".devflow/execution/tools/execution-contract-helpers.mjs",
+        ".devflow/execution/tools/execution-transition-engine.mjs",
+    ):
+        if required_reference not in init_execution_text:
+            errors.append(f"init-execution.md missing required runtime reference: {required_reference}")
+
+next_task_scaffold = scaffolds.get("next-task")
+if next_task_scaffold:
+    next_task_directory = next_task_scaffold["directory"]
+    next_task_runtime_paths = {
+        installed_path(next_task_directory, relative)
+        for relative in next_task_scaffold.get("files", [])
+        if relative != "README.md"
+    }
+    for relative in ("selection.json", "task-selection.schema.json", "tools/select-next-task.mjs", "tools/validate-next-task.mjs"):
+        source_relative = f"templates/next-task/{relative}"
+        if source_relative not in required_path_set:
+            errors.append(f"next-task runtime path missing from required_paths: {source_relative}")
+    compare_doc_paths("opencode/commands/init-execution.md", "## Dependencia de next-task", next_task_runtime_paths)
+    compare_doc_paths("opencode/commands/prepare-task-run.md", "## Dependencia de next-task", next_task_runtime_paths)
+    compare_doc_paths("templates/execution/README.md", "## Dependencias instaladas por /init-next-task", next_task_runtime_paths)
+    compare_doc_paths("README.md", "### Dependencias instaladas por `/init-next-task`", next_task_runtime_paths)
+
+    init_next_task_text = (root / "opencode/commands/init-next-task.md").read_text(encoding="utf-8")
+    if ".devflow/shared/tools/devflow-runtime-helpers.mjs" not in init_next_task_text:
+        errors.append("init-next-task.md must reference .devflow/shared/tools/devflow-runtime-helpers.mjs")
+
+all_installed_paths = set()
+for paths in installed_files_by_directory.values():
+    all_installed_paths.update(paths)
+
+for tool_path in sorted(root.glob("templates/*/tools/*.mjs")):
+    if tool_path.name.endswith(".test.mjs"):
+        continue
+    template_name = tool_path.relative_to(root / "templates").parts[0]
+    scaffold = scaffolds.get(template_name)
+    if not scaffold or "directory" not in scaffold:
+        continue
+    directory = normalize_directory(scaffold["directory"])
+    source_relative = tool_path.relative_to(root / "templates" / template_name).as_posix()
+    installed_source = installed_path(directory, source_relative)
+    for specifier in extract_imports(tool_path.read_text(encoding="utf-8")):
+        if not specifier.startswith("."):
+            continue
+        resolved = posixpath.normpath(posixpath.join(posixpath.dirname(installed_source), specifier))
+        if resolved not in all_installed_paths:
+            errors.append(
+                f"Orphan runtime import in {tool_path.relative_to(root)}: {specifier} -> {resolved}"
+            )
 
 sa_doc_templates = list((root / "templates/software-architect/doc-templates").glob("*.md"))
 main_templates = [t for t in sa_doc_templates if t.name not in ("SKILL.md",)]
@@ -175,13 +320,16 @@ if len(main_templates) != 14:
 # --- Test coverage validation ---
 
 known_test_targets = {
+    "test-next-task-tools": sorted(root.glob("templates/next-task/tools/*.test.mjs")),
     "test-task-planner-tools": sorted(root.glob("templates/task-planner/tools/*.test.mjs")),
     "test-execution-tools": [
         root / "templates/execution/tools/prepare-task-run.test.mjs",
         root / "templates/execution/tools/execution-transition-engine.test.mjs",
+        root / "templates/execution/tools/execution-migration.test.mjs",
     ],
     "test-agent-contracts": [
         root / "templates/execution/tools/contractual-tests.test.mjs",
+        root / "templates/execution/tools/build-next-task-context.test.mjs",
     ],
 }
 

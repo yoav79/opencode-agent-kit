@@ -12,7 +12,12 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE_PATH = path.join(HERE, 'execution-transition-engine.mjs');
 const HELPERS_PATH = path.join(HERE, 'execution-contract-helpers.mjs');
+const SHARED_HELPER = path.join(HERE, '..', '..', 'shared', 'tools', 'devflow-runtime-helpers.mjs');
 const CLI_TOOL = path.join(HERE, 'prepare-task-run.mjs');
+const SELECT_TOOL = path.join(HERE, '..', '..', 'next-task', 'tools', 'select-next-task.mjs');
+const VALIDATE_TOOL = path.join(HERE, '..', '..', 'next-task', 'tools', 'validate-next-task.mjs');
+const SELECTION_SCHEMA = path.join(HERE, '..', '..', 'next-task', 'task-selection.schema.json');
+const JOURNAL_SCHEMA = path.join(HERE, '..', 'transition-journal.schema.json');
 const EXECUTION_TEMPLATE = path.join(HERE, '..', 'execution-state.json');
 
 const DEFAULT_TS = '2026-07-25T12:00:00.000Z';
@@ -72,9 +77,15 @@ async function fixture({ revision = 0, selectionTaskId = 'TASK-006' } = {}) {
 async function fixtureSpawn({ revision = 0, selectionTaskId = 'TASK-006' } = {}) {
   const root = await fixture({ revision, selectionTaskId });
   await mkdir(path.join(root, '.devflow', 'execution', 'tools'), { recursive: true });
+  await mkdir(path.join(root, '.devflow', 'shared', 'tools'), { recursive: true });
   await cp(CLI_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'prepare-task-run.mjs'));
   await cp(ENGINE_PATH, path.join(root, '.devflow', 'execution', 'tools', 'execution-transition-engine.mjs'));
   await cp(HELPERS_PATH, path.join(root, '.devflow', 'execution', 'tools', 'execution-contract-helpers.mjs'));
+  await cp(SHARED_HELPER, path.join(root, '.devflow', 'shared', 'tools', 'devflow-runtime-helpers.mjs'));
+  await cp(SELECT_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'select-next-task.mjs'));
+  await cp(VALIDATE_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'validate-next-task.mjs'));
+  await cp(SELECTION_SCHEMA, path.join(root, '.devflow', 'execution', 'task-selection.schema.json'));
+  await cp(JOURNAL_SCHEMA, path.join(root, '.devflow', 'execution', 'transition-journal.schema.json'));
   return root;
 }
 
@@ -111,6 +122,49 @@ async function readOrNull(filePath) {
   } catch {
     return null;
   }
+}
+
+function runDir(root, taskId = 'TASK-006', attempt = 1) {
+  return path.join(root, '.devflow', 'execution', 'runs', taskId, `attempt-${String(attempt).padStart(2, '0')}`);
+}
+
+function runSelectionPath(root, taskId = 'TASK-006', attempt = 1) {
+  return path.join(runDir(root, taskId, attempt), 'selection.json');
+}
+
+function journalFile(root) {
+  return path.join(root, '.devflow', 'execution', 'transition-journal.json');
+}
+
+function journalEntry({
+  taskId = 'TASK-006',
+  attempt = 1,
+  expectedRevision = 0,
+  officialTimestamp = DEFAULT_TS,
+  selectionRaw = `${JSON.stringify(selection(expectedRevision, taskId), null, 2)}\n`,
+} = {}) {
+  const runPath = `.devflow/execution/runs/${taskId}/attempt-${String(attempt).padStart(2, '0')}`;
+  return {
+    schemaVersion: 1,
+    transitionType: 'prepare-task-run',
+    taskId,
+    attempt,
+    runPath,
+    expectedRevision,
+    targetRevision: expectedRevision + 1,
+    selectionDigest: `sha256:${createHash('sha256').update(selectionRaw, 'utf8').digest('hex')}`,
+    phase: 'started',
+    officialTimestamp,
+    expectedArtifacts: [
+      `${runPath}/selection.json`,
+      '.devflow/execution/execution-state.json',
+    ],
+    createdAt: officialTimestamp,
+  };
+}
+
+async function writeJournal(root, entry) {
+  await writeFile(journalFile(root), `${JSON.stringify(entry, null, 2)}\n`, 'utf8');
 }
 
 function spawnCli(root, args = [], at = DEFAULT_TS) {
@@ -231,18 +285,18 @@ test('3. Repetición idempotente: misma solicitud exacta produce mismo resultado
 test('4. Concurrencia: dos procesos reales desde la misma revisión produce exactamente un ganador', async () => {
   const root = await fixtureSpawn({ revision: 0 });
   try {
-    const [resultA, resultB] = await Promise.all([
-      spawnCli(root, [], DEFAULT_TS),
-      spawnCli(root, [], DEFAULT_TS),
-    ]);
+    const resultA = spawnCli(root, [], DEFAULT_TS);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const resultB = spawnCli(root, [], DEFAULT_TS);
+    const [resultAResolved, resultBResolved] = await Promise.all([resultA, resultB]);
 
-    const winners = [resultA, resultB].filter((r) => r.status === 0);
-    const losers = [resultA, resultB].filter((r) => r.status === 1);
+    const winners = [resultAResolved, resultBResolved].filter((r) => r.status === 0);
+    const losers = [resultAResolved, resultBResolved].filter((r) => r.status === 1);
 
     assert.equal(winners.length, 1,
-      `Debe haber exactamente un ganador. stdout A: ${resultA.stdout}, stdout B: ${resultB.stdout}`);
+      `Debe haber exactamente un ganador. stdout A: ${resultAResolved.stdout}, stdout B: ${resultBResolved.stdout}`);
     assert.equal(losers.length, 1,
-      `Debe haber exactamente un perdedor. stderr A: ${resultA.stderr}, stderr B: ${resultB.stderr}`);
+      `Debe haber exactamente un perdedor. stderr A: ${resultAResolved.stderr}, stderr B: ${resultBResolved.stderr}`);
 
     const loserStderr = losers[0].stderr.trim();
     assert.ok(loserStderr === 'STALE_SELECTION' || loserStderr === 'RUN_CONFLICT',
@@ -289,11 +343,11 @@ test('5. Fallo después del journal: recuperación limpia sin evidencia ni estad
     assert.equal(state.revision, 0, 'Estado no debe modificarse');
 
     const report = await callEngine(root);
-    assert.equal(report.classification, 'RUN_PREPARED');
+    assert.equal(report.classification, 'RECOVERED');
     assert.equal(report.taskId, 'TASK-006');
     assert.equal(report.attempt, 1);
     assert.equal(report.newRevision, 1);
-    assert.equal(report.recovered, false);
+    assert.equal(report.recovered, true);
 
     const finalState = await stateFile(root);
     assert.equal(finalState.revision, 1, 'Revisión incrementada una sola vez');
@@ -482,10 +536,8 @@ test('9. Estado reservado sin evidencia ni journal recuperable: produce conflict
 
     const before = await readFile(statePath, 'utf8');
 
-    await assert.rejects(
-      () => callEngine(root),
-      { name: 'EngineError', code: 'RUN_CONFLICT' },
-    );
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
 
     const after = await readFile(statePath, 'utf8');
     assert.equal(after, before, 'Estado no debe modificarse');
@@ -505,15 +557,19 @@ test('10. Journal corrupto (JSON inválido): se limpia y el engine continúa sin
   try {
     const jPath = path.join(root, '.devflow', 'execution', 'transition-journal.json');
     await writeFile(jPath, 'not valid json at all', 'utf8');
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
 
     const report = await callEngine(root);
-    assert.equal(report.classification, 'RUN_PREPARED', 'Journal corrupto debe ignorarse');
+    assert.equal(report.classification, 'JOURNAL_INVALID');
 
     const state = await stateFile(root);
-    assert.equal(state.revision, 1);
+    assert.equal(state.revision, 0);
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
 
     const journalAfter = await readOrNull(jPath);
-    assert.equal(journalAfter, null, 'Journal corrupto debe eliminarse');
+    assert.equal(journalAfter, 'not valid json at all', 'Journal corrupto debe preservarse');
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -533,15 +589,19 @@ test('10b. Journal con schemaVersion incompatible: se limpia y el engine contin�
       targetRevision: 1,
       phase: 'started',
     }));
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
 
     const report = await callEngine(root);
-    assert.equal(report.classification, 'RUN_PREPARED', 'Journal incompatible se limpia y el engine continúa');
+    assert.equal(report.classification, 'JOURNAL_INVALID');
 
     const state = await stateFile(root);
-    assert.equal(state.revision, 1, 'Engine debe poder continuar después de limpiar journal');
+    assert.equal(state.revision, 0);
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
 
     const journalAfter = await readOrNull(jPath);
-    assert.equal(journalAfter, null, 'Journal incompatible debe eliminarse');
+    assert.notEqual(journalAfter, null, 'Journal incompatible debe preservarse');
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -567,15 +627,19 @@ test('10c. Journal con transitionType desconocido: se limpia y el engine contin�
       ],
       createdAt: DEFAULT_TS,
     }));
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
 
     const report = await callEngine(root);
-    assert.equal(report.classification, 'RUN_PREPARED', 'Journal desconocido se limpia y el engine continúa');
+    assert.equal(report.classification, 'JOURNAL_INVALID');
 
     const state = await stateFile(root);
-    assert.equal(state.revision, 1, 'Engine debe poder continuar');
+    assert.equal(state.revision, 0);
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
 
     const journalAfter = await readOrNull(jPath);
-    assert.equal(journalAfter, null);
+    assert.notEqual(journalAfter, null);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -646,10 +710,8 @@ test('11d. Intentos: límite de maxAttempts agotado (EngineError con RUN_CONFLIC
     });
     await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 
-    await assert.rejects(
-      () => callEngine(root),
-      { name: 'EngineError', code: 'RUN_CONFLICT' },
-    );
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
 
     const stateAfter = await stateFile(root);
     assert.equal(stateAfter.revision, 0, 'Estado no debe modificarse');
@@ -677,9 +739,11 @@ test('12a. Lock abandonado: recuperación segura con PID inexistente', async () 
   try {
     const lockDir = path.join(root, LOCK_PATH);
     await mkdir(lockDir, { recursive: true });
-    await writeFile(path.join(lockDir, 'pid'), '999999999', 'utf8');
-    await writeFile(path.join(lockDir, 'host'), 'phantom-host', 'utf8');
-    await writeFile(path.join(lockDir, 'ts'), String(Date.now() - 120000), 'utf8');
+    await writeFile(path.join(lockDir, 'owner.json'), `${JSON.stringify({
+      pid: 999999999,
+      host: os.hostname(),
+      createdAtMs: Date.now() - 120000,
+    }, null, 2)}\n`, 'utf8');
 
     const report = await callEngine(root);
     assert.equal(report.classification, 'RUN_PREPARED');
@@ -696,9 +760,11 @@ test('12b. Lock abandonado: lock con PID vivo no se considera abandonado y se re
   try {
     const lockDir = path.join(root, LOCK_PATH);
     await mkdir(lockDir, { recursive: true });
-    await writeFile(path.join(lockDir, 'pid'), String(process.pid), 'utf8');
-    await writeFile(path.join(lockDir, 'host'), os.hostname(), 'utf8');
-    await writeFile(path.join(lockDir, 'ts'), String(Date.now()), 'utf8');
+    await writeFile(path.join(lockDir, 'owner.json'), `${JSON.stringify({
+      pid: process.pid,
+      host: os.hostname(),
+      createdAtMs: Date.now() - 120000,
+    }, null, 2)}\n`, 'utf8');
 
     const started = Date.now();
     await assert.rejects(
@@ -710,6 +776,261 @@ test('12b. Lock abandonado: lock con PID vivo no se considera abandonado y se re
 
     const state = await stateFile(root);
     assert.equal(state.revision, 0, 'Estado no debe modificarse');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('13. Selección inválida con taskId traversal produce SELECTION_INVALID sin mutar estado', async () => {
+  const root = await fixture();
+  try {
+    const selectionPath = path.join(root, '.devflow', 'execution', 'selection.json');
+    const invalidSelection = selection(0);
+    invalidSelection.selectedTaskId = '../TASK-006';
+    await writeFile(selectionPath, `${JSON.stringify(invalidSelection, null, 2)}\n`, 'utf8');
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'SELECTION_INVALID');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.equal(await readOrNull(runSelectionPath(root)), null);
+    assert.equal(await readOrNull(journalFile(root)), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('14. Journal con runPath fuera de .devflow/execution/runs produce JOURNAL_INVALID y se preserva', async () => {
+  const root = await fixture();
+  try {
+    const raw = `${JSON.stringify(selection(0), null, 2)}\n`;
+    const invalidJournal = journalEntry({ selectionRaw: raw });
+    invalidJournal.runPath = '.devflow/execution/runs/../escape/attempt-01';
+    invalidJournal.expectedArtifacts = [
+      '.devflow/execution/runs/../escape/attempt-01/selection.json',
+      '.devflow/execution/execution-state.json',
+    ];
+    await writeJournal(root, invalidJournal);
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'JOURNAL_INVALID');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.notEqual(await readOrNull(journalFile(root)), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('15. Digest incorrecto de evidencia produce RUN_CONFLICT y preserva journal', async () => {
+  const root = await fixture();
+  try {
+    const selectionRaw = `${JSON.stringify(selection(0), null, 2)}\n`;
+    await mkdir(runDir(root), { recursive: true });
+    await writeFile(runSelectionPath(root), selectionRaw, 'utf8');
+
+    const invalidJournal = journalEntry({ selectionRaw });
+    invalidJournal.selectionDigest = `sha256:${'d'.repeat(64)}`;
+    await writeJournal(root, invalidJournal);
+
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    const beforeJournal = await readFile(journalFile(root), 'utf8');
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    const afterJournal = await readFile(journalFile(root), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.equal(afterJournal, beforeJournal);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('16. Evidencia de otra tarea con journal aparentemente válido produce RUN_CONFLICT', async () => {
+  const root = await fixture();
+  try {
+    const rogueRaw = `${JSON.stringify(selection(0, 'TASK-007'), null, 2)}\n`;
+    await mkdir(runDir(root), { recursive: true });
+    await writeFile(runSelectionPath(root), rogueRaw, 'utf8');
+    await writeJournal(root, journalEntry({ selectionRaw: rogueRaw }));
+
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.notEqual(await readOrNull(journalFile(root)), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('17. Journal con revisión distinta de la revisión actual produce JOURNAL_CONFLICT sin mutar estado', async () => {
+  const root = await fixture({ revision: 5 });
+  try {
+    const staleJournal = journalEntry({ expectedRevision: 4, selectionRaw: `${JSON.stringify(selection(4), null, 2)}\n` });
+    await writeJournal(root, staleJournal);
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'JOURNAL_CONFLICT');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.notEqual(await readOrNull(journalFile(root)), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('18. Journal con targetRevision inválida produce JOURNAL_INVALID', async () => {
+  const root = await fixture();
+  try {
+    const invalidJournal = journalEntry();
+    invalidJournal.targetRevision = 9;
+    await writeJournal(root, invalidJournal);
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'JOURNAL_INVALID');
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('19. Tarea completed con journal antiguo y evidencia válida produce RUN_CONFLICT', async () => {
+  const root = await fixture({ revision: 1 });
+  try {
+    const selectionRaw = `${JSON.stringify(selection(0), null, 2)}\n`;
+    await mkdir(runDir(root), { recursive: true });
+    await writeFile(runSelectionPath(root), selectionRaw, 'utf8');
+    await writeJournal(root, journalEntry({ selectionRaw }));
+
+    const statePath = path.join(root, '.devflow', 'execution', 'execution-state.json');
+    const state = await json(statePath);
+    state.tasks.push({
+      taskId: 'TASK-006',
+      status: 'completed',
+      attemptCount: 1,
+      maxAttempts: 3,
+      activeRunId: null,
+      reservation: null,
+      blocker: null,
+      lastResult: null,
+      updatedAt: null,
+    });
+    await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+    const beforeState = await readFile(statePath, 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
+
+    const afterState = await readFile(statePath, 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.notEqual(await readOrNull(journalFile(root)), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('20. Tarea cancelled con evidencia antigua no vuelve a reserved', async () => {
+  const root = await fixture({ revision: 1 });
+  try {
+    const selectionRaw = `${JSON.stringify(selection(0), null, 2)}\n`;
+    await mkdir(runDir(root), { recursive: true });
+    await writeFile(runSelectionPath(root), selectionRaw, 'utf8');
+    await writeJournal(root, journalEntry({ selectionRaw }));
+
+    const statePath = path.join(root, '.devflow', 'execution', 'execution-state.json');
+    const state = await json(statePath);
+    state.tasks.push({
+      taskId: 'TASK-006',
+      status: 'cancelled',
+      attemptCount: 1,
+      maxAttempts: 3,
+      activeRunId: null,
+      reservation: null,
+      blocker: null,
+      lastResult: null,
+      updatedAt: null,
+    });
+    await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+    const beforeState = await readFile(statePath, 'utf8');
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'RUN_CONFLICT');
+
+    const afterState = await readFile(statePath, 'utf8');
+    assert.equal(afterState, beforeState);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('21. Lock remoto de otro host respeta timeout y no se retira automáticamente', async () => {
+  const root = await fixture();
+  try {
+    const lockDir = path.join(root, LOCK_PATH);
+    await mkdir(lockDir, { recursive: true });
+    await writeFile(path.join(lockDir, 'owner.json'), `${JSON.stringify({
+      pid: 999999999,
+      host: 'remote-host',
+      createdAtMs: Date.now() - 3600000,
+    }, null, 2)}\n`, 'utf8');
+
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    await assert.rejects(
+      () => callEngine(root, { extraEnv: { LOCK_TIMEOUT_MS: '500', LOCK_RETRY_MS: '100' } }),
+      { name: 'EngineError', code: 'LOCK_TIMEOUT' },
+    );
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+    assert.notEqual(await readOrNull(path.join(lockDir, 'owner.json')), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('22. Lock parcialmente creado devuelve LOCK_INVALID después de la ventana de inicialización', async () => {
+  const root = await fixture();
+  try {
+    const lockDir = path.join(root, LOCK_PATH);
+    await mkdir(lockDir, { recursive: true });
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    const beforeState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    await assert.rejects(
+      () => callEngine(root, { extraEnv: { LOCK_INIT_GRACE_MS: '1' } }),
+      { name: 'EngineError', code: 'LOCK_INVALID' },
+    );
+
+    const afterState = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(afterState, beforeState);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('23. Recuperación idempotente mantiene classification e idempotent coherentes', async () => {
+  const root = await fixture();
+  try {
+    await assert.rejects(
+      () => callEngine(root, { extraEnv: { FAULT_INJECT_AFTER_STATE: '1' } }),
+      { name: 'CrashSimulationError' },
+    );
+
+    const report = await callEngine(root);
+    assert.equal(report.classification, 'IDEMPOTENT');
+    assert.equal(report.idempotent, true);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

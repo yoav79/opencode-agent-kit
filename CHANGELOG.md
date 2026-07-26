@@ -11,6 +11,17 @@ cada hito.
 
 ### Added
 
+- **Helper compartido de runtime** — `templates/shared/tools/devflow-runtime-helpers.mjs` concentra validación JSON, IDs, hashes, issues y resolución canónica de `runPath`; `execution` y `next-task` lo instalan explícitamente en `.devflow/shared/tools/`. (este commit)
+- **Pruebas funcionales de next-task** — `templates/next-task/tools/select-next-task.test.mjs` cubre selección real, dependencias, cycles, waves, concurrencia lógica, estados `paused/completed`, IDs descriptivos y ambiguos, validación de `selection.json` y no mutación de `execution-state.json`. (este commit)
+- **Migración v1→v2 de execution-state** — `migrate-execution-state-v1-to-v2.mjs` migra el ownership legacy `next-task` al nuevo owner `devflow-execution` con backup `.v1` y tests deterministas. (este commit)
+- **Inspección determinista del repositorio para context-builder** — `templates/context-builder/tools/inspect-repository-context.mjs` resume rutas relevantes con exclusiones sensibles, hashes y preview redactado. (este commit)
+
+- **Prueba contractual de instalación de execution** — `tests/test-scripts.sh`
+  ahora instala los templates globales en un directorio temporal, simula
+  `/init-execution` y `/init-next-task`, inicializa `execution-state.json`,
+  ejecuta `prepare-task-run.mjs` y verifica que falle si se elimina
+  `execution-transition-engine.mjs` o `execution-contract-helpers.mjs`.
+  (este commit)
 - **CI workflow** — `.github/workflows/ci.yml` con triggers push y
   pull_request, Node 18, permisos mínimos (`contents: read`), sin secretos ni
   pasos mutantes. Ejecuta `make test` como entrypoint único.
@@ -29,6 +40,17 @@ cada hito.
 
 ### Changed
 
+- **`/build-next-task-context`** — Resuelve el intento activo exclusivamente desde `reservation.token` o `activeRunId`, valida el token canónico y deja de escanear intentos históricos. (este commit)
+- **`test-next-task-tools`** — Deja de ser solo `node --check` y ahora ejecuta `node --test templates/next-task/tools/*.test.mjs` además de la validación sintáctica. (este commit)
+- **`context-builder`** — Mantiene lectura amplia pero con denylist explícita para secretos y usa una tool determinista de inspección del repositorio en lugar de depender de lecturas indiscriminadas. (este commit)
+- **`/init-next-task` y `/init-execution`** — Declaran e instalan explícitamente el helper compartido `.devflow/shared/tools/devflow-runtime-helpers.mjs`; `next-task` ya no depende de `execution-contract-helpers.mjs`. (este commit)
+- **CI workflow** — Actualizado a Node LTS vigente con matrix, `concurrency` y `make test` como entrypoint único. (este commit)
+
+- **`/init-execution`, README y scaffold de execution** — Se alinean con el
+  runtime completo declarado en `templates/execution/scaffold.json`, incluyendo
+  `execution-contract-helpers.mjs` y `execution-transition-engine.mjs`, sin
+  sobrescritura de archivos existentes y con dependencia explícita de
+  `next-task` antes de `/prepare-task-run`. (este commit)
 - **`make test`** — Ahora ejecuta en orden: `validate`, `test-repository`,
   `test-software-architect-tools`, `test-task-planner-tools`,
   `test-next-task-tools`, `test-execution-tools`, `test-agent-contracts`.
@@ -113,9 +135,11 @@ cada hito.
 
 ### Fixed
 
-- **required_paths de next-task** — `scripts/validate.sh` ahora incluye
-  `templates/next-task/tools/touch-execution-state.mjs`, alineando el listado
-  requerido con los runtime tools detectados. (este commit)
+- **Validación estructural del runtime execution** — `scripts/validate.sh`
+  ahora compara `templates/execution/scaffold.json` contra las rutas
+  documentadas por `/init-execution`, valida las dependencias de `next-task`
+  requeridas por `prepare-task-run.mjs` y detecta imports huérfanos en el
+  runtime compartido de `.devflow/execution/`. (este commit)
 - **Validación parcial por gates 8/12/14** — `validate-blueprint.mjs` ahora
   soporta `--gate 8|12|14`, validando solo documentos acumulados hasta esa
   fase. El agente usa ese modo antes de solicitar aprobación humana y mantiene

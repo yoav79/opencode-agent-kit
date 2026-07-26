@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, opendir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, open, opendir, readFile, rename, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -10,24 +10,43 @@ import {
   loadJson,
   validateExecutionStateShape,
   validateTaskCollection,
+  validateSelectionForPreparation,
+  validateTransitionJournal,
   FILES,
   EXECUTION_ENGINE_FILES,
   READY_STATUSES,
   ATTEMPT_DIR_PATTERN,
+  TASK_SELECTED_CLASSIFICATION,
   attemptDirectoryName,
+  resolveCanonicalRunContext,
   runPathFor,
 } from './execution-contract-helpers.mjs';
 
-const ENGINE_NAME = 'execution-transition-engine';
 const TRANSITION_TYPE = 'prepare-task-run';
+const TERMINAL_STATUSES = new Set(['completed', 'cancelled', 'failed_permanent']);
+const LOCK_METADATA_FILE = 'owner.json';
 const ENGINE_CLASSIFICATIONS = {
   RUN_PREPARED: 'RUN_PREPARED',
   IDEMPOTENT: 'IDEMPOTENT',
   RECOVERED: 'RECOVERED',
   STALE_SELECTION: 'STALE_SELECTION',
+  SELECTION_INVALID: 'SELECTION_INVALID',
   RUN_CONFLICT: 'RUN_CONFLICT',
+  EXECUTION_STATE_INVALID: 'EXECUTION_STATE_INVALID',
+  JOURNAL_INVALID: 'JOURNAL_INVALID',
+  JOURNAL_CONFLICT: 'JOURNAL_CONFLICT',
+  LOCK_INVALID: 'LOCK_INVALID',
   LOCK_FAILED: 'LOCK_FAILED',
+  LOCK_TIMEOUT: 'LOCK_TIMEOUT',
 };
+const STABLE_RESULT_CODES = new Set([
+  ENGINE_CLASSIFICATIONS.SELECTION_INVALID,
+  ENGINE_CLASSIFICATIONS.STALE_SELECTION,
+  ENGINE_CLASSIFICATIONS.RUN_CONFLICT,
+  ENGINE_CLASSIFICATIONS.EXECUTION_STATE_INVALID,
+  ENGINE_CLASSIFICATIONS.JOURNAL_INVALID,
+  ENGINE_CLASSIFICATIONS.JOURNAL_CONFLICT,
+]);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -47,14 +66,15 @@ function result(classification, fields = {}) {
     previousRevision: fields.previousRevision ?? null,
     newRevision: fields.newRevision ?? null,
     recovered: fields.recovered ?? false,
-    idempotent: fields.idempotent ?? false,
+    idempotent: classification === ENGINE_CLASSIFICATIONS.IDEMPOTENT ? true : (fields.idempotent ?? false),
   };
 }
 
 class EngineError extends Error {
-  constructor(code, message) {
+  constructor(code, message, fields = {}) {
     super(message);
     this.code = code;
+    this.fields = fields;
     this.name = 'EngineError';
   }
 }
@@ -82,66 +102,28 @@ function injectFault(point) {
   }
 }
 
-async function acquireLock(root) {
-  const lockDir = path.join(root, EXECUTION_ENGINE_FILES.lock);
-  const pid = process.pid;
-  const host = os.hostname();
-  const lockTimeoutMs = Number.parseInt(process.env.LOCK_TIMEOUT_MS, 10) || 30000;
-  const lockRetryMs = Number.parseInt(process.env.LOCK_RETRY_MS, 10) || 200;
-  const deadline = Date.now() + lockTimeoutMs;
-
-  while (Date.now() < deadline) {
-    try {
-      await mkdir(lockDir);
-      await writeFile(path.join(lockDir, 'pid'), String(pid), 'utf8');
-      await writeFile(path.join(lockDir, 'host'), host, 'utf8');
-      await writeFile(path.join(lockDir, 'ts'), String(Date.now()), 'utf8');
-      return lockDir;
-    } catch (err) {
-      if (err.code !== 'EEXIST') throw new EngineError('LOCK_FAILED', `Error al adquirir lock: ${err.message}`);
-
-      const stale = await isStaleLock(lockDir);
-      if (stale) {
-        await rm(lockDir, { recursive: true, force: true }).catch(() => {});
-        continue;
-      }
-
-      await sleep(lockRetryMs);
-    }
-  }
-
-  throw new EngineError('LOCK_TIMEOUT', `No se pudo adquirir el lock en ${lockTimeoutMs}ms.`);
+function computeDigest(raw) {
+  return `sha256:${createHash('sha256').update(raw, 'utf8').digest('hex')}`;
 }
 
-async function isStaleLock(lockDir) {
+async function writeAtomicText(filePath, content) {
+  const tmpPath = `${filePath}.tmp`;
+  let handle;
+
   try {
-    const pidRaw = await readFile(path.join(lockDir, 'pid'), 'utf8');
-    const lockPid = Number.parseInt(pidRaw, 10);
-    if (!Number.isInteger(lockPid) || lockPid <= 0) return true;
-
-    try {
-      process.kill(lockPid, 0);
-    } catch {
-      return true;
+    await mkdir(path.dirname(filePath), { recursive: true });
+    handle = await open(tmpPath, 'w');
+    await handle.writeFile(content, 'utf8');
+    await handle.sync();
+    await handle.close();
+    handle = null;
+    await rename(tmpPath, filePath);
+  } catch (error) {
+    if (handle) {
+      await handle.close().catch(() => {});
     }
-
-    const tsRaw = await readFile(path.join(lockDir, 'ts'), 'utf8').catch(() => null);
-    if (tsRaw !== null) {
-      const ts = Number.parseInt(tsRaw, 10);
-      if (Number.isInteger(ts) && Date.now() - ts > 60000) return true;
-    }
-
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-async function releaseLock(lockDir) {
-  try {
-    await rm(lockDir, { recursive: true, force: true });
-  } catch (err) {
-    if (err.code !== 'ENOENT') throw err;
+    await rm(tmpPath, { force: true }).catch(() => {});
+    throw error;
   }
 }
 
@@ -150,24 +132,6 @@ async function readFileSafe(filePath) {
     return await readFile(filePath, 'utf8');
   } catch (err) {
     if (err.code === 'ENOENT') return null;
-    throw err;
-  }
-}
-
-async function directoryExists(dirPath) {
-  try {
-    await readFile(path.join(dirPath, '.check'), 'utf8');
-    return true;
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      try {
-        await mkdir(dirPath, { recursive: true });
-        await rm(dirPath, { recursive: true, force: true });
-        return false;
-      } catch {
-        return true;
-      }
-    }
     throw err;
   }
 }
@@ -181,72 +145,165 @@ async function dirExists(dirPath) {
   }
 }
 
+async function writeLockMetadata(lockDir, metadata) {
+  await writeAtomicText(
+    path.join(lockDir, LOCK_METADATA_FILE),
+    `${JSON.stringify(metadata, null, 2)}\n`,
+  );
+}
+
+function validateLockMetadataShape(value) {
+  return isObject(value)
+    && Number.isInteger(value.pid)
+    && value.pid > 0
+    && typeof value.host === 'string'
+    && value.host.trim() !== ''
+    && Number.isInteger(value.createdAtMs)
+    && value.createdAtMs >= 0
+    && JSON.stringify(Object.keys(value)) === JSON.stringify(['pid', 'host', 'createdAtMs']);
+}
+
+async function inspectExistingLock(lockDir, localHost, initializationGraceMs) {
+  let createdAtMs = null;
+  try {
+    const s = await stat(lockDir);
+    createdAtMs = s.mtimeMs;
+  } catch {
+    return { status: 'MISSING' };
+  }
+
+  const ageMs = Math.max(0, Date.now() - Math.floor(createdAtMs ?? Date.now()));
+  const metadataRaw = await readFileSafe(path.join(lockDir, LOCK_METADATA_FILE));
+  if (metadataRaw === null) {
+    if (ageMs < initializationGraceMs) {
+      return { status: 'INITIALIZING' };
+    }
+    return { status: 'INVALID', message: 'El lock existe pero no completó su metadata atómica.' };
+  }
+
+  let metadata;
+  try {
+    metadata = JSON.parse(metadataRaw);
+  } catch (error) {
+    return { status: 'INVALID', message: `La metadata del lock no contiene JSON válido: ${error.message}` };
+  }
+
+  if (!validateLockMetadataShape(metadata)) {
+    return { status: 'INVALID', message: 'La metadata del lock no cumple la estructura contractual.' };
+  }
+
+  if (metadata.host !== localHost) {
+    return { status: 'BUSY_REMOTE', metadata };
+  }
+
+  try {
+    process.kill(metadata.pid, 0);
+    return { status: 'BUSY_LOCAL', metadata };
+  } catch (error) {
+    if (error?.code === 'EPERM') {
+      return { status: 'BUSY_LOCAL', metadata };
+    }
+    return { status: 'STALE_LOCAL', metadata };
+  }
+}
+
+async function acquireLock(root) {
+  const lockDir = path.join(root, EXECUTION_ENGINE_FILES.lock);
+  const pid = process.pid;
+  const host = os.hostname();
+  const lockTimeoutMs = Number.parseInt(process.env.LOCK_TIMEOUT_MS, 10) || 30000;
+  const lockRetryMs = Number.parseInt(process.env.LOCK_RETRY_MS, 10) || 200;
+  const initializationGraceMs = Number.parseInt(process.env.LOCK_INIT_GRACE_MS, 10) || 1000;
+  const deadline = Date.now() + lockTimeoutMs;
+
+  while (Date.now() < deadline) {
+    try {
+      await mkdir(lockDir);
+      try {
+        await writeLockMetadata(lockDir, {
+          pid,
+          host,
+          createdAtMs: Date.now(),
+        });
+        return lockDir;
+      } catch (error) {
+        await rm(lockDir, { recursive: true, force: true }).catch(() => {});
+        throw new EngineError(ENGINE_CLASSIFICATIONS.LOCK_FAILED, `Error al completar la metadata del lock: ${error.message}`);
+      }
+    } catch (err) {
+      if (err instanceof EngineError) throw err;
+      if (err.code !== 'EEXIST') {
+        throw new EngineError(ENGINE_CLASSIFICATIONS.LOCK_FAILED, `Error al adquirir lock: ${err.message}`);
+      }
+
+      const lockStatus = await inspectExistingLock(lockDir, host, initializationGraceMs);
+      if (lockStatus.status === 'MISSING' || lockStatus.status === 'STALE_LOCAL') {
+        await rm(lockDir, { recursive: true, force: true }).catch(() => {});
+        continue;
+      }
+      if (lockStatus.status === 'INVALID') {
+        throw new EngineError(ENGINE_CLASSIFICATIONS.LOCK_INVALID, lockStatus.message);
+      }
+
+      await sleep(lockRetryMs);
+    }
+  }
+
+  throw new EngineError(ENGINE_CLASSIFICATIONS.LOCK_TIMEOUT, `No se pudo adquirir el lock en ${lockTimeoutMs}ms.`);
+}
+
+async function releaseLock(lockDir) {
+  try {
+    await rm(lockDir, { recursive: true, force: true });
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+}
+
 async function loadAndValidateSelection(root) {
   const issues = [];
   const loaded = await loadJson(root, FILES.selection, issues, { required: true });
 
-  if (loaded.raw === null) {
-    throw new EngineError('SELECTION_NOT_FOUND', `No existe ${FILES.selection}.`);
-  }
-  if (!loaded.value) {
-    throw new EngineError('SELECTION_NOT_TASK_SELECTED', `${FILES.selection} no contiene un objeto JSON válido.`);
+  if (loaded.raw === null || !loaded.value) {
+    return result(ENGINE_CLASSIFICATIONS.SELECTION_INVALID);
   }
 
-  const selection = loaded.value;
-
-  if (selection.classification !== 'TASK_SELECTED') {
-    return result(ENGINE_CLASSIFICATIONS.STALE_SELECTION, {
-      previousRevision: null,
-      newRevision: null,
+  validateSelectionForPreparation(loaded.value, FILES.selection, issues);
+  if (issues.length > 0) {
+    return result(ENGINE_CLASSIFICATIONS.SELECTION_INVALID, {
+      taskId: typeof loaded.value.selectedTaskId === 'string' ? loaded.value.selectedTaskId : null,
     });
   }
 
-  if (typeof selection.selectedTaskId !== 'string' || selection.selectedTaskId.trim() === '') {
-    throw new EngineError('SELECTION_INVALID', 'La selección no declara selectedTaskId.');
-  }
-
-  if (!isObject(selection.sourceSnapshot) || !isNonNegativeInteger(selection.sourceSnapshot.executionStateRevision)) {
-    return result(ENGINE_CLASSIFICATIONS.STALE_SELECTION, {
-      previousRevision: null,
-      newRevision: null,
-    });
-  }
-
-  return { selection, selectionRaw: loaded.raw };
+  return {
+    selection: loaded.value,
+    selectionRaw: loaded.raw,
+    selectionDigest: computeDigest(loaded.raw),
+  };
 }
 
-async function validateStateUnderLock(root, expectedRevision) {
+async function validateStateUnderLock(root) {
   const issues = [];
   const loaded = await loadJson(root, FILES.executionState, issues, { required: true });
 
   if (loaded.raw === null || !loaded.value) {
-    throw new EngineError('EXECUTION_STATE_INVALID', `No se pudo leer ${FILES.executionState}.`);
+    throw new EngineError(ENGINE_CLASSIFICATIONS.EXECUTION_STATE_INVALID, `No se pudo leer ${FILES.executionState}.`);
   }
 
   const taskRecords = validateExecutionStateShape(loaded.value, issues);
   const validation = validateTaskCollection(taskRecords, FILES.executionState, 'tasks', issues);
 
   if (issues.length > 0) {
-    throw new EngineError('EXECUTION_STATE_INVALID', issues.map((e) => e.code).join(', '));
+    throw new EngineError(ENGINE_CLASSIFICATIONS.EXECUTION_STATE_INVALID, issues.map((entry) => entry.code).join(', '));
   }
 
-  const state = loaded.value;
-  const tasks = validation.valid;
-
-  if (expectedRevision !== null && state.revision !== expectedRevision) {
-    return result(ENGINE_CLASSIFICATIONS.STALE_SELECTION, {
-      previousRevision: state.revision,
-      newRevision: state.revision,
-    });
-  }
-
-  return { state, tasks, stateRaw: loaded.raw };
+  return { state: loaded.value, tasks: validation.valid };
 }
 
 async function resolveAttempt(root, taskId, explicitAttempt) {
   if (explicitAttempt !== null) return explicitAttempt;
 
-  const taskRunsDir = path.join(root, '.devflow', 'execution', 'runs', taskId);
+  const taskRunsDir = path.join(root, FILES.runsRoot, taskId);
   let maxAttempt = 0;
 
   let dir;
@@ -290,19 +347,25 @@ function assertReservable(existingTask) {
   if (!existingTask) return;
 
   if (!READY_STATUSES.has(existingTask.status)) {
-    throw new EngineError('RUN_CONFLICT', 'La tarea ya no está en un estado reservable.');
+    throw new EngineError(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, 'La tarea ya no está en un estado reservable.', {
+      taskId: existingTask.taskId,
+    });
   }
 
   if (existingTask.activeRunId !== null || existingTask.reservation !== null || existingTask.blocker !== null) {
-    throw new EngineError('RUN_CONFLICT', 'La tarea ya tiene un run activo, una reserva o un blocker persistido.');
+    throw new EngineError(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, 'La tarea ya tiene un run activo, una reserva o un blocker persistido.', {
+      taskId: existingTask.taskId,
+    });
   }
 
   if (!isPositiveInteger(existingTask.maxAttempts) || !isNonNegativeInteger(existingTask.attemptCount)) {
-    throw new EngineError('EXECUTION_STATE_INVALID', 'La tarea tiene un estado de intentos inválido.');
+    throw new EngineError(ENGINE_CLASSIFICATIONS.EXECUTION_STATE_INVALID, 'La tarea tiene un estado de intentos inválido.');
   }
 
   if (existingTask.attemptCount >= existingTask.maxAttempts) {
-    throw new EngineError('RUN_CONFLICT', 'La tarea agotó sus intentos disponibles.');
+    throw new EngineError(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, 'La tarea agotó sus intentos disponibles.', {
+      taskId: existingTask.taskId,
+    });
   }
 }
 
@@ -331,46 +394,53 @@ function produceNextState(state, updatedTask, taskId, newRevision, at) {
   };
 }
 
-function computeDigest(raw) {
-  return `sha256:${createHash('sha256').update(raw, 'utf8').digest('hex')}`;
-}
-
 function journalPath(root) {
   return path.join(root, EXECUTION_ENGINE_FILES.journal);
 }
 
 async function writeJournal(root, fields) {
+  const runContext = resolveCanonicalRunContext(root, fields.taskId, fields.attempt);
   const entry = {
     schemaVersion: 1,
     transitionType: TRANSITION_TYPE,
     taskId: fields.taskId,
     attempt: fields.attempt,
-    runPath: fields.runPath,
+    runPath: runContext.runPath,
     expectedRevision: fields.expectedRevision,
     targetRevision: fields.targetRevision,
     selectionDigest: fields.selectionDigest,
     phase: 'started',
     officialTimestamp: fields.officialTimestamp,
     expectedArtifacts: [
-      runPathFor(fields.taskId, fields.attempt) + '/selection.json',
+      `${runContext.runPath}/selection.json`,
       FILES.executionState,
     ],
     createdAt: fields.officialTimestamp,
   };
 
-  await writeFile(journalPath(root), `${JSON.stringify(entry, null, 2)}\n`, 'utf8');
+  const validation = validateTransitionJournal(entry, { root });
+  if (!validation.ok) {
+    throw new EngineError('WRITE_FAILED', 'El journal generado no cumple el contrato.');
+  }
+
+  await writeAtomicText(journalPath(root), `${JSON.stringify(entry, null, 2)}\n`);
   return entry;
 }
 
 async function readJournal(root) {
-  const jp = journalPath(root);
+  const raw = await readFileSafe(journalPath(root));
+  if (raw === null) {
+    return { exists: false, raw: null, value: null, parseError: null };
+  }
+
   try {
-    const raw = await readFile(jp, 'utf8');
     const value = JSON.parse(raw);
-    if (!isObject(value)) return null;
-    return value;
-  } catch {
-    return null;
+    if (!isObject(value)) {
+      return { exists: true, raw, value: null, parseError: 'La raíz del journal debe ser un objeto JSON.' };
+    }
+    return { exists: true, raw, value, parseError: null };
+  } catch (error) {
+    return { exists: true, raw, value: null, parseError: error.message };
   }
 }
 
@@ -381,169 +451,378 @@ async function removeJournal(root) {
   }
 }
 
-async function cleanTempFiles(root) {
-  const stateTmp = path.join(root, FILES.executionState) + '.tmp';
-  await rm(stateTmp, { force: true }).catch(() => {});
+async function cleanTempFiles(root, runContext = null) {
+  await rm(`${path.join(root, FILES.executionState)}.tmp`, { force: true }).catch(() => {});
+  await rm(`${journalPath(root)}.tmp`, { force: true }).catch(() => {});
+  if (runContext) {
+    await rm(`${runContext.selectionPath}.tmp`, { force: true }).catch(() => {});
+  }
 }
 
-async function recoverFromJournal(root, selection, selectionRaw, state, tasks) {
-  const journal = await readJournal(root);
-  if (!journal) return null;
+function exactReservationMatches(taskRecord, journal, stateRevision) {
+  return taskRecord
+    && taskRecord.status === 'reserved'
+    && taskRecord.activeRunId === null
+    && taskRecord.blocker === null
+    && taskRecord.reservation !== null
+    && taskRecord.reservation.token === journal.runPath
+    && taskRecord.reservation.stateRevision === journal.expectedRevision
+    && taskRecord.reservation.reservedAt === journal.officialTimestamp
+    && stateRevision === journal.targetRevision;
+}
 
-  if (journal.transitionType !== TRANSITION_TYPE || journal.schemaVersion !== 1) {
-    await removeJournal(root);
-    return null;
+function classifyRecoveryState(state, taskRecord, journal) {
+  if (taskRecord && TERMINAL_STATUSES.has(taskRecord.status)) {
+    return 'terminal';
   }
 
-  const taskRecord = findTaskById(tasks, journal.taskId);
-  const evidencePath = path.join(root, journal.runPath, 'selection.json');
-  const evidenceRaw = await readFileSafe(evidencePath);
+  if (exactReservationMatches(taskRecord, journal, state.revision)) {
+    return 'exact_reserved';
+  }
 
-  const stateReflectsTransition = taskRecord
-    && taskRecord.status === 'reserved'
-    && taskRecord.reservation !== null
-    && taskRecord.reservation.stateRevision === journal.expectedRevision;
+  if (state.revision !== journal.expectedRevision) {
+    return 'revision_mismatch';
+  }
 
-  if (stateReflectsTransition) {
+  try {
+    assertReservable(taskRecord);
+    return 'reservable';
+  } catch (error) {
+    if (error instanceof EngineError && error.code === ENGINE_CLASSIFICATIONS.RUN_CONFLICT) {
+      return 'occupied';
+    }
+    throw error;
+  }
+}
+
+function inspectEvidence({ evidenceRaw, journal, selection, selectionRaw, selectionDigest }) {
+  if (evidenceRaw === null) {
+    return { status: 'missing' };
+  }
+
+  if (computeDigest(evidenceRaw) !== journal.selectionDigest) {
+    return { status: 'invalid', reason: 'digest' };
+  }
+
+  let evidence;
+  try {
+    evidence = JSON.parse(evidenceRaw);
+  } catch {
+    return { status: 'invalid', reason: 'json' };
+  }
+
+  const issues = [];
+  validateSelectionForPreparation(evidence, `${journal.runPath}/selection.json`, issues);
+  if (issues.length > 0) {
+    return { status: 'invalid', reason: 'shape' };
+  }
+
+  if (evidence.classification !== TASK_SELECTED_CLASSIFICATION
+    || evidence.selectedTaskId !== journal.taskId
+    || evidence.sourceSnapshot.executionStateRevision !== journal.expectedRevision) {
+    return { status: 'invalid', reason: 'identity' };
+  }
+
+  if (selection.classification !== TASK_SELECTED_CLASSIFICATION
+    || selection.selectedTaskId !== journal.taskId
+    || selection.sourceSnapshot.executionStateRevision !== journal.expectedRevision
+    || selectionDigest !== journal.selectionDigest
+    || evidenceRaw !== selectionRaw) {
+    return { status: 'invalid', reason: 'selection_mismatch' };
+  }
+
+  return { status: 'valid' };
+}
+
+function decideRecoveryAction({ evidenceStatus, stateStatus, selectionMatchesJournal }) {
+  if (evidenceStatus === 'invalid') {
+    return { type: 'result', classification: ENGINE_CLASSIFICATIONS.RUN_CONFLICT };
+  }
+  if (stateStatus === 'terminal') {
+    return { type: 'result', classification: ENGINE_CLASSIFICATIONS.RUN_CONFLICT };
+  }
+  if (evidenceStatus === 'missing' && !selectionMatchesJournal) {
+    return { type: 'result', classification: ENGINE_CLASSIFICATIONS.JOURNAL_CONFLICT };
+  }
+  if (evidenceStatus === 'missing' && stateStatus === 'reservable') {
+    return { type: 'restart' };
+  }
+  if (evidenceStatus === 'valid' && stateStatus === 'reservable') {
+    return { type: 'apply_state' };
+  }
+  if (evidenceStatus === 'valid' && stateStatus === 'exact_reserved') {
+    return { type: 'idempotent' };
+  }
+  if (evidenceStatus === 'missing' && stateStatus === 'exact_reserved') {
+    return { type: 'result', classification: ENGINE_CLASSIFICATIONS.JOURNAL_CONFLICT };
+  }
+  return { type: 'result', classification: ENGINE_CLASSIFICATIONS.JOURNAL_CONFLICT };
+}
+
+async function finalizeTransition(root, {
+  runContext,
+  selectionRaw,
+  newState,
+  writeEvidence,
+  writeState,
+}) {
+  try {
+    if (writeEvidence) {
+      await mkdir(runContext.runDirectory, { recursive: true });
+      await writeAtomicText(runContext.selectionPath, selectionRaw);
+      injectFault(FAULT_POINTS.AFTER_EVIDENCE);
+    }
+
+    if (writeState) {
+      await writeAtomicText(path.join(root, FILES.executionState), `${JSON.stringify(newState, null, 2)}\n`);
+      injectFault(FAULT_POINTS.AFTER_STATE);
+    }
+
+    injectFault(FAULT_POINTS.BEFORE_CLEANUP);
     await removeJournal(root);
-    await cleanTempFiles(root);
+    await cleanTempFiles(root, runContext);
+  } catch (writeError) {
+    if (writeError instanceof CrashSimulationError) throw writeError;
+    throw new EngineError('WRITE_FAILED', `Error durante escritura atómica: ${writeError.message}`);
+  }
+}
 
-    if (journal.taskId === selection.selectedTaskId
-      && journal.expectedRevision === selection.sourceSnapshot?.executionStateRevision) {
-      const sameEvidence = evidenceRaw === selectionRaw;
-      return result(ENGINE_CLASSIFICATIONS.IDEMPOTENT, {
+async function recoverFromJournal(root, {
+  explicitAttempt,
+  selection,
+  selectionRaw,
+  selectionDigest,
+  state,
+  tasks,
+}) {
+  const journalDocument = await readJournal(root);
+  if (!journalDocument.exists) return null;
+
+  if (journalDocument.parseError) {
+    return {
+      kind: 'result',
+      report: result(ENGINE_CLASSIFICATIONS.JOURNAL_INVALID, {
+        previousRevision: state.revision,
+        newRevision: state.revision,
+      }),
+    };
+  }
+
+  const journal = journalDocument.value;
+  const validation = validateTransitionJournal(journal, { root });
+  if (!validation.ok) {
+    return {
+      kind: 'result',
+      report: result(ENGINE_CLASSIFICATIONS.JOURNAL_INVALID, {
+        taskId: journal.taskId ?? null,
+        attempt: journal.attempt ?? null,
+        runPath: typeof journal.runPath === 'string' ? journal.runPath : null,
+        previousRevision: state.revision,
+        newRevision: state.revision,
+      }),
+    };
+  }
+
+  if (explicitAttempt !== null && explicitAttempt !== journal.attempt) {
+    return {
+      kind: 'result',
+      report: result(ENGINE_CLASSIFICATIONS.JOURNAL_CONFLICT, {
+        taskId: journal.taskId,
+        attempt: journal.attempt,
+        runPath: journal.runPath,
+        previousRevision: state.revision,
+        newRevision: state.revision,
+      }),
+    };
+  }
+
+  const runContext = validation.runContext;
+  const taskRecord = findTaskById(tasks, journal.taskId);
+  const stateStatus = classifyRecoveryState(state, taskRecord, journal);
+  const selectionMatchesJournal = selection.selectedTaskId === journal.taskId
+    && selection.sourceSnapshot.executionStateRevision === journal.expectedRevision
+    && selectionDigest === journal.selectionDigest;
+  const evidenceRaw = await readFileSafe(runContext.selectionPath);
+  const evidenceStatus = inspectEvidence({
+    evidenceRaw,
+    journal,
+    selection,
+    selectionRaw,
+    selectionDigest,
+  }).status;
+  const action = decideRecoveryAction({ evidenceStatus, stateStatus, selectionMatchesJournal });
+
+  if (action.type === 'result') {
+    return {
+      kind: 'result',
+      report: result(action.classification, {
+        taskId: journal.taskId,
+        attempt: journal.attempt,
+        runPath: journal.runPath,
+        previousRevision: state.revision,
+        newRevision: state.revision,
+      }),
+    };
+  }
+
+  if (action.type === 'idempotent') {
+    await removeJournal(root);
+    await cleanTempFiles(root, runContext);
+    return {
+      kind: 'result',
+      report: result(ENGINE_CLASSIFICATIONS.IDEMPOTENT, {
         taskId: journal.taskId,
         attempt: journal.attempt,
         runPath: journal.runPath,
         previousRevision: state.revision,
         newRevision: state.revision,
         recovered: true,
-        idempotent: sameEvidence,
-      });
-    }
-
-    return result(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, {
-      taskId: journal.taskId,
-      previousRevision: state.revision,
-      newRevision: state.revision,
-    });
+      }),
+    };
   }
 
-  if (evidenceRaw !== null) {
-    const at = journal.officialTimestamp || nowIso();
-    const newRevision = state.revision + 1;
-    const reservation = {
-      token: journal.runPath,
-      reservedAt: at,
-      stateRevision: journal.expectedRevision,
+  const at = journal.officialTimestamp;
+  const reservation = {
+    token: journal.runPath,
+    reservedAt: at,
+    stateRevision: journal.expectedRevision,
+  };
+  const updatedTask = buildReservedTask(taskRecord, journal.taskId, state.policy, reservation);
+  const newState = produceNextState(state, updatedTask, journal.taskId, journal.targetRevision, at);
+
+  if (action.type === 'restart') {
+    await finalizeTransition(root, {
+      runContext,
+      selectionRaw,
+      newState,
+      writeEvidence: true,
+      writeState: true,
+    });
+    return {
+      kind: 'result',
+      report: result(ENGINE_CLASSIFICATIONS.RECOVERED, {
+        taskId: journal.taskId,
+        attempt: journal.attempt,
+        runPath: journal.runPath,
+        previousRevision: state.revision,
+        newRevision: journal.targetRevision,
+        recovered: true,
+      }),
     };
-    const updatedTask = buildReservedTask(taskRecord, journal.taskId, state.policy, reservation);
-    const newState = produceNextState(state, updatedTask, journal.taskId, newRevision, at);
+  }
 
-    const stateTmp = path.join(root, FILES.executionState) + '.tmp';
-    await writeFile(stateTmp, `${JSON.stringify(newState, null, 2)}\n`, 'utf8');
-    await rename(stateTmp, path.join(root, FILES.executionState));
-
-    await removeJournal(root);
-
-    return result(ENGINE_CLASSIFICATIONS.RECOVERED, {
+  await finalizeTransition(root, {
+    runContext,
+    selectionRaw,
+    newState,
+    writeEvidence: false,
+    writeState: true,
+  });
+  return {
+    kind: 'result',
+    report: result(ENGINE_CLASSIFICATIONS.RECOVERED, {
       taskId: journal.taskId,
       attempt: journal.attempt,
       runPath: journal.runPath,
       previousRevision: state.revision,
-      newRevision,
+      newRevision: journal.targetRevision,
       recovered: true,
-      idempotent: false,
-    });
-  }
+    }),
+  };
+}
 
-  if (journal.taskId === selection.selectedTaskId
-    && journal.expectedRevision === state.revision
-    && selection.sourceSnapshot?.executionStateRevision === state.revision) {
-    await removeJournal(root);
-    return null;
-  }
-
-  await removeJournal(root);
-  return result(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, {
-    taskId: journal.taskId,
-    previousRevision: state.revision,
-    newRevision: state.revision,
-  });
+function exactPreparedState(taskRecord, runPath, expectedRevision, targetRevision, stateRevision) {
+  return taskRecord
+    && taskRecord.status === 'reserved'
+    && taskRecord.activeRunId === null
+    && taskRecord.blocker === null
+    && taskRecord.reservation !== null
+    && taskRecord.reservation.token === runPath
+    && taskRecord.reservation.stateRevision === expectedRevision
+    && stateRevision === targetRevision;
 }
 
 export async function prepareTaskRun(options = {}) {
   const root = options.root || process.cwd();
   const explicitAttempt = options.attempt ?? null;
   const onTimestamp = options.onTimestamp || null;
-
-  const selectionResult = await loadAndValidateSelection(root);
-  if (selectionResult.classification) {
-    return selectionResult;
-  }
-
-  const { selection, selectionRaw } = selectionResult;
-  const taskId = selection.selectedTaskId;
-  const expectedRevision = selection.sourceSnapshot.executionStateRevision;
-
-  const lockDir = await acquireLock(root);
+  let lockDir = null;
 
   try {
-    const stateResult = await validateStateUnderLock(root, null);
-    if (stateResult.classification) {
-      return stateResult;
+    if (explicitAttempt !== null && !isPositiveInteger(explicitAttempt)) {
+      throw new EngineError('INVALID_ATTEMPT', 'attempt debe ser un entero positivo.');
     }
 
-    const { state, tasks } = stateResult;
+    const initialSelection = await loadAndValidateSelection(root);
+    if (initialSelection.classification) {
+      return initialSelection;
+    }
 
-    const recoveryResult = await recoverFromJournal(root, selection, selectionRaw, state, tasks);
-    if (recoveryResult) {
-      return recoveryResult;
+    lockDir = await acquireLock(root);
+
+    const selectionResult = await loadAndValidateSelection(root);
+    if (selectionResult.classification) {
+      return selectionResult;
+    }
+
+    const { selection, selectionRaw, selectionDigest } = selectionResult;
+    const taskId = selection.selectedTaskId;
+    const expectedRevision = selection.sourceSnapshot.executionStateRevision;
+    const { state, tasks } = await validateStateUnderLock(root);
+
+    const recovery = await recoverFromJournal(root, {
+      explicitAttempt,
+      selection,
+      selectionRaw,
+      selectionDigest,
+      state,
+      tasks,
+    });
+    if (recovery) {
+      return recovery.report;
     }
 
     const attempt = await resolveAttempt(root, taskId, explicitAttempt);
-    const rp = runPathFor(taskId, attempt);
-    const runDir = path.join(root, rp);
-    const runSelectionPath = path.join(runDir, 'selection.json');
+    const runContext = resolveCanonicalRunContext(root, taskId, attempt);
+    const existingEvidence = await readFileSafe(runContext.selectionPath);
+    const existingTask = findTaskById(tasks, taskId);
 
-    const existingEvidence = await readFileSafe(runSelectionPath);
     if (existingEvidence !== null) {
-      if (existingEvidence !== selectionRaw) {
+      if (existingEvidence !== selectionRaw || computeDigest(existingEvidence) !== selectionDigest) {
         return result(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, {
           taskId,
           attempt,
+          runPath: runContext.runPath,
           previousRevision: state.revision,
           newRevision: state.revision,
         });
       }
 
-      const existingTask = findTaskById(tasks, taskId);
-      if (existingTask && existingTask.status === 'reserved'
-        && existingTask.reservation !== null
-        && existingTask.reservation.token === rp) {
+      if (exactPreparedState(existingTask, runContext.runPath, expectedRevision, expectedRevision + 1, state.revision)) {
         return result(ENGINE_CLASSIFICATIONS.IDEMPOTENT, {
           taskId,
           attempt,
-          runPath: rp,
+          runPath: runContext.runPath,
           previousRevision: state.revision,
           newRevision: state.revision,
-          idempotent: true,
         });
       }
 
       return result(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, {
         taskId,
         attempt,
+        runPath: runContext.runPath,
         previousRevision: state.revision,
         newRevision: state.revision,
       });
     }
 
-    const runDirExists = await dirExists(runDir);
+    const runDirExists = await dirExists(runContext.runDirectory);
     if (runDirExists) {
       return result(ENGINE_CLASSIFICATIONS.RUN_CONFLICT, {
         taskId,
         attempt,
+        runPath: runContext.runPath,
         previousRevision: state.revision,
         newRevision: state.revision,
       });
@@ -551,31 +830,27 @@ export async function prepareTaskRun(options = {}) {
 
     if (state.revision !== expectedRevision) {
       return result(ENGINE_CLASSIFICATIONS.STALE_SELECTION, {
+        taskId,
         previousRevision: state.revision,
         newRevision: state.revision,
       });
     }
 
-    const existingTask = findTaskById(tasks, taskId);
     assertReservable(existingTask);
 
     const at = (typeof onTimestamp === 'function') ? onTimestamp() : nowIso();
-    const newRevision = state.revision + 1;
-
+    const newRevision = expectedRevision + 1;
     const reservation = {
-      token: rp,
+      token: runContext.runPath,
       reservedAt: at,
       stateRevision: expectedRevision,
     };
-
     const updatedTask = buildReservedTask(existingTask, taskId, state.policy, reservation);
     const newState = produceNextState(state, updatedTask, taskId, newRevision, at);
-    const selectionDigest = computeDigest(selectionRaw);
 
     await writeJournal(root, {
       taskId,
       attempt,
-      runPath: rp,
       expectedRevision,
       targetRevision: newRevision,
       selectionDigest,
@@ -584,40 +859,33 @@ export async function prepareTaskRun(options = {}) {
 
     injectFault(FAULT_POINTS.AFTER_JOURNAL);
 
-    try {
-      await mkdir(runDir, { recursive: true });
-
-      const evidenceTmp = runSelectionPath + '.tmp';
-      await writeFile(evidenceTmp, selectionRaw, 'utf8');
-      await rename(evidenceTmp, runSelectionPath);
-
-      injectFault(FAULT_POINTS.AFTER_EVIDENCE);
-
-      const stateTmp = path.join(root, FILES.executionState) + '.tmp';
-      await writeFile(stateTmp, `${JSON.stringify(newState, null, 2)}\n`, 'utf8');
-      await rename(stateTmp, path.join(root, FILES.executionState));
-
-      injectFault(FAULT_POINTS.AFTER_STATE);
-
-      injectFault(FAULT_POINTS.BEFORE_CLEANUP);
-
-      await removeJournal(root);
-      await cleanTempFiles(root);
-    } catch (writeError) {
-      if (writeError instanceof CrashSimulationError) throw writeError;
-      throw new EngineError('WRITE_FAILED', `Error durante escritura atómica: ${writeError.message}`);
-    }
+    await finalizeTransition(root, {
+      runContext,
+      selectionRaw,
+      newState,
+      writeEvidence: true,
+      writeState: true,
+    });
 
     return result(ENGINE_CLASSIFICATIONS.RUN_PREPARED, {
       taskId,
       attempt,
-      runPath: rp,
+      runPath: runContext.runPath,
       previousRevision: state.revision,
       newRevision,
       recovered: false,
       idempotent: false,
     });
+  } catch (error) {
+    if (error instanceof EngineError && STABLE_RESULT_CODES.has(error.code)) {
+      return result(error.code, error.fields);
+    }
+    throw error;
   } finally {
-    await releaseLock(lockDir);
+    if (lockDir) {
+      await releaseLock(lockDir);
+    }
   }
 }
+
+export { EngineError, CrashSimulationError, attemptDirectoryName, runPathFor };

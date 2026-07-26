@@ -51,6 +51,21 @@ test('context-builder: no debe tener permiso mkdir', async () => {
   assert.ok(!/^  bash:.*\n.*mkdir/m.test(frontmatter), 'Must not have mkdir in bash permissions');
 });
 
+test('context-builder: debe negar patrones sensibles de lectura', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'opencode', 'agents', 'context-builder.md'), 'utf8');
+  const { frontmatter } = parseFrontmatter(text);
+  for (const pattern of ['*.pem', '*.key', '*.p12', '*.pfx', 'id_rsa', 'id_ed25519', '*.sqlite', '*.db', '*.dump', '*.backup', 'credentials*', 'secrets*', '*.env', '*.env.*']) {
+    assert.match(frontmatter, new RegExp(`"${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}":\\s*deny`), `Missing deny rule for ${pattern}`);
+  }
+});
+
+test('context-builder: debe usar la tool determinista de inspección del repositorio', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'opencode', 'agents', 'context-builder.md'), 'utf8');
+  const { frontmatter, body } = parseFrontmatter(text);
+  assert.ok(frontmatter.includes('"node .devflow/execution/tools/inspect-repository-context.mjs *": allow'), 'Must allow inspect-repository-context.mjs');
+  assert.match(body, /inspect-repository-context\.mjs/, 'Body must instruct using inspect-repository-context.mjs');
+});
+
 test('context-builder: solo debe editar execution-context.json y execution-prompt.md', async () => {
   const text = await readFile(path.join(REPO_ROOT, 'opencode', 'agents', 'context-builder.md'), 'utf8');
   const { frontmatter } = parseFrontmatter(text);
@@ -90,4 +105,19 @@ test('build-next-task-context: no debe referenciar prepare-task-run.mjs', async 
   const text = await readFile(path.join(REPO_ROOT, 'opencode', 'commands', 'build-next-task-context.md'), 'utf8');
   const { body } = parseFrontmatter(text);
   assert.ok(!/prepare-task-run\.mjs/.test(body), 'Must not reference prepare-task-run.mjs');
+});
+
+test('build-next-task-context: debe resolver reserved desde reservation.token y activos desde activeRunId', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'opencode', 'commands', 'build-next-task-context.md'), 'utf8');
+  const { body } = parseFrontmatter(text);
+  assert.match(body, /reservation\.token/, 'Must mention reservation.token as reserved source');
+  assert.match(body, /activeRunId/, 'Must mention activeRunId as active source');
+});
+
+test('build-next-task-context: no debe escanear intentos históricos ni usar AMBIGUOUS_ATTEMPT', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'opencode', 'commands', 'build-next-task-context.md'), 'utf8');
+  const { body } = parseFrontmatter(text);
+  assert.ok(!/AMBIGUOUS_ATTEMPT/.test(body), 'Must not mention AMBIGUOUS_ATTEMPT');
+  assert.ok(!/attempt-\*/.test(body), 'Must not scan attempt-* directories');
+  assert.ok(!/último intento|last attempt/i.test(body), 'Must not use heuristic attempt selection');
 });

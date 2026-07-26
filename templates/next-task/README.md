@@ -15,12 +15,24 @@ El contenido se copia a:
 └── tools/
     ├── select-next-task.mjs
     └── validate-next-task.mjs
+
+.devflow/shared/
+└── tools/
+    └── devflow-runtime-helpers.mjs
 ```
 
 El directorio `.devflow/execution/` es compartido con el template `execution`
 (runtime de orquestación). Ambos templates coexisten en el mismo directorio
 porque el selector consume `execution-state.json` y el orquestador consume
 `selection.json`.
+
+`next-task` ya no depende de helpers instalados por `execution`. Los helpers
+puros compartidos viven en `.devflow/shared/tools/devflow-runtime-helpers.mjs`
+y pueden instalarse junto con `next-task` sin requerir `/init-execution`.
+
+Para ejecutar realmente el selector sí debe existir
+`.devflow/execution/execution-state.json`, normalmente instalado por
+`/init-execution`.
 
 ## Selector determinista
 

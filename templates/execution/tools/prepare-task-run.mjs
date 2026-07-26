@@ -2,8 +2,10 @@
 
 import path from 'node:path';
 import process from 'node:process';
+import { access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
+import { NEXT_TASK_RUNTIME_FILES } from './execution-contract-helpers.mjs';
 import { prepareTaskRun } from './execution-transition-engine.mjs';
 
 const TOOL_NAME = 'prepare-task-run.mjs';
@@ -54,11 +56,37 @@ const EXIT_CODES = {
   RUN_PREPARED: 0,
   IDEMPOTENT: 0,
   RECOVERED: 0,
+  SELECTION_INVALID: 1,
   STALE_SELECTION: 1,
   RUN_CONFLICT: 1,
-  LOCK_TIMEOUT: 1,
-  LOCK_FAILED: 1,
+  EXECUTION_STATE_INVALID: 1,
+  JOURNAL_INVALID: 1,
+  JOURNAL_CONFLICT: 1,
+  LOCK_TIMEOUT: 2,
+  LOCK_INVALID: 2,
+  LOCK_FAILED: 2,
+  NEXT_TASK_RUNTIME_MISSING: 2,
 };
+
+async function assertNextTaskRuntime(root) {
+  const missing = [];
+
+  for (const relativePath of NEXT_TASK_RUNTIME_FILES) {
+    try {
+      await access(path.join(root, relativePath));
+    } catch {
+      missing.push(relativePath);
+    }
+  }
+
+  if (missing.length === 0) return;
+
+  const error = new Error(
+    `Faltan artefactos obligatorios de next-task: ${missing.join(', ')}. Ejecuta /init-next-task antes de /prepare-task-run.`,
+  );
+  error.code = 'NEXT_TASK_RUNTIME_MISSING';
+  throw error;
+}
 
 async function main() {
   let options;
@@ -69,6 +97,8 @@ async function main() {
     usage();
     process.exit(2);
   }
+
+  await assertNextTaskRuntime(options.root);
 
   const result = await prepareTaskRun({
     root: options.root,
@@ -92,7 +122,7 @@ if (invokedAsMain) {
   main().catch((error) => {
     const code = error?.code;
     if (code && EXIT_CODES[code] !== undefined) {
-      console.error(code);
+      console.error(code === 'NEXT_TASK_RUNTIME_MISSING' ? error.message : code);
       process.exit(EXIT_CODES[code]);
     }
     console.error(`Error interno de ${TOOL_NAME}: ${error?.stack ?? error?.message ?? error}`);

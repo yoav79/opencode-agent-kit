@@ -19,7 +19,7 @@ import {
   sameKeys,
   isObject,
   loadJson,
-} from './execution-contract-helpers.mjs';
+} from '../../shared/tools/devflow-runtime-helpers.mjs';
 
 const VALIDATOR_NAME = 'validate-next-task.mjs';
 const VALIDATOR_VERSION = '1.0';

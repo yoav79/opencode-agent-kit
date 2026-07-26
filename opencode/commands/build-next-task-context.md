@@ -4,8 +4,9 @@ agent: context-builder
 subtask: true
 ---
 
-Wrapper de solo lectura que localiza la última tarea seleccionada y, si el run
-ya fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
+Wrapper de solo lectura que localiza la última tarea seleccionada, resuelve el
+run activo exclusivamente desde el estado canónico persistido y, si el run ya
+fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
 
 ## Instrucciones
 
@@ -18,25 +19,23 @@ ya fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
 
 4. Lee `.devflow/execution/execution-state.json`.
 
-5. Determina el `taskId` desde `selection.selectedTaskId`.
+5. Determina el `taskId` exactamente desde `selection.selectedTaskId`.
 
-6. Busca en `execution-state.tasks[]` una entrada para ese `taskId`. Si no
-   existe o su estado no es `reserved`, `running`, `waiting_human` o
-   `waiting_external`, informa que primero debe ejecutarse:
+6. Busca en `execution-state.tasks[]` exactamente una entrada canónica para ese
+   `taskId` (sin ambigüedad por formas equivalentes como `TASK-6` y
+   `TASK-006`). Si falta o existen duplicados para la misma identidad, falla con
+   `EXECUTION_STATE_INVALID`.
 
-   ```text
-   /prepare-task-run
-   ```
+7. Resuelve el run activo solamente desde la entrada de estado canónica:
 
-   y detente sin modificar archivos.
+   - Si `status = reserved`, usa `tasks[].reservation.token`.
+   - Si `status` es `running`, `waiting_human` o `waiting_external`, usa
+     `tasks[].activeRunId`.
+   - No uses directorios históricos, conteos del historial de intentos,
+     reconstrucciones retrospectivas ni ninguna otra fuente implícita.
 
-7. Determina el `attempt` a partir de la reserva existente. Busca en
-   `.devflow/execution/runs/<TASK-ID>/` los directorios `attempt-*` y
-   resuelve el intento preparado. Si existe más de un intento o la resolución
-   es ambigua (múltiples directorios con `selection.json` válido), falla
-   explícitamente con `AMBIGUOUS_ATTEMPT` sin elegir silenciosamente.
-
-8. Si no existe ningún intento preparado, informa:
+8. Si el estado no contiene una reserva o un run activo persistidos, informa
+   que primero debe ejecutarse:
 
    ```text
    /prepare-task-run
@@ -44,18 +43,31 @@ ya fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
 
    y detente sin modificar archivos.
 
-9. Verifica que exista `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json`
-   y que su contenido coincida con la selección global actual. Si no coincide,
-   informa `RUN_CONFLICT` y detente.
+9. Valida el token persistido:
 
-10. Una vez resuelto el `taskId` y `attempt`, procede exactamente como
-    `/build-task-context` con esos valores: lee el `selection.json` del run
-    (no el global), los artefactos del plan, predecesores, repo, etc.
+   - permanece dentro de `.devflow/execution/runs/`;
+   - corresponde al mismo `taskId`;
+   - contiene un `attempt` válido;
+   - apunta al run canónico `.devflow/execution/runs/<TASK-ID>/attempt-<NN>`.
 
-11. Escribe `execution-context.json` y `execution-prompt.md` en el directorio
-    del intento.
+   Si falla cualquiera de estas validaciones, falla con `RUN_TOKEN_INVALID`.
 
-12. Informa la tarea, intento y clasificación resultante.
+10. Verifica que exista `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json`
+    y que su contenido coincida exactamente con la selección global actual. Si
+    falta evidencia: falla con `RUN_NOT_PREPARED`. Si la evidencia no coincide:
+    falla con `RUN_CONFLICT`.
+
+11. Una vez resuelto el `taskId` y `attempt`, procede exactamente como
+     `/build-task-context` con esos valores: lee el `selection.json` del run
+     (no el global), los artefactos del plan, predecesores, repo, etc.
+
+12. Delega en:
+
+    ```text
+    /build-task-context {"taskId":"<TASK-ID>","attempt":<N>}
+    ```
+
+13. Informa la tarea, intento y clasificación resultante.
 
 ## Salida
 
@@ -73,13 +85,16 @@ Para la tarea y el intento resueltos, escribe:
 | `SELECTION_NOT_FOUND` | No existe `.devflow/execution/selection.json`. Ejecuta `/select-next-task`. |
 | `SELECTION_NOT_TASK_SELECTED` | La selección global no está en estado `TASK_SELECTED`. |
 | `RUN_NOT_PREPARED` | La tarea no tiene un run preparado. Ejecuta `/prepare-task-run` primero. |
-| `AMBIGUOUS_ATTEMPT` | Existen múltiples intentos preparados y la resolución es ambigua. |
+| `EXECUTION_STATE_INVALID` | `execution-state.json` no resuelve exactamente una entrada canónica para la tarea seleccionada. |
+| `RUN_TOKEN_INVALID` | El token persistido del run no cumple el formato o la ubicación canónica de `.devflow/execution/runs/`. |
 | `RUN_CONFLICT` | La evidencia del run no coincide con la selección global. |
 
 ## Notas
 
 - Este comando no ejecuta, simula ni reemplaza `/prepare-task-run`. Si el run
   no está preparado, se detiene y pide ejecutar `/prepare-task-run`.
+- Los intentos históricos no participan en la resolución. El intento activo se
+  toma únicamente del token persistido en `execution-state.json`.
 - No modifica `execution-state.json`, no crea directorios, no copia
   `selection.json`, no reserva tareas, no incrementa intentos ni ejecuta
   transiciones de estado.

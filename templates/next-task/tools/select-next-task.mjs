@@ -5,7 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-export * from './execution-contract-helpers.mjs';
+export * from '../../shared/tools/devflow-runtime-helpers.mjs';
 
 import {
   isObject,
@@ -29,7 +29,7 @@ import {
   FILES,
   READY_STATUSES,
   ACTIVE_STATUSES,
-} from './execution-contract-helpers.mjs';
+} from '../../shared/tools/devflow-runtime-helpers.mjs';
 
 export const SELECTOR_NAME = 'select-next-task.mjs';
 export const SELECTOR_VERSION = '1.0';
@@ -93,9 +93,17 @@ export async function computeExpected(root) {
   const stateIssues = [];
   const planIssues = [];
 
+  const inputs = {
+    projectState: FILES.projectState,
+    readiness: FILES.readiness,
+    epicPlan: FILES.epicPlan,
+    taskPlan: FILES.taskPlan,
+    capabilityMap: FILES.capabilityMap,
+    executionState: FILES.executionState,
+    selectionSchema: FILES.selectionSchema,
+  };
   const loaded = {};
-  for (const [key, relativePath] of Object.entries(FILES)) {
-    if (key === 'selection') continue;
+  for (const [key, relativePath] of Object.entries(inputs)) {
     loaded[key] = await loadJson(root, relativePath, inputIssues);
   }
 
@@ -110,9 +118,6 @@ export async function computeExpected(root) {
   const capabilityMap = documents.capabilityMap;
   const executionState = documents.executionState;
 
-  if (documents.executionSchema && documents.executionSchema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
-    pushUniqueIssue(inputIssues, issue('FIELD_INVALID', FILES.executionSchema, 'El schema debe declarar JSON Schema Draft 2020-12.', '$schema'));
-  }
   if (documents.selectionSchema && documents.selectionSchema.$schema !== 'https://json-schema.org/draft/2020-12/schema') {
     pushUniqueIssue(inputIssues, issue('FIELD_INVALID', FILES.selectionSchema, 'El schema debe declarar JSON Schema Draft 2020-12.', '$schema'));
   }

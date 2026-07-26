@@ -13,8 +13,11 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PREPARE_TOOL = path.join(HERE, 'prepare-task-run.mjs');
 const ENGINE = path.join(HERE, 'execution-transition-engine.mjs');
 const HELPERS = path.join(HERE, 'execution-contract-helpers.mjs');
+const SHARED_HELPER = path.join(HERE, '..', '..', 'shared', 'tools', 'devflow-runtime-helpers.mjs');
 const SELECT_TOOL = path.join(HERE, '..', '..', 'next-task', 'tools', 'select-next-task.mjs');
 const VALIDATE_TOOL = path.join(HERE, '..', '..', 'next-task', 'tools', 'validate-next-task.mjs');
+const SELECTION_SCHEMA = path.join(HERE, '..', '..', 'next-task', 'task-selection.schema.json');
+const JOURNAL_SCHEMA = path.join(HERE, '..', 'transition-journal.schema.json');
 const EXECUTION_TEMPLATE = path.join(HERE, '..', 'execution-state.json');
 
 const DEFAULT_TS = '2026-07-25T12:00:00.000Z';
@@ -62,12 +65,16 @@ async function fixture({ revision = 0, selectionTaskId = 'TASK-006' } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'execution-run-'));
   await mkdir(path.join(root, '.devflow', 'execution', 'tools'), { recursive: true });
   await mkdir(path.join(root, '.devflow', 'execution', 'runs'), { recursive: true });
+  await mkdir(path.join(root, '.devflow', 'shared', 'tools'), { recursive: true });
 
   await cp(PREPARE_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'prepare-task-run.mjs'));
   await cp(ENGINE, path.join(root, '.devflow', 'execution', 'tools', 'execution-transition-engine.mjs'));
   await cp(HELPERS, path.join(root, '.devflow', 'execution', 'tools', 'execution-contract-helpers.mjs'));
+  await cp(SHARED_HELPER, path.join(root, '.devflow', 'shared', 'tools', 'devflow-runtime-helpers.mjs'));
   await cp(SELECT_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'select-next-task.mjs'));
   await cp(VALIDATE_TOOL, path.join(root, '.devflow', 'execution', 'tools', 'validate-next-task.mjs'));
+  await cp(SELECTION_SCHEMA, path.join(root, '.devflow', 'execution', 'task-selection.schema.json'));
+  await cp(JOURNAL_SCHEMA, path.join(root, '.devflow', 'execution', 'transition-journal.schema.json'));
 
   const executionState = await json(EXECUTION_TEMPLATE);
   executionState.project.id = 'demo-project';
@@ -272,6 +279,20 @@ test('detecta RUN_CONFLICT cuando la tarea ya está reservada en estado', async 
   }
 });
 
+test('falla con error claro si falta un artefacto obligatorio de next-task', async () => {
+  const root = await fixture();
+  try {
+    await rm(path.join(root, '.devflow', 'execution', 'task-selection.schema.json'));
+
+    const result = run(root);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /Faltan artefactos obligatorios de next-task/);
+    assert.match(result.stderr, /\.devflow\/execution\/task-selection\.schema\.json/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('concurrencia: dos procesos desde la misma revisión, solo uno gana', async () => {
   const root = await fixture({ revision: 0 });
   try {
@@ -377,7 +398,7 @@ test('el lock se libera incluso cuando falla la preparación', async () => {
     const result = run(root);
     assert.equal(result.status, 1);
 
-    const lockDir = path.join(root, '.devflow', 'execution', '.transition-lock');
+    const lockDir = path.join(root, '.devflow', 'execution', 'lock');
     const lockExists = await readdir(lockDir).then(() => true, () => false);
     assert.equal(lockExists, false);
   } finally {
@@ -388,10 +409,12 @@ test('el lock se libera incluso cuando falla la preparación', async () => {
 test('recupera un lock abandonado con PID inexistente', async () => {
   const root = await fixture();
   try {
-    await mkdir(path.join(root, '.devflow', 'execution', '.transition-lock'), { recursive: true });
-    await writeFile(path.join(root, '.devflow', 'execution', '.transition-lock', 'pid'), '999999999', 'utf8');
-    await writeFile(path.join(root, '.devflow', 'execution', '.transition-lock', 'host'), 'phantom-host', 'utf8');
-    await writeFile(path.join(root, '.devflow', 'execution', '.transition-lock', 'ts'), String(Date.now() - 120000), 'utf8');
+    await mkdir(path.join(root, '.devflow', 'execution', 'lock'), { recursive: true });
+    await writeFile(path.join(root, '.devflow', 'execution', 'lock', 'owner.json'), `${JSON.stringify({
+      pid: 999999999,
+      host: os.hostname(),
+      createdAtMs: Date.now() - 120000,
+    }, null, 2)}\n`, 'utf8');
 
     const result = run(root);
     assert.equal(result.status, 0, result.stderr);
@@ -403,6 +426,85 @@ test('recupera un lock abandonado con PID inexistente', async () => {
 
     const state = await json(path.join(root, '.devflow', 'execution', 'execution-state.json'));
     assert.equal(state.revision, 1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('rechaza una selección inválida con traversal y devuelve SELECTION_INVALID', async () => {
+  const root = await fixture();
+  try {
+    const selectionPath = path.join(root, '.devflow', 'execution', 'selection.json');
+    const payload = selection(0);
+    payload.selectedTaskId = '../TASK-006';
+    await writeFile(selectionPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+
+    const before = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    const result = run(root);
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr.trim(), 'SELECTION_INVALID');
+
+    const after = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(after, before);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('bloquea un journal corrupto y lo preserva con JOURNAL_INVALID', async () => {
+  const root = await fixture();
+  try {
+    const journalPath = path.join(root, '.devflow', 'execution', 'transition-journal.json');
+    await writeFile(journalPath, 'not valid json', 'utf8');
+    const before = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+
+    const result = run(root);
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr.trim(), 'JOURNAL_INVALID');
+
+    const after = await readFile(path.join(root, '.devflow', 'execution', 'execution-state.json'), 'utf8');
+    assert.equal(after, before);
+    assert.equal(await readFile(journalPath, 'utf8'), 'not valid json');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('un lock remoto agota timeout y devuelve LOCK_TIMEOUT por CLI', async () => {
+  const root = await fixture();
+  try {
+    await mkdir(path.join(root, '.devflow', 'execution', 'lock'), { recursive: true });
+    await writeFile(path.join(root, '.devflow', 'execution', 'lock', 'owner.json'), `${JSON.stringify({
+      pid: 999999999,
+      host: 'remote-host',
+      createdAtMs: Date.now() - 60000,
+    }, null, 2)}\n`, 'utf8');
+
+    const result = spawnSync('node', ['.devflow/execution/tools/prepare-task-run.mjs'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...envFor(root), LOCK_TIMEOUT_MS: '500', LOCK_RETRY_MS: '100' },
+    });
+    assert.equal(result.status, 2);
+    assert.equal(result.stderr.trim(), 'LOCK_TIMEOUT');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('un lock parcial devuelve LOCK_INVALID por CLI', async () => {
+  const root = await fixture();
+  try {
+    await mkdir(path.join(root, '.devflow', 'execution', 'lock'), { recursive: true });
+    await new Promise((resolve) => setTimeout(resolve, 25));
+
+    const result = spawnSync('node', ['.devflow/execution/tools/prepare-task-run.mjs'], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...envFor(root), LOCK_INIT_GRACE_MS: '1' },
+    });
+    assert.equal(result.status, 2);
+    assert.equal(result.stderr.trim(), 'LOCK_INVALID');
   } finally {
     await rm(root, { recursive: true, force: true });
   }

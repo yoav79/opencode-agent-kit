@@ -5,9 +5,12 @@
     "context-build-request.schema.json",
     "execution-context.schema.json",
     "execution-context.template.json",
-    "execution-prompt.template.md"
+    "execution-prompt.template.md",
+    "tools/inspect-repository-context.mjs"
   ],
-  "dirs": [],
+  "dirs": [
+    "tools"
+  ],
   "agent": {
     "description": "Prepara el contexto ejecutable y el prompt de una tarea ya seleccionada, sin elegir otra tarea ni modificar el plan o el estado de ejecución.",
     "mode": "subagent",

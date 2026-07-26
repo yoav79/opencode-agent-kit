@@ -4,8 +4,10 @@
     "README.md",
     "execution-state.json",
     "execution-state.schema.json",
+    "transition-journal.schema.json",
     "tools/execution-contract-helpers.mjs",
     "tools/execution-transition-engine.mjs",
+    "tools/migrate-execution-state-v1-to-v2.mjs",
     "tools/prepare-task-run.mjs",
     "tools/touch-execution-state.mjs"
   ],

@@ -73,17 +73,26 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  ├── tasks/                                                     │
 │  └── tools/         (validador y actualizador determinista)     │
 │                                                                  │
+│  .devflow/shared/                                                │
+│  └── tools/devflow-runtime-helpers.mjs  (helpers puros compartidos) │
+│                                                                  │
 │  .devflow/execution/                                             │
+│  ├── README.md             (guía local del runtime compartido)   │
 │  ├── execution-state.json  (estado mutable del orquestador)     │
 │  ├── selection.json        (salida del selector determinista)   │
+│  ├── task-selection.schema.json  (contrato de selección)        │
 │  ├── transition-journal.json  (sidecar transaccional)           │
+│  ├── transition-journal.schema.json  (contrato del journal)     │
 │  ├── execution-context.schema.json  (contrato de contexto)      │
 │  ├── context-build-request.schema.json                          │
-│  ├── tools/execution-contract-helpers.mjs  (helpers puros)      │
+│  ├── tools/execution-contract-helpers.mjs  (adaptador de contratos) │
 │  ├── tools/execution-transition-engine.mjs  (dueño mutaciones)  │
+│  ├── tools/migrate-execution-state-v1-to-v2.mjs (migración)     │
 │  ├── tools/prepare-task-run.mjs  (wrapper CLI)                  │
+│  ├── tools/touch-execution-state.mjs  (init timestamps)          │
 │  ├── tools/select-next-task.mjs   (selector determinista)       │
 │  ├── tools/validate-next-task.mjs (gate de validación)          │
+│  ├── tools/inspect-repository-context.mjs (inspección segura)   │
 │  └── runs/                 (evidencia creada por orquestador)    │
 │      └── TASK-XXX/attempt-NN/                                   │
 │          ├── selection.json    (evidencia de la reserva)        │
@@ -153,7 +162,8 @@ selección; delega completamente en la herramienta.
 
 Permisos: Lectura mínima (`execution-state.json`). Ejecuta únicamente el
 selector determinista vía bash. No lee, interpreta ni modifica `selection.json`
-directamente.
+directamente. Sus helpers puros viven en `.devflow/shared/tools/` y no dependen
+del runtime de mutación de `execution`.
 
 ### `context-builder` — Constructor de Contexto de Ejecución
 
@@ -196,12 +206,12 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/publish-blueprint` | software-architect | Publica el blueprint aprobado hacia `docs/software-architect/` |
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
-| `/init-execution` | general | Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/` |
-| `/init-next-task` | general | Instala los contratos de selección determinista (`selection.json`, `select-next-task.mjs`, `validate-next-task.mjs`) en `.devflow/execution/` |
+| `/init-execution` | general | Inicializa el estado mutable, la migración v1→v2 y las herramientas de orquestación en `.devflow/execution/`, además del helper compartido en `.devflow/shared/` |
+| `/init-next-task` | general | Instala los contratos de selección determinista en `.devflow/execution/` y el helper compartido requerido en `.devflow/shared/` |
 | `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
 | `/prepare-task-run` | general | Invoca el motor transaccional `execution-transition-engine.mjs` via `prepare-task-run.mjs` para reservar la tarea seleccionada |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos en un run ya preparado |
-| `/build-next-task-context` | context-builder | Wrapper de solo lectura: construye contexto para la ultima tarea seleccionada si el run ya esta preparado |
+| `/build-next-task-context` | context-builder | Wrapper de solo lectura: resuelve el run activo desde `reservation.token` o `activeRunId` y delega a `/build-task-context` |
 
 ## Estructura del Repositorio
 
@@ -236,7 +246,9 @@ opencode-agent-kit/
 │   └── opencode.example.json      # Configuracion de ejemplo
 ├── templates/
 │   ├── shared/
+│   │   ├── scaffold.json
 │   │   └── tools/
+│   │       ├── devflow-runtime-helpers.mjs
 │   │       └── timestamp.mjs
 │   ├── software-architect/        # Plantillas del agente de diseno
 │   │   ├── project-state.json
@@ -397,7 +409,7 @@ El agente:
 - Genera capacidades, epicas y tareas con validacion determinista
 - Produce un plan validado listo para DevFlow
 
-#### 3. Execution (Task Selection & Context)
+#### 3. Execution (Selector → Motor → Context Builder)
 
 Una vez que el plan está publicado, inicializa el espacio de ejecución y
 selecciona la primera tarea:
@@ -411,18 +423,45 @@ selecciona la primera tarea:
 ```
 
 `/build-next-task-context` es un wrapper de solo lectura que evita escribir
-el `taskId` manualmente, pero solo funciona si el run ya fue preparado.
+el `taskId` manualmente. Resuelve el run activo desde el token persistido del
+estado canónico y solo funciona si el run ya fue preparado.
 
 El flujo canónico:
 
 1. `/init-execution` — Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/`
 2. `/init-next-task` — Instala los contratos de selección determinista en `.devflow/execution/`
-3. `/select-next-task` — Invoca el selector determinista `select-next-task.mjs` para producir `selection.json`
-4. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
-   registra la tarea en el estado de ejecución
-5. `/build-task-context` — Construye `execution-context.json` y
+3. `/select-next-task` — Selector: invoca `select-next-task.mjs` para producir `selection.json`
+4. `/prepare-task-run` — Motor de transición: valida la selección, crea el
+   directorio del run, copia evidencia y registra la reserva en
+   `execution-state.json`
+5. `/build-task-context` — Context Builder: construye `execution-context.json` y
    `execution-prompt.md` con el alcance, criterios, predecesores y contexto
    técnico del repositorio
+
+### Runtime instalado por `/init-execution`
+
+- `.devflow/execution/README.md`
+- `.devflow/execution/execution-state.json`
+- `.devflow/execution/execution-state.schema.json`
+- `.devflow/execution/transition-journal.schema.json`
+- `.devflow/execution/tools/execution-contract-helpers.mjs`
+- `.devflow/execution/tools/execution-transition-engine.mjs`
+- `.devflow/execution/tools/migrate-execution-state-v1-to-v2.mjs`
+- `.devflow/execution/tools/prepare-task-run.mjs`
+- `.devflow/execution/tools/touch-execution-state.mjs`
+
+### Dependencia compartida instalada por `/init-execution` y `/init-next-task`
+
+- `.devflow/shared/tools/devflow-runtime-helpers.mjs`
+
+### Dependencias instaladas por `/init-next-task`
+
+`/prepare-task-run` requiere además estas rutas instaladas por `next-task`:
+
+- `.devflow/execution/selection.json`
+- `.devflow/execution/task-selection.schema.json`
+- `.devflow/execution/tools/select-next-task.mjs`
+- `.devflow/execution/tools/validate-next-task.mjs`
 
 ### Validacion del Repositorio
 
@@ -464,12 +503,12 @@ make test-agent-contracts
 | Target | Cobertura |
 |--------|-----------|
 | `validate` | Integridad del repositorio (JSON, frontmatter, rutas requeridas, cobertura de tests) |
-| `test-repository` | Instalación por symlinks, creación de scaffold y desinstalación |
+| `test-repository` | Instalación por symlinks, creación de scaffold, simulación contractual de `/init-execution` + `/init-next-task` y desinstalación |
 | `test-software-architect-tools` | Validador de blueprint, migración v1→v2, estados reproducibles, publish |
 | `test-task-planner-tools` | Herramientas deterministas de task-planner (6 suites: permisos, timestamps, validación de plan, épicas, capacidades) |
-| `test-next-task-tools` | Sintaxis de herramientas de next-task (selector y gate) |
+| `test-next-task-tools` | Selector y gate de next-task con pruebas funcionales deterministas + `node --check` |
 | `test-execution-tools` | Motor de transiciones de ejecución (prepare-task-run, execution-transition-engine) |
-| `test-agent-contracts` | Contratos de permisos de agentes (context-builder, build-next-task-context) |
+| `test-agent-contracts` | Contratos de permisos de agentes y resolución determinista de `build-next-task-context` |
 
 La suite completa (`make test`) ejecuta `validate` primero, luego las 6 suites
 de prueba en orden. Cualquier fallo en cualquier suite detiene la ejecución.
@@ -487,6 +526,11 @@ El runtime de OpenCode que sí queda cubierto indirectamente:
   lock, journal y fault injection.
 - **Preparación de runs:** se prueba `prepare-task-run.mjs` como CLI real con
   fixture completo de `.devflow/execution/`.
+- **Instalación real del runtime:** `test-scripts.sh` instala templates
+  globales en un directorio temporal, simula `/init-execution` y
+  `/init-next-task`, inicializa `execution-state.json`, ejecuta
+  `prepare-task-run.mjs` y falla si faltan `execution-transition-engine.mjs` o
+  `execution-contract-helpers.mjs`.
 - **Validación estructural:** `validate.sh` verifica que toda herramienta
   runtime tenga su ruta en `required_paths`, que todo frontmatter sea válido,
   y que ningún archivo `.test.mjs` quede fuera de `make test`.

@@ -24,14 +24,15 @@ test-software-architect-tools: ## Prueba validator, migración y fixtures de sof
 test-task-planner-tools: ## Prueba determinista de tools de task-planner (permisos, timestamps, validación)
 	node --test templates/task-planner/tools/*.test.mjs
 
-test-next-task-tools: ## Verifica sintaxis de las herramientas de next-task
+test-next-task-tools: ## Prueba comportamiento de next-task y valida sintaxis de sus herramientas
+	node --test templates/next-task/tools/*.test.mjs
 	for f in templates/next-task/tools/*.mjs; do node --check "$$f" || exit 1; done
 
-test-execution-tools: ## Prueba el motor de transiciones de ejecución (prepare-task-run, execution-transition-engine)
-	node --test templates/execution/tools/prepare-task-run.test.mjs templates/execution/tools/execution-transition-engine.test.mjs
+test-execution-tools: ## Prueba runtime y migración de execution
+	node --test templates/execution/tools/prepare-task-run.test.mjs templates/execution/tools/execution-transition-engine.test.mjs templates/execution/tools/execution-migration.test.mjs
 
-test-agent-contracts: ## Prueba contratos de permisos de agentes (context-builder, build-next-task-context)
-	node --test templates/execution/tools/contractual-tests.test.mjs
+test-agent-contracts: ## Prueba contratos de agentes y la resolución determinista de build-next-task-context
+	node --test templates/execution/tools/contractual-tests.test.mjs templates/execution/tools/build-next-task-context.test.mjs
 
 install: ## Instala agentes, skills y comandos en ~/.config/opencode
 	./scripts/install.sh

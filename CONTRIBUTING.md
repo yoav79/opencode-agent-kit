@@ -4,7 +4,7 @@ Gracias por tu interes en contribuir. Este documento explica como participar de 
 
 ## Principios Fundamentales
 
-1. **Separar configuracion de artefactos.** Los agentes, comandos y plantillas van en `opencode/` y `templates/`. Los resultados de cada proyecto van en su propio `.devflow/software-architect/` o `.devflow/task-planner/`.
+1. **Separar configuracion de artefactos.** Los agentes, comandos y plantillas van en `opencode/` y `templates/`. Los resultados de cada proyecto van en su propio `.devflow/software-architect/`, `.devflow/task-planner/`, `.devflow/execution/` y `.devflow/shared/`.
 2. **Minimo privilegio.** Cada agente solo debe tener los permisos estrictamente necesarios para su rol.
 3. **No inventar.** Nunca agregar requisitos, features o decisiones que no esten respaldadas por evidencia.
 4. **Trazabilidad.** Cada cambio debe poder justificarse con un problema concreto o una mejora verificable.
@@ -100,10 +100,11 @@ Las plantillas viven en `templates/nombre-agente/` y se copian al proyecto desti
 
 ### Reglas para Plantillas
 
-- **Cada plantilla debe ser autocontenido.** No dependa de archivos externos al directorio.
+- **Cada plantilla debe declarar dependencias explícitas.** Si un runtime usa helpers compartidos, instálalos vía `templates/shared/` o un package versionado; no dependas del orden accidental de inicialización.
 - **Incluye `project-state.json`** con la estructura de estado correcta.
 - **Incluye `workflow.md`** que documente las fases y criterios de salida.
 - **Valida las versiones** en `project-state.json` contra las esperadas por el agente.
+- **No cambies ownership contractual sin migración.** Si modificas `schemaVersion` o el dueño lógico de `execution-state.json`, agrega migrador determinista y tests.
 - **No incluyas archivos de test** o fixtures en las plantillas.
 
 ## Cambios a Reglas

@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "engine": {
-    "name": "next-task",
-    "contractVersion": "1.0"
+    "name": "devflow-execution",
+    "contractVersion": "2.0"
   },
   "project": {
     "id": "<project-slug>",

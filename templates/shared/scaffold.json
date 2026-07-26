@@ -1,0 +1,9 @@
+{
+  "directory": ".devflow/shared",
+  "files": [
+    "tools/devflow-runtime-helpers.mjs"
+  ],
+  "dirs": [
+    "tools"
+  ]
+}

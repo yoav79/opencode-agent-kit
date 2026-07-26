@@ -8,6 +8,18 @@ permission:
     "*": allow
     "*.env": deny
     "*.env.*": deny
+    "*.pem": deny
+    "*.key": deny
+    "*.p12": deny
+    "*.pfx": deny
+    "id_rsa": deny
+    "id_ed25519": deny
+    "*.sqlite": deny
+    "*.db": deny
+    "*.dump": deny
+    "*.backup": deny
+    "credentials*": deny
+    "secrets*": deny
     ".devflow/execution/runs/*/attempt-*/selection.json": allow
     "$HOME/.config/opencode/templates/context-builder/*": allow
   edit:
@@ -18,6 +30,7 @@ permission:
   grep: allow
   bash:
     "*": deny
+    "node .devflow/execution/tools/inspect-repository-context.mjs *": allow
     "node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow
     "git status --short": allow
     "git status --short *": allow
@@ -71,6 +84,10 @@ Antes de trabajar, lee:
 - `$HOME/.config/opencode/templates/context-builder/execution-context.schema.json`;
 - `$HOME/.config/opencode/templates/context-builder/execution-context.template.json`;
 - `$HOME/.config/opencode/templates/context-builder/execution-prompt.template.md`.
+
+Para inspección del repositorio usa preferentemente:
+
+- `.devflow/execution/tools/inspect-repository-context.mjs`.
 
 Las plantillas orientan la estructura. No copies tokens `{{...}}` al resultado.
 
@@ -156,7 +173,9 @@ Ejecuta esta secuencia antes de derivar contenido:
 17. Lee el blueprint resuelto registrado por el Task Planner.
 18. Verifica predecesores y sus resultados persistidos.
 19. Lee únicamente memoria verificada y relevante.
-20. Inspecciona el repositorio actual de forma selectiva.
+20. Inspecciona el repositorio actual de forma selectiva con
+    `.devflow/execution/tools/inspect-repository-context.mjs` y solo lee archivos
+    adicionales cuando el reporte no alcance.
 21. Clasifica el contexto.
 22. Escribe primero `execution-context.json`.
 23. Vuelve a leerlo y comprueba su consistencia.

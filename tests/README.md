@@ -10,9 +10,9 @@ contratos de archivos sin iniciar OpenCode ni depender de un modelo.
 | `test-scripts.sh` | Instalación por symlinks, creación de scaffold y desinstalación | Ejecución de agentes, slash commands y permisos en runtime |
 | `test-software-architect-tools.sh` | Validator, migración v1 a v2, estados reproducibles, publish | Entrevistas, delegación con `task`, gates humanos y promoción realizada por OpenCode |
 | `test-task-planner-tools` (`node --test`) | 6 suites: permisos (`task: allow`), timestamps, validación de plan, épicas, capacidades, epic-decomposition | Planificación completa con agente, decisiones humanas, interacción con blueprint |
-| `test-next-task-tools` (`node --check`) | Sintaxis de `select-next-task.mjs` y `validate-next-task.mjs` | Lógica de selección real, integración con execution-state |
-| `test-execution-tools` (`node --test`) | Motor transaccional: preparación de runs, concurrencia, journal, locks, recuperación ante fallos, idempotencia | Ejecución real de tareas, integración con OpenCode, gates humanos |
-| `test-agent-contracts` (`node --test`) | Contratos de permisos: `context-builder` como subagente, restricciones de edición, prohibición de `prepare-task-run` en `build-next-task-context` | Comportamiento runtime de los agentes, delegación con `task`, conversaciones |
+| `test-next-task-tools` (`node --test` + `node --check`) | Selección real de la siguiente tarea, dependencias, waves, concurrencia lógica, IDs descriptivos/ambiguos, gate `validate-next-task`, no mutación de `execution-state.json` | Ejecución de agentes, slash commands de OpenCode, cobertura E2E |
+| `test-execution-tools` (`node --test`) | Motor transaccional: preparación de runs, concurrencia, journal, locks, recuperación ante fallos, idempotencia y migración v1→v2 de `execution-state.json` | Ejecución real de tareas, integración con OpenCode, gates humanos |
+| `test-agent-contracts` (`node --test`) | Contratos de permisos: `context-builder` como subagente, denylist de lectura sensible, uso de inspección determinista y resolución canónica de `/build-next-task-context` | Comportamiento runtime de los agentes, delegación con `task`, conversaciones |
 
 ## Cobertura de runtime
 
@@ -20,14 +20,19 @@ Aunque las suites no ejecutan OpenCode, cubren invariantes del runtime:
 
 - **Permisos de agentes:** se verifica que `context-builder.md` tenga
   `mode: subagent`, no pueda editar `execution-state.json` ni `selection.json`,
-  no tenga permiso `mkdir`, y que solo edite `execution-context.json` y
-  `execution-prompt.md`.
+  no tenga permiso `mkdir`, bloquee patrones sensibles de lectura, use la tool
+  determinista `inspect-repository-context.mjs`, y que solo edite
+  `execution-context.json` y `execution-prompt.md`.
 - **Comandos:** `build-next-task-context.md` no contiene instrucciones para
-  ejecutar o referenciar `prepare-task-run`.
+  ejecutar o referenciar `prepare-task-run`, y resuelve el intento solo desde
+  `reservation.token` o `activeRunId`.
 - **Motor de transiciones:** `execution-transition-engine.mjs` se prueba con
   reserva normal, stale selection, idempotencia, concurrencia real entre
   procesos, fault injection (fallo tras journal, tras evidencia, tras estado),
   recuperación de journal, locks abandonados y límite de intentos.
+- **Selector determinista:** `select-next-task.mjs` se prueba con estados
+  `paused` y `completed`, dependencias satisfechas o pendientes, ciclos,
+  límite de concurrencia, IDs descriptivos y ambigüedades numéricas.
 - **CLI real:** `prepare-task-run.mjs` se prueba como comando CLI con
   fixtures de directorio completo.
 - **Validación estructural:** `scripts/validate.sh` verifica que toda

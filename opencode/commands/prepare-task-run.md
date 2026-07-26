@@ -37,6 +37,16 @@ Ejemplos:
 /prepare-task-run {"attempt":2}
 ```
 
+## Dependencia de next-task
+
+Antes de ejecutar el wrapper, deben existir estas rutas instaladas por
+`/init-next-task`:
+
+- `.devflow/execution/selection.json`
+- `.devflow/execution/task-selection.schema.json`
+- `.devflow/execution/tools/select-next-task.mjs`
+- `.devflow/execution/tools/validate-next-task.mjs`
+
 ## Instrucciones
 
 1. Valida la entrada:
@@ -47,7 +57,15 @@ Ejemplos:
    Si `attempt` existe, debe ser un entero `>= 1`.
    Si aparece `taskId`, detén la ejecución.
 
-2. Verifica que existe `.devflow/execution/tools/prepare-task-run.mjs`.
+2. Verifica que existen:
+
+   - `.devflow/execution/tools/prepare-task-run.mjs`
+   - `.devflow/execution/tools/execution-transition-engine.mjs`
+   - `.devflow/execution/tools/execution-contract-helpers.mjs`
+   - `.devflow/shared/tools/devflow-runtime-helpers.mjs`
+   - todas las rutas listadas en `Dependencia de next-task`
+
+   Si falta cualquiera, detén la ejecución e informa la ruta exacta faltante.
 
 3. Ejecuta el tool local del proyecto, no reimplementes la lógica a mano:
 
@@ -55,24 +73,32 @@ Ejemplos:
    node .devflow/execution/tools/prepare-task-run.mjs [--attempt N]
    ```
 
-4. El tool delega en el motor transaccional que:
+4. El wrapper valida primero que el runtime de `next-task` esté instalado.
+   Solo después delega en el motor transaccional que:
 
-   - Lee y valida `selection.json`.
-   - Verifica `classification === TASK_SELECTED` y `selectedTaskId` presente.
-   - Adquiere un lock exclusivo entre procesos.
-   - Relee `execution-state.json` bajo lock.
-   - Detecta y recupera transiciones incompletas (journal pendiente).
-   - Si la revisión de la selección no coincide con el estado actual,
-     responde `STALE_SELECTION` sin crear archivos.
-   - Si la evidencia del intento ya existe y coincide, responde
-     `IDEMPOTENT` sin modificar estado.
-   - Determina el número de intento: usa `--attempt` si se proporcionó,
-     o `max(existing)+1` desde `runs/<TASK-ID>/`.
-   - Crea el directorio `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/`.
-   - Copia `selection.json` como evidencia inmutable.
-   - Actualiza `execution-state.json` (revision+1, reservation, timestamps).
-   - Todo mediante archivos temporales + rename atómico.
-   - Libera el lock.
+    - Lee `selection.json` como entrada no confiable y valida
+      `classification === TASK_SELECTED`, `selectedTaskId` canónico y
+      `sourceSnapshot.executionStateRevision` entero no negativo.
+    - Adquiere un lock exclusivo entre procesos.
+    - Relee `selection.json` y `execution-state.json` bajo lock.
+    - Valida cualquier `transition-journal.json` contra
+      `transition-journal.schema.json` y reglas canónicas adicionales.
+    - Detecta y recupera transiciones incompletas solo si journal, evidencia,
+      digest, revisión y estado son coherentes.
+    - Si la revisión de la selección no coincide con el estado actual,
+      responde `STALE_SELECTION` sin crear archivos.
+    - Si la selección es inválida, responde `SELECTION_INVALID` sin mutar estado.
+    - Si la evidencia del intento ya existe y coincide, responde
+      `IDEMPOTENT` solo cuando estado, token, intento y evidencia coinciden.
+    - Determina el número de intento: usa `--attempt` si se proporcionó,
+      o `max(existing)+1` desde `runs/<TASK-ID>/`.
+    - Crea el directorio `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/`.
+    - Copia `selection.json` como evidencia inmutable.
+    - Actualiza `execution-state.json` (revision+1, reservation, timestamps).
+    - Escribe journal, evidencia y estado mediante archivos temporales + rename atómico.
+    - No limpia el journal antes de validar completamente path, digest,
+      evidencia, token, revisiones y estado.
+    - Libera el lock.
 
 5. Informa el resultado canónico:
 
@@ -96,9 +122,12 @@ Ejemplos:
 | `RUN_PREPARED` | 0 | Run preparado exitosamente |
 | `IDEMPOTENT` | 0 | El run ya estaba preparado, no se modificó nada |
 | `RECOVERED` | 0 | Run recuperado desde journal incompleto |
+| `SELECTION_INVALID` | 1 | `selection.json` no es canónico o verificable |
 | `STALE_SELECTION` | 1 | La selección ya no corresponde a la revisión actual |
 | `RUN_CONFLICT` | 1 | Conflicto (tarea no reservable, evidencia diferente, etc.) |
-| `LOCK_FAILED` / `LOCK_TIMEOUT` | 2 | Error interno, lock no disponible |
+| `JOURNAL_INVALID` | 1 | El journal existe pero no cumple el contrato |
+| `JOURNAL_CONFLICT` | 1 | El journal es válido pero no es recuperable de forma segura |
+| `LOCK_FAILED` / `LOCK_TIMEOUT` / `LOCK_INVALID` | 2 | Error interno o lock no utilizable |
 
 ## Notas
 
@@ -106,7 +135,11 @@ Ejemplos:
 - Este comando no construye el contexto. Usa `/build-task-context` después.
 - No modifiques `selection.json` global ni otros artefactos del plan.
 - Reserva no es ejecución: `attemptCount` no se incrementa durante `prepare`.
+- El wrapper debe fallar con error claro si faltan `selection.json`,
+  `task-selection.schema.json` o las herramientas de selección.
 - El motor asegura la liberación del lock incluso ante errores.
+- El motor no puede recuperar una transición sin evidencia verificable o una
+  intención verificable vía journal canónico.
 
 ## Contexto adicional
 
