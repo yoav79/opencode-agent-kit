@@ -1,7 +1,7 @@
 ---
 description: Prepara un run de ejecución: crea el directorio y registra la tarea en el estado de ejecución
 agent: next-task
-subtask: false
+subtask: true
 ---
 
 Prepara un run de ejecución para una tarea ya seleccionada. Crea el directorio

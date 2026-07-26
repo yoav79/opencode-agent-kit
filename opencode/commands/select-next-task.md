@@ -1,7 +1,7 @@
 ---
 description: Selecciona la siguiente tarea ejecutable de DevFlow mediante reglas deterministas
 agent: next-task
-subtask: false
+subtask: true
 ---
 
 Selecciona exactamente una tarea ejecutable de DevFlow evaluando el plan

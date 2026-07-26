@@ -139,7 +139,7 @@ Consume el plan aprobado y el estado de ejecución para seleccionar exactamente
 una tarea mediante reglas deterministas. Puede ser reemplazado por un scheduler
 sin cambiar los contratos.
 
-- **Modo:** primary
+- **Modo:** subagent
 - **Temperatura:** 0
 - **Entrada:** `.devflow/task-planner/*.json` y `.devflow/execution/execution-state.json`
 - **Salida:** `.devflow/execution/selection.json`

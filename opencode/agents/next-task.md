@@ -1,6 +1,6 @@
 ---
 description: Selecciona exactamente una tarea ejecutable de DevFlow mediante reglas deterministas, sin ejecutar código ni modificar el plan o el estado de ejecución.
-mode: primary
+mode: subagent
 temperature: 0
 steps: 12
 permission:

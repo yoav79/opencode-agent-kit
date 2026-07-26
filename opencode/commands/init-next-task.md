@@ -1,7 +1,7 @@
 ---
 description: Inicializa o continúa el espacio de ejecución de DevFlow para el proyecto actual
 agent: next-task
-subtask: false
+subtask: true
 ---
 
 Inicializa el espacio de ejecución de DevFlow para el proyecto ubicado en el

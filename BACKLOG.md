@@ -142,16 +142,16 @@ automática de que las versiones del comando coincidan con las plantillas.
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Hacer que mode: primary funcione sin comando
+### [Medio] Mantener next-task invocable solo por comandos
 **[next-task]**
 
-Actualmente `next-task` se invoca únicamente mediante comandos
-(`/select-next-task`, `/prepare-task-run`). Debería poder invocarse
-directamente como agente primario.
+`next-task` debe operar como subagente determinista invocado únicamente mediante
+comandos (`/init-next-task`, `/select-next-task`, `/prepare-task-run`). No debe
+presentarse como agente primario de conversación directa.
 
 - **P:** media | **E:** S | **A:** agente, comando
 - **Referencias:** `opencode/agents/next-task.md`
-- **Criterio de salida:** next-task funciona como agente primario sin depender de slash commands
+- **Criterio de salida:** next-task usa `mode: subagent` y todos sus comandos lo invocan como subtask
 - **Depende de:** Ninguna
 
 </div>

@@ -23,6 +23,9 @@ cada hito.
 
 ### Changed
 
+- **`next-task` como subagente** — `next-task` vuelve a `mode: subagent` y sus
+  comandos se ejecutan como `subtask: true`; la selección queda accesible solo
+  mediante slash commands. (este commit)
 - **Fixture workflow.md sincronizado** — Alineado con el template principal:
   principio 29 (drafts/), sección drafts/ en documentos, y fase 8 con modelo
   híbrido task-planner/epic-decomposer. (este commit)
