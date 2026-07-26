@@ -31,6 +31,7 @@ permission:
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs .devflow/task-planner/tools/render-task-markdown.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs .devflow/task-planner/tools/validate-capability-map.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-epic-batch.mjs .devflow/task-planner/tools/validate-epic-batch.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
@@ -43,6 +44,8 @@ permission:
     "node .devflow/task-planner/tools/update-timestamps.mjs *": allow
     "node .devflow/task-planner/tools/validate-capability-map.mjs": allow
     "node .devflow/task-planner/tools/validate-capability-map.mjs *": allow
+    "node .devflow/task-planner/tools/validate-epic-batch.mjs": allow
+    "node .devflow/task-planner/tools/validate-epic-batch.mjs *": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs *": allow
     "node .devflow/task-planner/tools/reserve-task-ids.mjs": allow
@@ -479,11 +482,13 @@ Cuando el subagente devuelve `GENERATED`:
    un archivo `TASK-*.md` existente en `drafts/`.
 5. Verifica que cada `taskId` en `result.json.capabilityAssignments` coincide
    con los IDs reservados en el paso 2 de la invocación (coherencia de IDs).
-6. Si alguna verificación falla, informa al usuario y no promociones.
+6. Ejecuta `node .devflow/task-planner/tools/validate-epic-batch.mjs --epic <EPIC-ID>`.
+   Si devuelve código distinto de `0`, informa al usuario y no promociones.
+7. Si alguna verificación falla, informa al usuario y no promociones.
 
 ### Pasos de promoción
 
-1. Mueve cada `drafts/TASK-*.md` a `.devflow/task-planner/tasks/TASK-*.md`.
+1. Copia/promueve cada `drafts/TASK-*.md` de `drafts/` a `.devflow/task-planner/tasks/TASK-*.md`.
 2. Lee `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado por
    `assemble-epic-task-batch.mjs` en el paso 2b) y fusiona sus tareas en
    `task-plan.json.tasks`. No duplices tareas que ya existan.
@@ -1241,7 +1246,7 @@ Procesa las épicas **secuencialmente**, una por iteración:
     h. **Promueve los drafts** siguiendo el procedimiento de
         **Promoción de drafts**:
         - Valida `result.json` contra los IDs reservados (paso c).
-        - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
+        - Copia/promueve `TASK-*.md` de `drafts/` a `tasks/`.
        - Fusiona `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado
          por `assemble-epic-task-batch.mjs`) en `task-plan.json.tasks`.
        - Actualiza `ownerTaskId` en `capability-map.json`.

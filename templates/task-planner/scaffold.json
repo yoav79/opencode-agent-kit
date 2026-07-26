@@ -26,6 +26,7 @@
     "tools/reserve-task-ids.mjs",
     "tools/update-timestamps.mjs",
     "tools/validate-capability-map.mjs",
+    "tools/validate-epic-batch.mjs",
     "tools/validate-plan.mjs"
   ],
   "command": "/init-task-planner",

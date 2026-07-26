@@ -98,6 +98,10 @@ Utiliza estas plantillas como fuente de verdad.
 
   @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs
 
+- Validador determinista por épica:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-epic-batch.mjs
+
 - Renderer determinista de tareas:
 
   @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs
@@ -134,6 +138,7 @@ La estructura inicial válida es:
     ├── reserve-task-ids.mjs
     ├── update-timestamps.mjs
     ├── validate-capability-map.mjs
+    ├── validate-epic-batch.mjs
     ├── validate-plan.mjs
     └── build-epic-graph.mjs
 ```
@@ -173,6 +178,7 @@ cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/as
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs .devflow/task-planner/tools/render-task-markdown.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs .devflow/task-planner/tools/validate-capability-map.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-epic-batch.mjs .devflow/task-planner/tools/validate-epic-batch.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
@@ -235,15 +241,16 @@ Inicializa un proyecto nuevo:
 6. crea cada archivo inicial usando exactamente su plantilla oficial;
 7. copia el ensamblador determinista oficial de capacidades como `.devflow/task-planner/tools/assemble-capability-map.mjs`;
 8. copia el validador determinista oficial de capacidades como `.devflow/task-planner/tools/validate-capability-map.mjs`;
-9. copia el ensamblador estructurado oficial como `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
-10. copia el renderer determinista oficial de tareas como `.devflow/task-planner/tools/render-task-markdown.mjs`;
-11. copia el reservador determinista oficial como `.devflow/task-planner/tools/reserve-task-ids.mjs`;
-12. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
-13. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
-14. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
-15. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
-16. no agregues registros de ejemplo;
-17. no ejecutes el validador.
+9. copia el validador determinista oficial por épica como `.devflow/task-planner/tools/validate-epic-batch.mjs`;
+10. copia el ensamblador estructurado oficial como `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
+11. copia el renderer determinista oficial de tareas como `.devflow/task-planner/tools/render-task-markdown.mjs`;
+12. copia el reservador determinista oficial como `.devflow/task-planner/tools/reserve-task-ids.mjs`;
+13. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
+14. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
+15. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
+16. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
+17. no agregues registros de ejemplo;
+18. no ejecutes el validador.
 
 #### Caso B — `.devflow/task-planner/` ya existe
 
@@ -307,6 +314,7 @@ falten:
 - `.devflow/task-planner/tools/render-task-markdown.mjs`;
 - `.devflow/task-planner/tools/reserve-task-ids.mjs`;
 - `.devflow/task-planner/tools/validate-capability-map.mjs`;
+- `.devflow/task-planner/tools/validate-epic-batch.mjs`;
 - `.devflow/task-planner/tools/validate-plan.mjs`;
 - `.devflow/task-planner/tools/update-timestamps.mjs`;
 - `.devflow/task-planner/tools/build-epic-graph.mjs`.

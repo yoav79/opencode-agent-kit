@@ -7,8 +7,8 @@ permission:
   read:
     ".devflow/task-planner/**": allow
   edit:
-    ".devflow/task-planner/drafts/**": allow
     "*": deny
+    ".devflow/task-planner/drafts/**": allow
   glob:
     "*": allow
   grep:

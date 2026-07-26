@@ -125,7 +125,7 @@ Transforma un Software Blueprint aprobado en un plan completo de tareas para Dev
   9. Plan Validation — Ejecuta validador determinista
   10. Plan Approval — Solicita aprobacion humana del plan final
 
-**Permisos:** Puede editar archivos en `.devflow/task-planner/`. **No puede** ejecutar codigo, hacer commits, ni modificar el producto.
+**Permisos:** Puede editar archivos en `.devflow/task-planner/`. Solo ejecuta herramientas de planificacion Node deterministas autorizadas. No ejecuta codigo del producto, no hace commits ni modifica el producto.
 
 ### `next-task` — Selector de Siguiente Tarea
 
