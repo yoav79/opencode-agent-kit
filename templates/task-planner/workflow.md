@@ -1196,13 +1196,20 @@ El subagente `epic-decomposer` no puede:
       pertenecen exclusivamente a esa épica.
    c. Verifica que cada `createdTaskId`, `capabilityAssignment` y `epicUpdate`
       coincida con los IDs reservados en el paso 1.
-   d. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/`.
-   e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado en paso 2)
+   d. Ejecuta la validación determinista pre-promoción:
+      ```
+      node .devflow/task-planner/tools/validate-epic-batch.mjs --epic <currentEpicId>
+      ```
+      Si devuelve código distinto de `0`, informa el reporte al usuario, no
+      promuevas `TASK-*.md`, no fusiones el partial y no avances de épica.
+   e. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/` solo si la
+      validación pasó.
+   f. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado en paso 2)
       en `task-plan.json`.
-   f. Actualiza `ownerTaskId` en `capability-map.json`.
-   g. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
-   h. Actualiza contadores y `project-state.json`.
-   i. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
+   g. Actualiza `ownerTaskId` en `capability-map.json`.
+   h. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
+   i. Actualiza contadores y `project-state.json`.
+   j. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
       `build-epic-graph.mjs`.
 9. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
@@ -1218,6 +1225,8 @@ Un draft solo puede promocionarse cuando el agente principal confirma que:
 - el Markdown promovido conserva exactamente el bloque canónico renderizado para
   evitar `TASK_SEMANTIC_KEY_MISMATCH`, `TASK_SEMANTIC_BLOCK_MISMATCH` y
   `TASK_FOREIGN_BACKEND_BINDING`.
+- `validate-epic-batch.mjs --epic <currentEpicId>` devolvió código `0` sobre
+  los drafts de esa épica antes de copiar archivos o fusionar el partial.
 
 Si cualquiera de esas comprobaciones falla, prevalece la autoridad del agente
 principal: no se promociona el draft, la épica no se marca como `decomposed` y

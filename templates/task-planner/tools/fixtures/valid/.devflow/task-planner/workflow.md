@@ -1105,13 +1105,17 @@ El subagente `epic-decomposer` no puede:
       pertenecen exclusivamente a esa épica.
    c. Verifica que cada `createdTaskId`, `capabilityAssignment` y `epicUpdate`
       sea consistente con la épica, sus capacidades y el contrato semántico.
-   d. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/`.
-   e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` en `task-plan.json`.
-   f. Actualiza `ownerTaskId` en `capability-map.json`.
-   g. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
-    h. Actualiza contadores y `project-state.json`.
-    i. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
-       `build-epic-graph.mjs`.
+   d. Ejecuta `node .devflow/task-planner/tools/validate-epic-batch.mjs --epic <currentEpicId>`.
+      Si devuelve código distinto de `0`, informa el reporte, no promuevas
+      `TASK-*.md`, no fusiones el partial y no avances de épica.
+   e. Promueve cada `TASK-*.md` desde `drafts/` hacia `tasks/` solo si la
+      validación pasó.
+   f. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` en `task-plan.json`.
+   g. Actualiza `ownerTaskId` en `capability-map.json`.
+   h. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
+   i. Actualiza contadores y `project-state.json`.
+   j. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
+      `build-epic-graph.mjs`.
 6. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
 ## Regla de promoción
@@ -1123,6 +1127,8 @@ Un draft solo puede promocionarse cuando el agente principal confirma que:
   cobertura y Markdown;
 - no existe escritura directa previa sobre índices globales;
 - la promoción mantiene una sola tarea propietaria por capacidad.
+- `validate-epic-batch.mjs --epic <currentEpicId>` devolvió código `0` sobre
+  los drafts de esa épica antes de copiar archivos o fusionar el partial.
 
 Si cualquiera de esas comprobaciones falla, prevalece la autoridad del agente
 principal: no se promociona el draft, la épica no se marca como `decomposed` y

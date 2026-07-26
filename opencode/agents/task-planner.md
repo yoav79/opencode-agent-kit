@@ -459,7 +459,7 @@ El subagente recibe el skeleton ya congelado y no compone semántica libre.
 
 | Código | Acción del orquestador |
 |--------|------------------------|
-| `GENERATED` | Procede con la promoción de drafts |
+| `GENERATED` | Ejecuta la validación determinista por épica y solo promueve si devuelve `0` |
 | `BLOCKED` | Informa al usuario qué inputs faltan o qué contradicciones impidieron la descomposición. No avances. |
 
 ## Promoción de drafts
@@ -1239,12 +1239,22 @@ Procesa las épicas **secuencialmente**, una por iteración:
           `backendBindings` y `sourceFunctionIds` ya renderizados
 
     g. **Maneja el resultado**:
-        - Si `GENERATED`: procede con la promoción (paso h).
+        - Si `GENERATED`: ejecuta la validación determinista por épica antes
+          de promover:
+          ```
+          node .devflow/task-planner/tools/validate-epic-batch.mjs --epic <currentEpicId>
+          ```
+          Si devuelve código distinto de `0`, informa el reporte al usuario,
+          no copies `TASK-*.md`, no fusiones el partial y no avances a la
+          siguiente épica.
+        - Si la validación devuelve `0`, procede con la promoción (paso h).
         - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
           la siguiente épica hasta resolver el bloqueo.
 
     h. **Promueve los drafts** siguiendo el procedimiento de
         **Promoción de drafts**:
+        - Confirma que `validate-epic-batch.mjs --epic <currentEpicId>` ya
+          pasó sobre los drafts de esa épica.
         - Valida `result.json` contra los IDs reservados (paso c).
         - Copia/promueve `TASK-*.md` de `drafts/` a `tasks/`.
        - Fusiona `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado
