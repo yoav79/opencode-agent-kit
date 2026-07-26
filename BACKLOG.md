@@ -125,22 +125,6 @@ al que ya tiene `software-architect`. La estructura es compleja
 
 <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
-### [Medio] Template task-planner.md sin shared timestamp tool
-**[task-planner]**
-
-`templates/task-planner/task-planner.md` no incluye
-`"node $HOME/.config/opencode/templates/shared/tools/timestamp.mjs *": allow`
-mientras que los otros agentes ya lo tienen. Agregarlo.
-
-- **P:** media | **E:** S | **A:** agente
-- **Referencias:** `templates/task-planner/task-planner.md`
-- **Criterio de salida:** el template incluye el permiso para el shared timestamp tool
-- **Depende de:** Ninguna
-
-</div>
-
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
-
 ### [Medio] Init command con versiones hardcodeadas
 **[task-planner]**
 
@@ -1120,7 +1104,7 @@ nueva convención con soporte `XDG_CONFIG_HOME`.
 canónica es `opencode/agents/task-planner.md`.
 
 - **P:** media | **E:** S | **A:** agente
-- **Referencias:** `opencode/agents/task-planner.md`, `templates/task-planner/task-planner.md`
+- **Referencias:** `opencode/agents/task-planner.md`, ruta eliminada `templates/task-planner/task-planner.md`
 - **Criterio de salida:** existe una sola definición canónica del agente task-planner, o ambas versiones están sincronizadas
 - **Depende de:** Ninguna
 - **Completado en:** (este commit)

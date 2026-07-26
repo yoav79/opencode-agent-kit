@@ -25,10 +25,12 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  │       Agents         │       │      Commands         │        │
 │  │                      │       │                       │        │
 │  │  software-architect  │◄──────│  init-software-       │        │
+│  │  blueprint-compiler  │◄──────│  compile-blueprint    │        │
+│  │  consistency-reviewer│◄──────│  review-consistency   │        │
 │  │  task-planner        │◄──────│  init-task-planner    │        │
+│  │  epic-decomposer     │       │  publish-blueprint    │        │
 │  │  next-task           │◄──────│  select-next-task     │        │
 │  │  context-builder     │◄──────│  build-task-context   │        │
-│  │  consistency-reviewer│◄──────│  review-consistency   │        │
 │  └──────────────────────┘       └──────────────────────┘        │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -38,7 +40,7 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │                     Templates                             │   │
-│  │   software-architect/ | task-planner/ | next-task/ | context-builder/ │   │
+│  │   software-architect/ | task-planner/ | next-task/ | context-builder/ | shared/ │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -60,9 +62,13 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  ├── workflow.md         (fases de planificacion)               │
 │  ├── semantic-contract.json                                     │
 │  ├── requirements.json                                          │
+│  ├── decisions.json                                             │
+│  ├── readiness.json                                             │
 │  ├── capability-map.json                                        │
 │  ├── epic-plan.json                                             │
 │  ├── task-plan.json                                             │
+│  ├── task-template.md                                           │
+│  ├── drafts/                                                    │
 │  ├── epics/                                                     │
 │  ├── tasks/                                                     │
 │  └── tools/         (validador y actualizador determinista)     │
@@ -178,6 +184,7 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 |---------|--------|-------------|
 | `/init-software-architect` | software-architect | Inicializa o continua el diseno de arquitectura del proyecto |
 | `/compile-blueprint` | blueprint-compiler | Compila drafts de Technical Requirements o Software Blueprint |
+| `/publish-blueprint` | software-architect | Publica el blueprint aprobado hacia `docs/software-architect/` |
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
 | `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
 | `/init-next-task` | next-task | Inicializa el espacio de ejecucion (`.devflow/execution/`) |
@@ -193,19 +200,23 @@ opencode-agent-kit/
 ├── opencode/
 │   ├── agents/                    # Definiciones de agentes (.md + frontmatter YAML)
 │   │   ├── software-architect.md
+│   │   ├── blueprint-compiler.md
+│   │   ├── consistency-reviewer.md
 │   │   ├── task-planner.md
+│   │   ├── epic-decomposer.md
 │   │   ├── next-task.md
-│   │   ├── context-builder.md
-│   │   └── consistency-reviewer.md
+│   │   └── context-builder.md
 │   ├── commands/                  # Comandos slash (.md)
 │   │   ├── init-software-architect.md
+│   │   ├── compile-blueprint.md
+│   │   ├── publish-blueprint.md
+│   │   ├── review-consistency.md
 │   │   ├── init-task-planner.md
 │   │   ├── init-next-task.md
 │   │   ├── select-next-task.md
 │   │   ├── prepare-task-run.md
 │   │   ├── build-task-context.md
-│   │   ├── build-next-task-context.md
-│   │   └── review-consistency.md
+│   │   └── build-next-task-context.md
 │   ├── rules/                     # Reglas compartidas (.md)
 │   │   ├── general.md
 │   │   ├── git-policy.md
@@ -213,19 +224,44 @@ opencode-agent-kit/
 │   ├── AGENTS.md                  # Reglas globales para todos los agentes
 │   └── opencode.example.json      # Configuracion de ejemplo
 ├── templates/
+│   ├── shared/
+│   │   └── tools/
+│   │       └── timestamp.mjs
 │   ├── software-architect/        # Plantillas del agente de diseno
 │   │   ├── project-state.json
-│   │   └── workflow.md
+│   │   ├── project-state.schema.json
+│   │   ├── workflow.md
+│   │   ├── scaffold.json
+│   │   ├── doc-templates/
+│   │   ├── contracts/
+│   │   ├── migration/
+│   │   └── tools/
 │   ├── task-planner/              # Plantillas del agente de planificacion
 │   │   ├── project-state.json
 │   │   ├── workflow.md
 │   │   ├── semantic-contract.json
 │   │   ├── requirements.json
+│   │   ├── decisions.json
+│   │   ├── readiness.json
 │   │   ├── capability-map.json
 │   │   ├── epic-plan.json
 │   │   ├── task-plan.json
 │   │   ├── task-template.md
-│   │   └── tools/                 # Validador y actualizador determinista
+│   │   ├── scaffold.json
+│   │   ├── SEMANTIC-CONTRACT.md
+│   │   ├── contracts/
+│   │   └── tools/                 # Herramientas deterministas y tests
+│   │       ├── assemble-capability-map.mjs
+│   │       ├── assemble-epic-task-batch.mjs
+│   │       ├── build-epic-graph.mjs
+│   │       ├── render-task-markdown.mjs
+│   │       ├── reserve-task-ids.mjs
+│   │       ├── update-timestamps.mjs
+│   │       ├── validate-capability-map.mjs
+│   │       ├── validate-epic-batch.mjs
+│   │       ├── validate-plan.mjs
+│   │       ├── *.test.mjs
+│   │       └── fixtures/
 │   ├── next-task/                 # Contratos y gate de selección
 │   │   ├── execution-state.json
 │   │   ├── selection.json
@@ -242,6 +278,8 @@ opencode-agent-kit/
 │   ├── install.sh                 # Instalacion global via symlinks
 │   ├── uninstall.sh               # Desinstalacion segura
 │   ├── create-project.sh          # Crea scaffold en un proyecto destino
+│   ├── generate-scaffold.sh        # Regenera scaffold.json desde templates
+│   ├── publish-blueprint.sh        # Publica blueprint completo a docs/
 │   └── validate.sh                # Validacion de integridad del repositorio
 ├── tests/
 │   ├── README.md                  # Taxonomia y limites de cobertura
@@ -392,11 +430,13 @@ Ejecución separada:
 ```bash
 make test-repository
 make test-software-architect-tools
+make test-task-planner-tools
 ```
 
 - `test-repository` verifica instalación, scaffold y desinstalación.
 - `test-software-architect-tools` verifica validator, migración y fixtures de
   estado reproducibles.
+- `test-task-planner-tools` verifica herramientas deterministas de task-planner.
 
 La taxonomía completa y los límites de cobertura están en
 [`tests/README.md`](tests/README.md).

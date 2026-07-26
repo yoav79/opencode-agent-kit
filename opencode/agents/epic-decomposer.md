@@ -75,12 +75,16 @@ Recibes en el prompt de invocación:
 1. `drafts/TASK-<ID>.md` — un archivo por tarea, con las secciones:
 
    - `## Objetivo`
+   - `## Capacidades creadas`
+   - `## Capacidades consumidas`
    - `## Alcance`
    - `## Fuera de alcance`
    - `## Criterios de aceptación`
    - `## Pruebas`
    - `## Contrato semántico`
 
+   Lista en `## Capacidades creadas` y `## Capacidades consumidas` los IDs
+   `CAP-*` de `createsCapabilityIds` y `consumesCapabilityIds` del skeleton.
    Copia `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y `backendBindings`
    exactamente desde el skeleton del `task-batch.json`.
 

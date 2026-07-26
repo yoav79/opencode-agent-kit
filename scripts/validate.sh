@@ -37,6 +37,7 @@ required_paths = [
     "templates/software-architect/scaffold.json",
     "templates/software-architect/tools/validate-blueprint.mjs",
     "templates/software-architect/tools/migrate-v1-to-v2.mjs",
+    "templates/shared/tools/timestamp.mjs",
     "templates/software-architect/contracts/blueprint-compiler.md",
     "templates/software-architect/contracts/consistency-reviewer.md",
     "templates/task-planner/project-state.json",
@@ -48,9 +49,16 @@ required_paths = [
     "templates/task-planner/epic-plan.json",
     "templates/task-planner/task-plan.json",
     "templates/task-planner/task-template.md",
+    "templates/task-planner/tools/assemble-capability-map.mjs",
+    "templates/task-planner/tools/assemble-epic-task-batch.mjs",
+    "templates/task-planner/tools/render-task-markdown.mjs",
+    "templates/task-planner/tools/reserve-task-ids.mjs",
+    "templates/task-planner/tools/validate-capability-map.mjs",
+    "templates/task-planner/tools/validate-epic-batch.mjs",
     "templates/task-planner/tools/validate-plan.mjs",
     "templates/task-planner/tools/update-timestamps.mjs",
     "templates/task-planner/tools/build-epic-graph.mjs",
+    "templates/next-task/tools/validate-next-task.mjs",
     "scripts/install.sh",
     "scripts/uninstall.sh",
     "scripts/create-project.sh",
@@ -61,6 +69,18 @@ required_paths = [
 for relative in required_paths:
     if not (root / relative).exists():
         errors.append(f"Missing required path: {relative}")
+
+required_path_set = set(required_paths)
+runtime_tools = [
+    path
+    for pattern in ("templates/*/tools/*.mjs", "templates/shared/tools/*.mjs")
+    for path in root.glob(pattern)
+    if not path.name.endswith(".test.mjs")
+]
+for path in sorted(runtime_tools):
+    relative = path.relative_to(root).as_posix()
+    if relative not in required_path_set:
+        errors.append(f"Runtime tool missing from required_paths: {relative}")
 
 for path in root.rglob("*.json"):
     try:

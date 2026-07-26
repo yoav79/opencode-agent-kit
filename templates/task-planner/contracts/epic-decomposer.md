@@ -64,12 +64,18 @@ subagente no lo regenera ni lo modifica. Solo escribe los siguientes archivos:
 
 ```
 ## Objetivo
+## Capacidades creadas
+## Capacidades consumidas
 ## Alcance
 ## Fuera de alcance
 ## Criterios de aceptación
 ## Pruebas
 ## Contrato semántico
 ```
+
+Las secciones `## Capacidades creadas` y `## Capacidades consumidas` deben
+listar literalmente los IDs `CAP-*` declarados por el skeleton para
+`createsCapabilityIds` y `consumesCapabilityIds`, respectivamente.
 
 El bloque `## Contrato semántico` debe contener JSON válido con:
 

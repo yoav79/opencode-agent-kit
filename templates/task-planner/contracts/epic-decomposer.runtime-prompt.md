@@ -93,6 +93,8 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 
 ```md
 ## Objetivo
+## Capacidades creadas
+## Capacidades consumidas
 ## Alcance
 ## Fuera de alcance
 ## Criterios de aceptación
@@ -100,7 +102,10 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 ## Contrato semántico
 ```
 
-10. La seccion `## Contrato semantico` debe contener JSON valido copiando
+10. Las secciones `## Capacidades creadas` y `## Capacidades consumidas` deben
+    listar literalmente los IDs `CAP-*` de `createsCapabilityIds` y
+    `consumesCapabilityIds` del skeleton, respectivamente.
+11. La seccion `## Contrato semantico` debe contener JSON valido copiando
     exactamente `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y
     `backendBindings` desde el skeleton:
 
@@ -113,8 +118,8 @@ generado por `assemble-epic-task-batch.mjs`; no lo regeneres.
 }
 ```
 
-11. Ordena los `createdTaskIds` y asignaciones por `taskId` ascendente.
-12. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta
+12. Ordena los `createdTaskIds` y asignaciones por `taskId` ascendente.
+13. Si detectas faltantes, contradicciones explicitas, una epica ya descompuesta
     o un contrato semantico no aprobado, no escribas outputs parciales
     inconsistentes y devuelve `BLOCKED`.
 
