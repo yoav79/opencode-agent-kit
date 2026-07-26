@@ -51,6 +51,9 @@ permission:
     "$HOME/.config/opencode/templates/task-planner/tools/*": allow
     "$XDG_CONFIG_HOME/opencode/templates/task-planner/tools/*": allow
     "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/*": allow
+    "$HOME/.config/opencode/templates/task-planner/contracts/*": allow
+    "$XDG_CONFIG_HOME/opencode/templates/task-planner/contracts/*": allow
+    "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/contracts/*": allow
 ---
 
 # Task Planner

@@ -68,3 +68,12 @@ test('epic-decomposer tiene task: deny (no puede crear sub-subagentes)', async (
   const text = await subagentText();
   assert.match(text, /task: deny/);
 });
+
+test('task-planner puede leer contratos de epic-decomposer via external_directory', async () => {
+  const text = await agentText();
+  assert.match(text, /external_directory[\s\S]*contracts\/\*/);
+  const VAR = String.raw`\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner`;
+  assert.match(text, new RegExp(`${VAR}\\/contracts\\/\\*": allow`));
+  assert.match(text, new RegExp(`\\$HOME/\\.config/opencode/templates/task-planner/contracts/\\*": allow`));
+  assert.match(text, new RegExp(`\\$XDG_CONFIG_HOME/opencode/templates/task-planner/contracts/\\*": allow`));
+});
