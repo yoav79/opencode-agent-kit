@@ -19,7 +19,9 @@
     "tools"
   ],
   "toolFiles": [
+    "tools/assemble-epic-task-batch.mjs",
     "tools/build-epic-graph.mjs",
+    "tools/reserve-task-ids.mjs",
     "tools/update-timestamps.mjs",
     "tools/validate-plan.mjs"
   ],

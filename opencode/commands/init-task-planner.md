@@ -82,6 +82,14 @@ Utiliza estas plantillas como fuente de verdad.
 
   @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs
 
+- Reserva determinista de TASK-###:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs
+
+- Ensamblado estructurado de batches por épica:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs
+
 ## Objetivo
 
 Preparar o reanudar el espacio de trabajo del Task Planner sin sobrescribir
@@ -108,8 +116,10 @@ La estructura inicial válida es:
 ├── epics/
 ├── tasks/
 └── tools/
-    ├── validate-plan.mjs
+    ├── assemble-epic-task-batch.mjs
+    ├── reserve-task-ids.mjs
     ├── update-timestamps.mjs
+    ├── validate-plan.mjs
     └── build-epic-graph.mjs
 ```
 
@@ -143,6 +153,8 @@ cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-pla
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs .devflow/task-planner/tools/assemble-epic-task-batch.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
@@ -203,12 +215,14 @@ Inicializa un proyecto nuevo:
 4. crea `.devflow/task-planner/tasks/`;
 5. crea `.devflow/task-planner/tools/`;
 6. crea cada archivo inicial usando exactamente su plantilla oficial;
-7. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
-8. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
-9. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
-10. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
-11. no agregues registros de ejemplo;
-12. no ejecutes el validador.
+7. copia el ensamblador estructurado oficial como `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
+8. copia el reservador determinista oficial como `.devflow/task-planner/tools/reserve-task-ids.mjs`;
+9. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
+10. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
+11. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
+12. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
+13. no agregues registros de ejemplo;
+14. no ejecutes el validador.
 
 #### Caso B — `.devflow/task-planner/` ya existe
 
@@ -265,6 +279,8 @@ falten:
 - `.devflow/task-planner/readiness.json`;
 - `.devflow/task-planner/task-plan.json`;
 - `.devflow/task-planner/task-template.md`;
+- `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
+- `.devflow/task-planner/tools/reserve-task-ids.mjs`;
 - `.devflow/task-planner/tools/validate-plan.mjs`;
 - `.devflow/task-planner/tools/update-timestamps.mjs`;
 - `.devflow/task-planner/tools/build-epic-graph.mjs`.

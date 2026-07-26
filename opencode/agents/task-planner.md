@@ -26,12 +26,18 @@ permission:
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
+    "node .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow
+    "node .devflow/task-planner/tools/assemble-epic-task-batch.mjs *": allow
     "node .devflow/task-planner/tools/update-timestamps.mjs *": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs *": allow
+    "node .devflow/task-planner/tools/reserve-task-ids.mjs": allow
+    "node .devflow/task-planner/tools/reserve-task-ids.mjs *": allow
     "node .devflow/task-planner/tools/validate-plan.mjs": allow
     "node .devflow/task-planner/tools/validate-plan.mjs *": allow
   task: allow

@@ -36,6 +36,8 @@ test('solo las copias cp -n de plantillas conocidas quedan permitidas', async ()
   const text = await agentText();
   const VAR = String.raw`\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner`;
   assert.match(text, new RegExp(`cp -n ${VAR}\\/project-state\\.json \\.devflow\\/task-planner\\/project-state\\.json": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/assemble-epic-task-batch\\.mjs \\.devflow\\/task-planner\\/tools\\/assemble-epic-task-batch\\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/reserve-task-ids\\.mjs \\.devflow\\/task-planner\\/tools\\/reserve-task-ids\\.mjs": allow`));
   assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/update-timestamps\\.mjs \\.devflow\\/task-planner\\/tools\\/update-timestamps\\.mjs": allow`));
   assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/build-epic-graph\\.mjs \\.devflow\\/task-planner\\/tools\\/build-epic-graph\\.mjs": allow`));
   assert.match(text, /node \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow/);
