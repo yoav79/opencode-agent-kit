@@ -203,6 +203,8 @@ test('render-task-markdown genera drafts canónicos desde el skeleton semántico
     assert.match(markdown, /"semanticKeys": \[\s*"dom.create"\s*\]/);
     assert.match(markdown, /"sourceFunctionIds": \[\s*"FUN-DOM-CREATE"\s*\]/);
     assert.match(markdown, /"backendBindings": \[\s*"mailctl domain create"\s*\]/);
+    assert.equal(markdown.match(/^- AC-003:/gm)?.length, 1);
+    assert.match(markdown, /^- Caso de fallo: Un fallo de la operación no se reporta como éxito\.$/m);
     assert.doesNotMatch(markdown, /mailctl domain delete/);
   } finally {
     await rm(root, { recursive: true, force: true });

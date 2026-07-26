@@ -54,6 +54,16 @@ function sameStringSet(left, right) {
   );
 }
 
+function duplicateValues(values) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates].sort(compareIds);
+}
+
 function addError(code, message, taskId = null) {
   errors.push({ code, message, taskId });
   if (taskId) {
@@ -403,6 +413,20 @@ async function main() {
       '## Capacidades consumidas',
       'CAP',
     );
+    for (const duplicate of duplicateValues(createdIds)) {
+      addError(
+        'TASK_CREATED_CAPABILITIES_MARKDOWN_DUPLICATED',
+        `${taskId} repite ${duplicate} en ## Capacidades creadas.`,
+        taskId,
+      );
+    }
+    for (const duplicate of duplicateValues(consumedIds)) {
+      addError(
+        'TASK_CONSUMED_CAPABILITIES_MARKDOWN_DUPLICATED',
+        `${taskId} repite ${duplicate} en ## Capacidades consumidas.`,
+        taskId,
+      );
+    }
     if (!sameStringSet(createdIds, task.createsCapabilityIds)) {
       addError(
         'TASK_CREATED_CAPABILITIES_MARKDOWN_MISMATCH',
@@ -461,6 +485,21 @@ async function main() {
       '## Criterios de aceptación',
       'AC',
     );
+
+    for (const duplicate of duplicateValues(scopeIds)) {
+      addError(
+        'TASK_SCOPE_MARKDOWN_DUPLICATED',
+        `${taskId} repite ${duplicate} en ## Alcance.`,
+        taskId,
+      );
+    }
+    for (const duplicate of duplicateValues(acceptanceIds)) {
+      addError(
+        'TASK_ACCEPTANCE_MARKDOWN_DUPLICATED',
+        `${taskId} repite ${duplicate} en ## Criterios de aceptación.`,
+        taskId,
+      );
+    }
 
     if (scopeIds.length === 0) {
       addError(

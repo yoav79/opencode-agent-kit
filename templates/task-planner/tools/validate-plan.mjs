@@ -3433,6 +3433,22 @@ async function main() {
 
     const createdIds = definitionIdsInSection(markdown, '## Capacidades creadas', 'CAP');
     const consumedIds = definitionIdsInSection(markdown, '## Capacidades consumidas', 'CAP');
+    for (const duplicate of duplicateValues(createdIds)) {
+      addError(
+        'TASK_CREATED_CAPABILITIES_MARKDOWN_DUPLICATED',
+        `${task.id} repite ${duplicate} en ## Capacidades creadas.`,
+        normalized,
+        task.id,
+      );
+    }
+    for (const duplicate of duplicateValues(consumedIds)) {
+      addError(
+        'TASK_CONSUMED_CAPABILITIES_MARKDOWN_DUPLICATED',
+        `${task.id} repite ${duplicate} en ## Capacidades consumidas.`,
+        normalized,
+        task.id,
+      );
+    }
     if (!sameStringSet(createdIds, task.createsCapabilityIds)) {
       addError(
         'TASK_CREATED_CAPABILITIES_MARKDOWN_MISMATCH',
@@ -3452,6 +3468,22 @@ async function main() {
 
     const scopeIds = definitionIdsInSection(markdown, '## Alcance', 'SCOPE');
     const acceptanceIds = definitionIdsInSection(markdown, '## Criterios de aceptación', 'AC');
+    for (const duplicate of duplicateValues(scopeIds)) {
+      addError(
+        'TASK_SCOPE_MARKDOWN_DUPLICATED',
+        `${task.id} repite ${duplicate} en ## Alcance.`,
+        normalized,
+        task.id,
+      );
+    }
+    for (const duplicate of duplicateValues(acceptanceIds)) {
+      addError(
+        'TASK_ACCEPTANCE_MARKDOWN_DUPLICATED',
+        `${task.id} repite ${duplicate} en ## Criterios de aceptación.`,
+        normalized,
+        task.id,
+      );
+    }
     if (task.type === 'functional') {
       const expectedScopeIds = arr(task.requirementCoverage).flatMap((coverage) => arr(coverage?.scopeItemIds));
       const expectedAcceptanceIds = arr(task.requirementCoverage).flatMap((coverage) => arr(coverage?.acceptanceCriterionIds));

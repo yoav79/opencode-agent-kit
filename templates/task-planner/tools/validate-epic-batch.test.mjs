@@ -241,6 +241,31 @@ test('rechaza AC faltante en markdown', async () => {
   );
 });
 
+test('rechaza AC duplicado en markdown', async () => {
+  const result = await withFixture(async (root) => {
+    const file = path.join(
+      root,
+      '.devflow',
+      'task-planner',
+      'drafts',
+      'TASK-003.md',
+    );
+    const text = await readFile(file, 'utf8');
+    await writeFile(
+      file,
+      text.replace(
+        '- AC-001: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.',
+        '- AC-001: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.\n- AC-001: Un fallo de la operación no se reporta como éxito.',
+      ),
+      'utf8',
+    );
+  });
+  assert.equal(result.status, 1);
+  assert(
+    taskCodes(result, 'TASK-003').has('TASK_ACCEPTANCE_MARKDOWN_DUPLICATED'),
+  );
+});
+
 test('rechaza heading obligatorio faltante', async () => {
   const result = await withFixture(async (root) => {
     const file = path.join(

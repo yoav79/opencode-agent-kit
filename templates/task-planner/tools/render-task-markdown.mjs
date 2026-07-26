@@ -379,7 +379,7 @@ function buildCriteriosAceptacion(task) {
       for (let i = 0; i < allAcIds.length; i += 1) {
         lines.push(`- ${allAcIds[i]}: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.`);
       }
-      lines.push(`- ${allAcIds[allAcIds.length - 1]}: Un fallo de la operación no se reporta como éxito.`);
+      lines.push('- Caso de fallo: Un fallo de la operación no se reporta como éxito.');
     } else {
       lines.push('- AC-001: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.');
       lines.push('- AC-002: Un fallo de la operación no se reporta como éxito.');

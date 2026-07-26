@@ -63,6 +63,23 @@ test('rechaza tarea sin bloque semántico', async () => {
   assert(codes(result).has('TASK_SEMANTIC_BLOCK_MISSING'));
 });
 
+test('rechaza AC duplicado en markdown', async () => {
+  const result = await withFixture(async (root) => {
+    const file = path.join(root, '.devflow', 'task-planner', 'tasks', 'TASK-003.md');
+    const text = await readFile(file, 'utf8');
+    await writeFile(
+      file,
+      text.replace(
+        '- AC-001: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.',
+        '- AC-001: Bajo las precondiciones declaradas, la acción produce exactamente el resultado observable del contrato.\n- AC-001: Un fallo de la operación no se reporta como éxito.',
+      ),
+      'utf8',
+    );
+  });
+  assert.equal(result.status, 1);
+  assert(codes(result).has('TASK_ACCEPTANCE_MARKDOWN_DUPLICATED'));
+});
+
 test('rechaza backend binding de otro behavior en la tarea', async () => {
   const result = await withFixture(async (root) => {
     const file = path.join(root, '.devflow', 'task-planner', 'tasks', 'TASK-003.md');
