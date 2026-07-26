@@ -76,8 +76,12 @@ Esto permite instalar el mismo conjunto de agentes y metodologia de diseno en mu
 │  .devflow/execution/                                             │
 │  ├── execution-state.json  (estado mutable del orquestador)     │
 │  ├── selection.json        (salida del selector determinista)   │
+│  ├── transition-journal.json  (sidecar transaccional)           │
 │  ├── execution-context.schema.json  (contrato de contexto)      │
 │  ├── context-build-request.schema.json                          │
+│  ├── tools/execution-contract-helpers.mjs  (helpers puros)      │
+│  ├── tools/execution-transition-engine.mjs  (dueño mutaciones)  │
+│  ├── tools/prepare-task-run.mjs  (wrapper CLI)                  │
 │  ├── tools/select-next-task.mjs   (selector determinista)       │
 │  ├── tools/validate-next-task.mjs (gate de validación)          │
 │  └── runs/                 (evidencia creada por orquestador)    │
@@ -153,9 +157,10 @@ directamente.
 
 ### `context-builder` — Constructor de Contexto de Ejecución
 
-Toma una tarea ya seleccionada y prepara el contexto ejecutable para un
-intento. Lee el plan, los artefactos, los predecesores y el repositorio, y
-produce un JSON estructurado más un prompt Markdown listo para el ejecutor.
+Subagente que construye el contexto ejecutable de una tarea cuyo run ya fue
+preparado por el orquestador. Lee el plan, los artefactos, los predecesores
+y el repositorio, y produce un JSON estructurado más un prompt Markdown listo
+para el ejecutor.
 
 - **Modo:** subagent
 - **Temperatura:** 0.1
@@ -164,8 +169,9 @@ produce un JSON estructurado más un prompt Markdown listo para el ejecutor.
   del intento
 
 Permisos: Solo lectura sobre planificación, ejecución y repo. Escribe
-únicamente en el directorio del intento. No selecciona tareas ni ejecuta
-código.
+únicamente `execution-context.json` y `execution-prompt.md` en un run
+previamente preparado. No selecciona tareas, no reserva tareas, no crea
+directorios, no modifica `execution-state.json` ni ningún `selection.json`.
 
 ### `consistency-reviewer` — Revisor de Consistencia
 
@@ -193,9 +199,9 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 | `/init-execution` | general | Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/` |
 | `/init-next-task` | general | Instala los contratos de selección determinista (`selection.json`, `select-next-task.mjs`, `validate-next-task.mjs`) en `.devflow/execution/` |
 | `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
-| `/prepare-task-run` | general | Invoca `prepare-task-run.mjs` para reservar la tarea seleccionada y crear su directorio de run |
-| `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos |
-| `/build-next-task-context` | context-builder | Construye contexto para la ultima tarea seleccionada (auto) |
+| `/prepare-task-run` | general | Invoca el motor transaccional `execution-transition-engine.mjs` via `prepare-task-run.mjs` para reservar la tarea seleccionada |
+| `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos en un run ya preparado |
+| `/build-next-task-context` | context-builder | Wrapper de solo lectura: construye contexto para la ultima tarea seleccionada si el run ya esta preparado |
 
 ## Estructura del Repositorio
 
@@ -281,6 +287,9 @@ opencode-agent-kit/
 │   │   ├── execution-state.schema.json
 │   │   ├── scaffold.json
 │   │   └── tools/
+│   │       ├── execution-contract-helpers.mjs
+│   │       ├── execution-transition-engine.mjs
+│   │       ├── prepare-task-run.mjs
 │   │       └── touch-execution-state.mjs
 │   └── context-builder/           # Contratos de contexto de ejecución
 │       ├── README.md
@@ -401,18 +410,17 @@ selecciona la primera tarea:
 /build-task-context {"taskId":"TASK-006","attempt":1}
 ```
 
-`/build-next-task-context` existe como conveniencia histórica, pero queda
-pendiente revisarlo porque duplica parte de la preparación del run dentro de
-`context-builder`.
+`/build-next-task-context` es un wrapper de solo lectura que evita escribir
+el `taskId` manualmente, pero solo funciona si el run ya fue preparado.
 
 El flujo canónico:
 
 1. `/init-execution` — Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/`
 2. `/init-next-task` — Instala los contratos de selección determinista en `.devflow/execution/`
 3. `/select-next-task` — Invoca el selector determinista `select-next-task.mjs` para producir `selection.json`
-3. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
+4. `/prepare-task-run` — Crea el directorio del run, copia evidencia,
    registra la tarea en el estado de ejecución
-4. `/build-task-context` — Construye `execution-context.json` y
+5. `/build-task-context` — Construye `execution-context.json` y
    `execution-prompt.md` con el alcance, criterios, predecesores y contexto
    técnico del repositorio
 
@@ -431,9 +439,12 @@ Valida:
 
 ### Tests
 
-Las suites actuales prueban scripts y herramientas deterministas. No inician
-OpenCode ni validan conversaciones, permisos en runtime, slash commands,
-delegación con `task` o gates humanos.
+Las suites actuales son deterministas: prueban scripts, herramientas y
+contratos de archivos sin iniciar OpenCode ni depender de un modelo.
+
+No inician OpenCode ni validan conversaciones, permisos en runtime, slash
+commands, delegación con `task` o gates humanos. Tampoco existe una prueba
+E2E de OpenCode completa.
 
 ```bash
 make test
@@ -445,12 +456,55 @@ Ejecución separada:
 make test-repository
 make test-software-architect-tools
 make test-task-planner-tools
+make test-next-task-tools
+make test-execution-tools
+make test-agent-contracts
 ```
 
-- `test-repository` verifica instalación, scaffold y desinstalación.
-- `test-software-architect-tools` verifica validator, migración y fixtures de
-  estado reproducibles.
-- `test-task-planner-tools` verifica herramientas deterministas de task-planner.
+| Target | Cobertura |
+|--------|-----------|
+| `validate` | Integridad del repositorio (JSON, frontmatter, rutas requeridas, cobertura de tests) |
+| `test-repository` | Instalación por symlinks, creación de scaffold y desinstalación |
+| `test-software-architect-tools` | Validador de blueprint, migración v1→v2, estados reproducibles, publish |
+| `test-task-planner-tools` | Herramientas deterministas de task-planner (6 suites: permisos, timestamps, validación de plan, épicas, capacidades) |
+| `test-next-task-tools` | Sintaxis de herramientas de next-task (selector y gate) |
+| `test-execution-tools` | Motor de transiciones de ejecución (prepare-task-run, execution-transition-engine) |
+| `test-agent-contracts` | Contratos de permisos de agentes (context-builder, build-next-task-context) |
+
+La suite completa (`make test`) ejecuta `validate` primero, luego las 6 suites
+de prueba en orden. Cualquier fallo en cualquier suite detiene la ejecución.
+
+### Cobertura de runtime
+
+El runtime de OpenCode que sí queda cubierto indirectamente:
+
+- **Contratos de permisos:** se verifica que `context-builder.md` tenga
+  `mode: subagent`, no edite `execution-state.json` ni `selection.json`, no
+  tenga `mkdir`, y que `build-next-task-context.md` no instruya ejecutar
+  `prepare-task-run`.
+- **Transiciones de estado:** se prueba el motor transaccional
+  `execution-transition-engine.mjs` con reserva, recuperación, concurrencia,
+  lock, journal y fault injection.
+- **Preparación de runs:** se prueba `prepare-task-run.mjs` como CLI real con
+  fixture completo de `.devflow/execution/`.
+- **Validación estructural:** `validate.sh` verifica que toda herramienta
+  runtime tenga su ruta en `required_paths`, que todo frontmatter sea válido,
+  y que ningún archivo `.test.mjs` quede fuera de `make test`.
+
+### Lo que NO cubre `make test`
+
+- Conversaciones completas de OpenCode con modelo.
+- Ejecución de agentes, subagentes o delegación con `task`.
+- Slash commands en runtime (solo se verifican contratos de archivos).
+- Gates humanos, aprobación de fases o promoción de drafts.
+- Comportamiento de OpenCode con configuraciones reales.
+- Pruebas E2E del pipeline Diseño → Planificación → Ejecución.
+
+Una futura suite de runtime debe vivir separada (por ejemplo,
+`test-opencode-smoke.sh`) y debe instalar la configuración en un entorno
+temporal, iniciar OpenCode y verificar comandos, permisos, subagentes y
+gates humanos. Esa suite no debe presentarse como determinista ni mezclarse
+con las pruebas actuales.
 
 La taxonomía completa y los límites de cobertura están en
 [`tests/README.md`](tests/README.md).

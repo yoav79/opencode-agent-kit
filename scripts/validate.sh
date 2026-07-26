@@ -64,6 +64,8 @@ required_paths = [
     "templates/execution/execution-state.json",
     "templates/execution/execution-state.schema.json",
     "templates/execution/scaffold.json",
+    "templates/execution/tools/execution-contract-helpers.mjs",
+    "templates/execution/tools/execution-transition-engine.mjs",
     "templates/execution/tools/prepare-task-run.mjs",
     "templates/execution/tools/touch-execution-state.mjs",
     "scripts/install.sh",
@@ -169,6 +171,94 @@ sa_doc_templates = list((root / "templates/software-architect/doc-templates").gl
 main_templates = [t for t in sa_doc_templates if t.name not in ("SKILL.md",)]
 if len(main_templates) != 14:
     errors.append(f"software-architect doc-templates has {len(main_templates)} files, expected 14")
+
+# --- Test coverage validation ---
+
+known_test_targets = {
+    "test-task-planner-tools": sorted(root.glob("templates/task-planner/tools/*.test.mjs")),
+    "test-execution-tools": [
+        root / "templates/execution/tools/prepare-task-run.test.mjs",
+        root / "templates/execution/tools/execution-transition-engine.test.mjs",
+    ],
+    "test-agent-contracts": [
+        root / "templates/execution/tools/contractual-tests.test.mjs",
+    ],
+}
+
+for target_name, files in known_test_targets.items():
+    if not files:
+        errors.append(f"{target_name}: no test files found (glob returned empty)")
+    for f in files:
+        if not f.exists():
+            errors.append(f"{target_name}: referenced test file does not exist: {f.relative_to(root)}")
+
+all_covered = set()
+for files in known_test_targets.values():
+    all_covered.update(files)
+
+all_test_files = set(root.glob("templates/*/tools/*.test.mjs"))
+uncovered = sorted(all_test_files - all_covered)
+for test_file in uncovered:
+    relative = test_file.relative_to(root).as_posix()
+    errors.append(f"Test file not covered by any make test-* target: {relative}")
+
+# --- Contractual test: context-builder permissions ---
+
+cb_agent = root / "opencode/agents/context-builder.md"
+if cb_agent.exists():
+    text = cb_agent.read_text(encoding="utf-8")
+    match = frontmatter_re.match(text)
+    if not match:
+        errors.append("context-builder: missing frontmatter")
+    else:
+        fm = match.group(1)
+        body = text[match.end():]
+
+        # 1. mode must be subagent
+        mode = re.search(r"^mode:\s*(\S+)", fm, re.MULTILINE)
+        if not mode or mode.group(1) != "subagent":
+            errors.append("context-builder: mode must be subagent")
+
+        # 2. no edit permission for execution-state.json
+        if re.search(r"execution-state\.json", fm):
+            errors.append("context-builder: must not have any permission targeting execution-state.json")
+
+        # 3. no edit permission for selection.json (any copy)
+        edit_section = re.search(r"^  edit:\n((?:    .*\n?)*)", fm, re.MULTILINE)
+        if edit_section:
+            edit_actions = edit_section.group(1)
+            if re.search(r"selection\.json", edit_actions):
+                errors.append("context-builder: must not have edit permission for any selection.json")
+
+        # 4. no mkdir in bash permissions
+        if re.search(r"mkdir", fm):
+            errors.append("context-builder: must not have mkdir permission")
+
+        # 5. only authorized edit patterns: execution-context.json and execution-prompt.md
+        if edit_section:
+            edit_actions = edit_section.group(1)
+            allowed_patterns = re.findall(r'"(\.devflow/execution/runs/[^"]+)"', edit_actions)
+            for pattern in allowed_patterns:
+                if "execution-context.json" not in pattern and "execution-prompt.md" not in pattern:
+                    errors.append(f"context-builder: unauthorized edit pattern: {pattern}")
+
+        # 6. body must state it is a subagent (not primary)
+        if "eres un subagente" not in body.lower() and "subagente" not in body.lower()[:200]:
+            errors.append("context-builder: body must declare it is a subagent")
+
+bntc = root / "opencode/commands/build-next-task-context.md"
+if bntc.exists():
+    text = bntc.read_text(encoding="utf-8")
+    match = frontmatter_re.match(text)
+    if match:
+        body = text[match.end():]
+        # Must not contain instructions to execute or simulate prepare-task-run
+        exec_refs = re.findall(r"(?:execute|run|exec|simulate|invoke|delegate\s+to)\s+(?:`[^`]*)?prepare\-task\-run", body, re.IGNORECASE)
+        for ref in exec_refs:
+            errors.append(f"build-next-task-context: must not instruct to execute prepare-task-run (found: {ref.strip()})")
+        # Must not reference prepare-task-run.mjs as something to run
+        if re.search(r"prepare-task-run\.mjs", body):
+            errors.append("build-next-task-context: must not reference prepare-task-run.mjs as an executable")
 
 if errors:
     print("Validation failed:")

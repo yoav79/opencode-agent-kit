@@ -158,14 +158,11 @@ make test
 ### 3. Antes del Pull Request
 
 ```bash
-# Validacion completa
-./scripts/validate.sh
+# Ejecutar validacion estructural y todas las suites deterministas
+make test
 
 # Verificar instalacion
 ./scripts/install.sh --dry-run
-
-# Ejecutar tests de integracion
-./tests/test-scripts.sh
 ```
 
 ### 4. Pull Request

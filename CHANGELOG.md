@@ -11,6 +11,34 @@ cada hito.
 
 ### Added
 
+- **CI workflow** — `.github/workflows/ci.yml` con triggers push y
+  pull_request, Node 18, permisos mínimos (`contents: read`), sin secretos ni
+  pasos mutantes. Ejecuta `make test` como entrypoint único.
+  (este commit)
+- **test-next-task-tools** — Target que verifica sintaxis de
+  `select-next-task.mjs` y `validate-next-task.mjs` con `node --check`.
+  (este commit)
+- **test-execution-tools** — Target que ejecuta pruebas del motor
+  transaccional: `prepare-task-run.test.mjs` y
+  `execution-transition-engine.test.mjs`. (este commit)
+- **test-agent-contracts** — Target que ejecuta pruebas contractuales de
+  permisos de agentes: `contractual-tests.test.mjs`. (este commit)
+- **Validación estructural de cobertura de tests** — `validate.sh` ahora
+  verifica que ningún `.test.mjs` quede fuera de `make test` y que cada
+  directorio de herramientas tenga al menos un test. (este commit)
+
+### Changed
+
+- **`make test`** — Ahora ejecuta en orden: `validate`, `test-repository`,
+  `test-software-architect-tools`, `test-task-planner-tools`,
+  `test-next-task-tools`, `test-execution-tools`, `test-agent-contracts`.
+  Cualquier fallo en cualquier suite detiene la ejecución. (este commit)
+- **README.md** — Tests documentados con tabla completa de 6 targets,
+  cobertura de runtime y límites explícitos. (este commit)
+- **tests/README.md** — Taxonomía ampliada con las 3 nuevas suites,
+  cobertura de runtime documentada (motor transaccional, contratos de
+  permisos, validación estructural). (este commit)
+
 - **permission-policy.test.mjs** — Tests para `task: allow` en task-planner,
   `mode: subagent` en epic-decomposer, y restricción de drafts/. (este commit)
 - **BACKLOG.md** — Backlog organizado por agente, con prioridad, esfuerzo,
