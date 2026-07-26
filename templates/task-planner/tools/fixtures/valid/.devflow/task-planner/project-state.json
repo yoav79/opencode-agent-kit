@@ -105,6 +105,10 @@
       "path": ".devflow/task-planner/epic-plan.json",
       "status": "validated"
     },
+    "taskPlan": {
+      "path": ".devflow/task-planner/task-plan.json",
+      "status": "validated"
+    },
     "epicsDirectory": {
       "path": ".devflow/task-planner/epics",
       "status": "populated"
@@ -121,27 +125,23 @@
       "path": ".devflow/task-planner/tools/validate-plan.mjs",
       "status": "available"
     },
-    "taskPlan": {
-      "path": ".devflow/task-planner/task-plan.json",
-      "status": "validated"
+    "draftsDirectory": {
+      "path": ".devflow/task-planner/drafts",
+      "status": "initialized"
     },
-    "tasksDirectory": {
-      "path": ".devflow/task-planner/tasks",
-      "status": "populated"
-    },
-    "timestampUpdater": {
-      "path": ".devflow/task-planner/tools/update-timestamps.mjs",
+    "taskIdReserver": {
+      "path": ".devflow/task-planner/tools/reserve-task-ids.mjs",
       "status": "available"
     },
-    "epicGraphBuilder": {
-      "path": ".devflow/task-planner/tools/build-epic-graph.mjs",
+    "epicTaskBatchAssembler": {
+      "path": ".devflow/task-planner/tools/assemble-epic-task-batch.mjs",
       "status": "available"
     }
   },
   "timestamps": {
     "createdAt": "2026-07-22T00:00:00.000Z",
-    "updatedAt": "2026-07-23T09:00:00.000Z",
+    "updatedAt": "2026-07-26T01:30:03.687Z",
     "completedAt": null,
-    "contentHash": "sha256:9c7699b3f795a8795c3105795fa00d3d811138a59fba2269e36637f3215d1bf9"
+    "contentHash": "sha256:8e453814576f8fadce25b4ec55bf7287420eedb19d4dc3ed019a562f6832633f"
   }
 }
