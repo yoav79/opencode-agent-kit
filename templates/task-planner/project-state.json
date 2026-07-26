@@ -101,6 +101,14 @@
       "path": ".devflow/task-planner/capability-map.json",
       "status": "initialized"
     },
+    "capabilityMapAssembler": {
+      "path": ".devflow/task-planner/tools/assemble-capability-map.mjs",
+      "status": "available"
+    },
+    "capabilityMapValidator": {
+      "path": ".devflow/task-planner/tools/validate-capability-map.mjs",
+      "status": "available"
+    },
     "epicPlan": {
       "path": ".devflow/task-planner/epic-plan.json",
       "status": "initialized"
@@ -131,6 +139,10 @@
     },
     "epicTaskBatchAssembler": {
       "path": ".devflow/task-planner/tools/assemble-epic-task-batch.mjs",
+      "status": "available"
+    },
+    "taskMarkdownRenderer": {
+      "path": ".devflow/task-planner/tools/render-task-markdown.mjs",
       "status": "available"
     },
     "taskPlan": {

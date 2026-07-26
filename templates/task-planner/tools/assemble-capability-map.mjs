@@ -449,6 +449,10 @@ async function main() {
     for (const issue of issues) {
       process.stdout.write(`  - ${issue.code}: ${issue.message}\n`);
     }
+
+    process.stderr.write('Capability map assembly aborted: la propuesta no pasó la validación local previa.\n');
+    process.exitCode = 1;
+    return;
   }
 
   const existing = (await exists(P.capabilities))

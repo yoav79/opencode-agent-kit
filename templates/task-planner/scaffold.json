@@ -19,10 +19,13 @@
     "tools"
   ],
   "toolFiles": [
+    "tools/assemble-capability-map.mjs",
     "tools/assemble-epic-task-batch.mjs",
     "tools/build-epic-graph.mjs",
+    "tools/render-task-markdown.mjs",
     "tools/reserve-task-ids.mjs",
     "tools/update-timestamps.mjs",
+    "tools/validate-capability-map.mjs",
     "tools/validate-plan.mjs"
   ],
   "command": "/init-task-planner",

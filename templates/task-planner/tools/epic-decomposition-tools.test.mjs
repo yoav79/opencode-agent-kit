@@ -12,6 +12,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_ROOT = path.join(HERE, 'fixtures', 'valid');
 const RESERVE_SOURCE = path.join(HERE, 'reserve-task-ids.mjs');
 const ASSEMBLE_SOURCE = path.join(HERE, 'assemble-epic-task-batch.mjs');
+const RENDER_SOURCE = path.join(HERE, 'render-task-markdown.mjs');
 
 async function json(file) {
   return JSON.parse(await readFile(file, 'utf8'));
@@ -26,6 +27,7 @@ async function withFixture(mutate) {
   await cp(FIXTURE_ROOT, root, { recursive: true });
   await cp(RESERVE_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'reserve-task-ids.mjs'));
   await cp(ASSEMBLE_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'assemble-epic-task-batch.mjs'));
+  await cp(RENDER_SOURCE, path.join(root, '.devflow', 'task-planner', 'tools', 'render-task-markdown.mjs'));
   try {
     if (mutate) await mutate(root);
     return root;
@@ -158,6 +160,50 @@ test('assemble-epic-task-batch congela semántica estructurada sin narrativa lib
     assert.deepEqual(partial.tasks.map((task) => task.id), batch.createdTaskIds);
     assert.equal(JSON.stringify(batch).includes('## Objetivo'), false);
     assert.equal(JSON.stringify(batch).includes('Cualquier behavior'), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('render-task-markdown genera drafts canónicos desde el skeleton semántico', async () => {
+  const root = await withFixture(resetToPreDecomposition);
+  try {
+    const reserve = spawnSync('node', ['.devflow/task-planner/tools/reserve-task-ids.mjs', '--epic', 'EPIC-DOM-001'], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(reserve.status, 0, reserve.stderr);
+
+    const assemble = spawnSync('node', ['.devflow/task-planner/tools/assemble-epic-task-batch.mjs', '--epic', 'EPIC-DOM-001'], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(assemble.status, 0, assemble.stderr);
+
+    const render = spawnSync('node', [
+      '.devflow/task-planner/tools/render-task-markdown.mjs',
+      '--task-batch',
+      '.devflow/task-planner/drafts/EPIC-DOM-001.task-batch.json',
+      '--output-dir',
+      '.devflow/task-planner/drafts',
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(render.status, 0, render.stderr);
+
+    const rendered = JSON.parse(render.stdout);
+    assert.equal(rendered.tool, 'render-task-markdown.mjs');
+    assert.equal(rendered.renderedCount, 7);
+
+    const markdown = await readFile(path.join(root, '.devflow', 'task-planner', 'drafts', 'TASK-003.md'), 'utf8');
+    assert.match(markdown, /^# TASK-003/m);
+    assert.match(markdown, /## Contrato semántico/);
+    assert.match(markdown, /"behaviorIds": \[\s*"BEH-DOM-CREATE"\s*\]/);
+    assert.match(markdown, /"semanticKeys": \[\s*"dom.create"\s*\]/);
+    assert.match(markdown, /"sourceFunctionIds": \[\s*"FUN-DOM-CREATE"\s*\]/);
+    assert.match(markdown, /"backendBindings": \[\s*"mailctl domain create"\s*\]/);
+    assert.doesNotMatch(markdown, /mailctl domain delete/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

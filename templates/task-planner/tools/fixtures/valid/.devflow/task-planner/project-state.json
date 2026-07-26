@@ -101,6 +101,14 @@
       "path": ".devflow/task-planner/capability-map.json",
       "status": "validated"
     },
+    "capabilityMapAssembler": {
+      "path": ".devflow/task-planner/tools/assemble-capability-map.mjs",
+      "status": "available"
+    },
+    "capabilityMapValidator": {
+      "path": ".devflow/task-planner/tools/validate-capability-map.mjs",
+      "status": "available"
+    },
     "epicPlan": {
       "path": ".devflow/task-planner/epic-plan.json",
       "status": "validated"
@@ -136,12 +144,16 @@
     "epicTaskBatchAssembler": {
       "path": ".devflow/task-planner/tools/assemble-epic-task-batch.mjs",
       "status": "available"
+    },
+    "taskMarkdownRenderer": {
+      "path": ".devflow/task-planner/tools/render-task-markdown.mjs",
+      "status": "available"
     }
   },
   "timestamps": {
     "createdAt": "2026-07-22T00:00:00.000Z",
-    "updatedAt": "2026-07-26T01:30:03.687Z",
+    "updatedAt": "2026-07-26T01:39:10.141Z",
     "completedAt": null,
-    "contentHash": "sha256:8e453814576f8fadce25b4ec55bf7287420eedb19d4dc3ed019a562f6832633f"
+    "contentHash": "sha256:dae18a0129ff2eef8a2a134d28f71aa039e980b2ffcdad4e2f2f0664f30b95df"
   }
 }

@@ -26,14 +26,23 @@ permission:
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-capability-map.mjs .devflow/task-planner/tools/assemble-capability-map.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs .devflow/task-planner/tools/render-task-markdown.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs": allow
+    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs .devflow/task-planner/tools/validate-capability-map.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
     "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
+    "node .devflow/task-planner/tools/assemble-capability-map.mjs": allow
+    "node .devflow/task-planner/tools/assemble-capability-map.mjs *": allow
     "node .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow
     "node .devflow/task-planner/tools/assemble-epic-task-batch.mjs *": allow
+    "node .devflow/task-planner/tools/render-task-markdown.mjs": allow
+    "node .devflow/task-planner/tools/render-task-markdown.mjs *": allow
     "node .devflow/task-planner/tools/update-timestamps.mjs *": allow
+    "node .devflow/task-planner/tools/validate-capability-map.mjs": allow
+    "node .devflow/task-planner/tools/validate-capability-map.mjs *": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs": allow
     "node .devflow/task-planner/tools/build-epic-graph.mjs *": allow
     "node .devflow/task-planner/tools/reserve-task-ids.mjs": allow
@@ -121,16 +130,19 @@ Antes de responder:
 10. Revisa los artefactos declarados en `project-state.json`.
 11. Comprueba que `.devflow/task-planner/drafts/` exista cuando el estado declare `artifacts.draftsDirectory.status = initialized`.
 12. Comprueba que `.devflow/task-planner/tools/reserve-task-ids.mjs` exista cuando el estado declare `artifacts.taskIdReserver.status = available`.
-13. Comprueba que `.devflow/task-planner/tools/assemble-epic-task-batch.mjs` exista cuando el estado declare `artifacts.epicTaskBatchAssembler.status = available`.
-14. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
-15. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
-16. Comprueba que `.devflow/task-planner/tools/build-epic-graph.mjs` exista cuando el estado declare `artifacts.epicGraphBuilder.status = available`.
-17. Lee únicamente los archivos necesarios para la fase actual.
-18. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
-19. No reinicies el proceso.
-20. No repitas fases aprobadas.
-21. No regeneres artefactos validados salvo que una transición de regreso los
-    haya invalidado explícitamente.
+13. Comprueba que `.devflow/task-planner/tools/assemble-capability-map.mjs` exista cuando el estado declare `artifacts.capabilityMapAssembler.status = available`.
+14. Comprueba que `.devflow/task-planner/tools/validate-capability-map.mjs` exista cuando el estado declare `artifacts.capabilityMapValidator.status = available`.
+15. Comprueba que `.devflow/task-planner/tools/assemble-epic-task-batch.mjs` exista cuando el estado declare `artifacts.epicTaskBatchAssembler.status = available`.
+16. Comprueba que `.devflow/task-planner/tools/render-task-markdown.mjs` exista cuando el estado declare `artifacts.taskMarkdownRenderer.status = available`.
+17. Comprueba que `.devflow/task-planner/tools/validate-plan.mjs` exista cuando el estado declare `artifacts.planValidator.status = available`.
+18. Comprueba que `.devflow/task-planner/tools/update-timestamps.mjs` exista cuando el estado declare `artifacts.timestampUpdater.status = available`.
+19. Comprueba que `.devflow/task-planner/tools/build-epic-graph.mjs` exista cuando el estado declare `artifacts.epicGraphBuilder.status = available`.
+20. Lee únicamente los archivos necesarios para la fase actual.
+21. Continúa desde `resumeFrom` o `currentEpicId` cuando corresponda.
+22. No reinicies el proceso.
+23. No repitas fases aprobadas.
+24. No regeneres artefactos validados salvo que una transición de regreso los
+     haya invalidado explícitamente.
 
 Si falta un archivo obligatorio para la fase actual:
 
@@ -302,6 +314,8 @@ una decisión aunque ambas aparezcan aprobadas.
 40. Bash permanece denegado por defecto. Solo se permiten los comandos exactos de inicialización, el validador y el actualizador de timestamps declarados en permisos; cualquier otra copia requiere aprobación del usuario.
 41. Después de crear o modificar un JSON administrado, ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs touch <archivo>`; el hash de contenido debe quedar sincronizado.
 42. Nunca edites `timestamps.createdAt`, `timestamps.updatedAt`, `timestamps.completedAt`, `requestedAt` ni `resolvedAt` con herramientas de edición.
+43. Durante `capability_mapping`, el LLM solo propone `capability-map.proposal.json`; `behaviorIds`, `semanticKeys`, `result` y `requirementIds` oficiales deben quedar fijados por `assemble-capability-map.mjs` y validados por `validate-capability-map.mjs`.
+44. Durante `epic_decomposition`, el bloque `## Contrato semántico` de cada tarea debe provenir de `render-task-markdown.mjs`; ni el agente principal ni el subagente lo redactan libremente.
 
 # Fechas deterministas y copia segura
 
@@ -1053,15 +1067,17 @@ Salida principal:
 Reglas:
 
 1. toda capacidad `functional` planificada corresponde a exactamente un contrato;
-2. copia exactamente `behaviorIds` y `semanticKeys` desde ese contrato;
-3. `requirementIds` debe contener el `requirementId` del contrato;
-4. una capacidad no funcional usa arrays semánticos vacíos;
-5. `ownerEpicId = null` y `ownerTaskId = null` durante esta fase;
-6. no generes capacidades CRUD ni agrupaciones separables;
-7. no cambies `operation`, `outcome`, `sourceFunctionId` o `semanticKey`;
-8. establece `capability-map.json.status = generated`;
-9. calcula `capabilitiesMapped` desde la longitud real del mapa;
-10. mantén `capabilityMapValidated = false`.
+2. el LLM escribe una propuesta base en `capability-map.proposal.json`;
+3. ejecuta `node .devflow/task-planner/tools/assemble-capability-map.mjs` para congelar `behaviorIds`, `semanticKeys`, `result` y `requirementIds` desde el contrato;
+4. ejecuta `node .devflow/task-planner/tools/validate-capability-map.mjs` antes de tratar el mapa como oficial;
+5. `requirementIds` debe contener el `requirementId` del contrato;
+6. una capacidad no funcional usa arrays semánticos vacíos;
+7. `ownerEpicId = null` y `ownerTaskId = null` durante esta fase;
+8. no generes capacidades CRUD ni agrupaciones separables;
+9. no cambies `operation`, `outcome`, `sourceFunctionId` o `semanticKey` manualmente dentro de `capability-map.json`;
+10. establece `capability-map.json.status = generated` solo si la validación local devuelve código `0`;
+11. calcula `capabilitiesMapped` desde la longitud real del mapa;
+12. mantén `capabilityMapValidated = false`.
 
 No generes tareas durante esta fase.
 
@@ -1200,22 +1216,32 @@ Procesa las épicas **secuencialmente**, una por iteración:
        Verifica que `drafts/<EPIC-ID>.task-plan.partial.json` y
        `drafts/<EPIC-ID>.task-batch.json` existan.
 
-    e. **Invoca al subagente** siguiendo el procedimiento de
-       **Delegación a subagentes** (pasos 1-4). El prompt debe incluir:
-       - `currentEpicId`
-       - Las rutas de todos los inputs
-       - El mapa `capabilityId -> taskId` preasignado
-       - La ruta del skeleton semántico `drafts/<EPIC-ID>.task-batch.json`
+    e. **Renderiza Markdown canónico**: ejecuta:
+       ```
+       node .devflow/task-planner/tools/render-task-markdown.mjs --task-batch .devflow/task-planner/drafts/<EPIC-ID>.task-batch.json --output-dir .devflow/task-planner/drafts
+       ```
+       Verifica que `drafts/TASK-*.md` exista para todos los IDs reservados. Ese
+       render fija el bloque `## Contrato semántico` antes de invocar al
+       subagente.
 
-    f. **Maneja el resultado**:
-       - Si `GENERATED`: procede con la promoción (paso g).
-       - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
-         la siguiente épica hasta resolver el bloqueo.
+    f. **Invoca al subagente** siguiendo el procedimiento de
+        **Delegación a subagentes** (pasos 1-4). El prompt debe incluir:
+        - `currentEpicId`
+        - Las rutas de todos los inputs
+        - El mapa `capabilityId -> taskId` preasignado
+        - La ruta del skeleton semántico `drafts/<EPIC-ID>.task-batch.json`
+        - La instrucción explícita de conservar `semanticKeys`, `behaviorIds`,
+          `backendBindings` y `sourceFunctionIds` ya renderizados
 
-    g. **Promueve los drafts** siguiendo el procedimiento de
-       **Promoción de drafts**:
-       - Valida `result.json` contra los IDs reservados (paso c).
-       - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
+    g. **Maneja el resultado**:
+        - Si `GENERATED`: procede con la promoción (paso h).
+        - Si `BLOCKED`: informa al usuario la causa exacta. No avances a
+          la siguiente épica hasta resolver el bloqueo.
+
+    h. **Promueve los drafts** siguiendo el procedimiento de
+        **Promoción de drafts**:
+        - Valida `result.json` contra los IDs reservados (paso c).
+        - Mueve `TASK-*.md` de `drafts/` a `tasks/`.
        - Fusiona `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado
          por `assemble-epic-task-batch.mjs`) en `task-plan.json.tasks`.
        - Actualiza `ownerTaskId` en `capability-map.json`.
@@ -1223,7 +1249,7 @@ Procesa las épicas **secuencialmente**, una por iteración:
        - Ejecuta `update-timestamps.mjs touch` para cada JSON modificado.
        - Actualiza contadores en `project-state.json`.
 
-    h. **Siguiente épica**: si existen épicas con `decomposed = false`:
+    i. **Siguiente épica**: si existen épicas con `decomposed = false`:
       - Establece `currentEpicId` en la siguiente épica pendiente.
       - Ejecuta `update-timestamps.mjs touch` sobre `project-state.json`.
       - Permanece en fase `epic_decomposition`.

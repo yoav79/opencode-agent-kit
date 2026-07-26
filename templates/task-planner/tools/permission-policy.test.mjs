@@ -35,12 +35,25 @@ test('edit no queda globalmente abierto; solo permite .devflow/task-planner/**',
 test('solo las copias cp -n de plantillas conocidas quedan permitidas', async () => {
   const text = await agentText();
   const VAR = String.raw`\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner`;
-  assert.match(text, new RegExp(`cp -n ${VAR}\\/project-state\\.json \\.devflow\\/task-planner\\/project-state\\.json": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/assemble-epic-task-batch\\.mjs \\.devflow\\/task-planner\\/tools\\/assemble-epic-task-batch\\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/reserve-task-ids\\.mjs \\.devflow\\/task-planner\\/tools\\/reserve-task-ids\\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/update-timestamps\\.mjs \\.devflow\\/task-planner\\/tools\\/update-timestamps\\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\\/tools\\/build-epic-graph\\.mjs \\.devflow\\/task-planner\\/tools\\/build-epic-graph\\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/project-state\.json \.devflow\/task-planner\/project-state\.json": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/assemble-capability-map\.mjs \.devflow\/task-planner\/tools\/assemble-capability-map\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/assemble-epic-task-batch\.mjs \.devflow\/task-planner\/tools\/assemble-epic-task-batch\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/render-task-markdown\.mjs \.devflow\/task-planner\/tools\/render-task-markdown\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/reserve-task-ids\.mjs \.devflow\/task-planner\/tools\/reserve-task-ids\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/update-timestamps\.mjs \.devflow\/task-planner\/tools\/update-timestamps\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/validate-capability-map\.mjs \.devflow\/task-planner\/tools\/validate-capability-map\.mjs": allow`));
+  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/build-epic-graph\.mjs \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow`));
   assert.match(text, /node \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow/);
+});
+
+test('task-planner permite ejecutar las tools semánticas oficiales', async () => {
+  const text = await agentText();
+  assert.match(text, /node \.devflow\/task-planner\/tools\/assemble-capability-map\.mjs": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/assemble-capability-map\.mjs \*": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/validate-capability-map\.mjs": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/validate-capability-map\.mjs \*": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/render-task-markdown\.mjs": allow/);
+  assert.match(text, /node \.devflow\/task-planner\/tools\/render-task-markdown\.mjs \*": allow/);
 });
 
 test('task-planner tiene task: allow para invocar subagentes', async () => {
@@ -72,8 +85,7 @@ test('epic-decomposer tiene task: deny (no puede crear sub-subagentes)', async (
 test('task-planner puede leer contratos de epic-decomposer via external_directory', async () => {
   const text = await agentText();
   assert.match(text, /external_directory[\s\S]*contracts\/\*/);
-  const VAR = String.raw`\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner`;
-  assert.match(text, new RegExp(`${VAR}\\/contracts\\/\\*": allow`));
-  assert.match(text, new RegExp(`\\$HOME/\\.config/opencode/templates/task-planner/contracts/\\*": allow`));
-  assert.match(text, new RegExp(`\\$XDG_CONFIG_HOME/opencode/templates/task-planner/contracts/\\*": allow`));
+  assert.match(text, /"\$HOME\/\.config\/opencode\/templates\/task-planner\/contracts\/\*": allow/);
+  assert.match(text, /"\$XDG_CONFIG_HOME\/opencode\/templates\/task-planner\/contracts\/\*": allow/);
+  assert.match(text, /"\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner\/contracts\/\*": allow/);
 });

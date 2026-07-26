@@ -204,6 +204,36 @@ Herramienta determinista de reloj y huella de contenido. Registra fechas ISO UTC
 
 Debe ejecutarse después de crear o modificar cualquier JSON administrado.
 
+### `.devflow/task-planner/tools/assemble-capability-map.mjs`
+
+Ensamblador determinista del mapa de capacidades.
+
+Lee `semantic-contract.json` y una propuesta local del LLM desde
+`.devflow/task-planner/capability-map.proposal.json` para congelar en origen:
+
+- `behaviorIds`;
+- `semanticKeys`;
+- `result` cuando la capacidad es funcional;
+- `requirementIds` derivados del contrato.
+
+Si la propuesta no pasa su validación local previa, no debe persistir
+`.devflow/task-planner/capability-map.json`.
+
+### `.devflow/task-planner/tools/validate-capability-map.mjs`
+
+Validador determinista del mapa de capacidades.
+
+Comprueba, como mínimo:
+
+- correspondencia exacta `behaviorId -> semanticKey -> outcome` contra
+  `semantic-contract.json`;
+- unicidad de capacidad funcional por behavior;
+- ausencia de capacidades funcionales sin contrato;
+- integridad de dependencias y consumidores.
+
+Solo después de una ejecución local exitosa puede considerarse oficial
+`capability-map.json`.
+
 ### `.devflow/task-planner/tools/validate-plan.mjs`
 
 Validador determinista del plan.
@@ -217,6 +247,16 @@ Debe devolver:
 
 - código `0` cuando no existen errores bloqueantes;
 - código distinto de `0` cuando el plan es inválido.
+
+### `.devflow/task-planner/tools/render-task-markdown.mjs`
+
+Renderer determinista del Markdown de tareas.
+
+Genera el Markdown canónico a partir de un skeleton estructurado o de tareas ya
+indexadas y es la única fuente autorizada para el bloque `## Contrato semántico`.
+
+En `epic_decomposition` puede renderizar drafts dentro de
+`.devflow/task-planner/drafts/` antes del enriquecimiento narrativo.
 
 ---
 
@@ -815,18 +855,30 @@ contrato semántico.
 
 ## Acciones obligatorias
 
-1. Generar `capability-map.json` con `schemaVersion = 3`.
-2. Para cada capacidad `functional` planificada seleccionar exactamente un
-   contrato semántico.
-3. Copiar:
+1. Redactar una propuesta base del LLM en
+   `.devflow/task-planner/capability-map.proposal.json`.
+2. Ejecutar exactamente:
+   ```bash
+   node .devflow/task-planner/tools/assemble-capability-map.mjs
+   ```
+3. Ejecutar exactamente:
+   ```bash
+   node .devflow/task-planner/tools/validate-capability-map.mjs
+   ```
+4. Persistir `capability-map.json` como artefacto oficial solo si ambas
+   comprobaciones pasan localmente.
+5. Para cada capacidad `functional` planificada usar exactamente un contrato
+   semántico.
+6. Congelar desde el ensamblador:
    - `behaviorIds = [contract.behaviorId]`;
    - `semanticKeys = [contract.semanticKey]`;
-   - `requirementIds` incluyendo `contract.requirementId`.
-4. Para capacidades no funcionales usar arrays semánticos vacíos.
-5. Asignar un `logicalOwner`.
-6. Mantener `ownerEpicId = null` y `ownerTaskId = null`.
-7. Detectar duplicaciones, consumidores sin proveedor y capacidades sin contrato.
-8. Actualizar contadores desde el mapa real.
+   - `requirementIds` incluyendo `contract.requirementId`;
+   - `result = contract.outcome`.
+7. Para capacidades no funcionales usar arrays semánticos vacíos.
+8. Asignar un `logicalOwner`.
+9. Mantener `ownerEpicId = null` y `ownerTaskId = null`.
+10. Detectar duplicaciones, consumidores sin proveedor y capacidades sin contrato.
+11. Actualizar contadores desde el mapa real.
 
 ## Reglas obligatorias
 
@@ -834,6 +886,9 @@ contrato semántico.
 - Un behavior MVP tiene exactamente una capacidad funcional propietaria.
 - No se reescribe `semanticKey`, `operation`, `outcome` ni `sourceFunctionId`.
 - No se crean capacidades CRUD o agrupaciones separables.
+- `CAPABILITY_OUTCOME_MISMATCH` y `CAPABILITY_SEMANTIC_KEYS_MISMATCH` deben
+  bloquear la fase y regresar a la propuesta, no corregirse manualmente dentro
+  del artefacto oficial.
 
 ## Acciones prohibidas
 
@@ -1113,19 +1168,29 @@ El subagente `epic-decomposer` no puede:
    (behaviorIds, semanticKeys, requirementCoverage) queda congelado antes de
    la invocación al subagente.
 
-3. El agente principal verifica los inputs según el contrato de `epic-decomposer`,
+3. **Renderizar Markdown canónico**: el agente principal ejecuta:
+   ```
+   node .devflow/task-planner/tools/render-task-markdown.mjs --task-batch .devflow/task-planner/drafts/<EPIC-ID>.task-batch.json --output-dir .devflow/task-planner/drafts
+   ```
+   Verifica que los archivos `drafts/TASK-*.md` existan. Ese Markdown canónico
+   fija `behaviorIds`, `semanticKeys`, `sourceFunctionIds` y
+   `backendBindings` antes del enriquecimiento narrativo.
+
+4. El agente principal verifica los inputs según el contrato de `epic-decomposer`,
    incluyendo `drafts/<EPIC-ID>.task-batch.json`.
 
-4. El agente principal invoca al subagente con `currentEpicId`, los inputs y el
-   skeleton semántico preconstruido.
+5. El agente principal invoca al subagente con `currentEpicId`, los inputs, el
+   skeleton semántico preconstruido y los drafts canónicos ya renderizados.
 
-5. El subagente genera los drafts: escribe `TASK-*.md` (Markdown) y
-   `<EPIC-ID>.result.json`. El archivo `task-plan.partial.json` ya fue generado
-   por `assemble-epic-task-batch.mjs` en el paso 2; el subagente no lo regenera.
+6. El subagente enriquece los drafts: puede editar narrativa, alcance, pruebas y
+   criterios, pero no compone ni reemplaza `semanticKeys`, `behaviorIds`,
+   `backendBindings` ni `sourceFunctionIds`. El archivo
+   `task-plan.partial.json` ya fue generado por `assemble-epic-task-batch.mjs` en
+   el paso 2; el subagente no lo regenera.
 
-6. El subagente devuelve `GENERATED` o `BLOCKED`.
+7. El subagente devuelve `GENERATED` o `BLOCKED`.
 
-7. Si `GENERATED`, el agente principal:
+8. Si `GENERATED`, el agente principal:
    a. Lee `drafts/<EPIC-ID>.result.json`.
    b. Verifica que `epicId = currentEpicId` y que todos los outputs draft
       pertenecen exclusivamente a esa épica.
@@ -1139,7 +1204,7 @@ El subagente `epic-decomposer` no puede:
    h. Actualiza contadores y `project-state.json`.
    i. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
       `build-epic-graph.mjs`.
-8. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
+9. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
 ## Regla de promoción
 
@@ -1150,6 +1215,9 @@ Un draft solo puede promocionarse cuando el agente principal confirma que:
   cobertura y Markdown;
 - no existe escritura directa previa sobre índices globales;
 - la promoción mantiene una sola tarea propietaria por capacidad.
+- el Markdown promovido conserva exactamente el bloque canónico renderizado para
+  evitar `TASK_SEMANTIC_KEY_MISMATCH`, `TASK_SEMANTIC_BLOCK_MISMATCH` y
+  `TASK_FOREIGN_BACKEND_BINDING`.
 
 Si cualquiera de esas comprobaciones falla, prevalece la autoridad del agente
 principal: no se promociona el draft, la épica no se marca como `decomposed` y

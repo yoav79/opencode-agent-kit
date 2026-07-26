@@ -90,6 +90,18 @@ Utiliza estas plantillas como fuente de verdad.
 
   @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs
 
+- Ensamblador determinista de capacidades:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-capability-map.mjs
+
+- Validador determinista de capacidades:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs
+
+- Renderer determinista de tareas:
+
+  @${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs
+
 ## Objetivo
 
 Preparar o reanudar el espacio de trabajo del Task Planner sin sobrescribir
@@ -116,9 +128,12 @@ La estructura inicial válida es:
 ├── epics/
 ├── tasks/
 └── tools/
+    ├── assemble-capability-map.mjs
     ├── assemble-epic-task-batch.mjs
+    ├── render-task-markdown.mjs
     ├── reserve-task-ids.mjs
     ├── update-timestamps.mjs
+    ├── validate-capability-map.mjs
     ├── validate-plan.mjs
     └── build-epic-graph.mjs
 ```
@@ -153,8 +168,11 @@ cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-pla
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-capability-map.mjs .devflow/task-planner/tools/assemble-capability-map.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs .devflow/task-planner/tools/assemble-epic-task-batch.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs .devflow/task-planner/tools/render-task-markdown.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs
+cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs .devflow/task-planner/tools/validate-capability-map.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs
 cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs
@@ -215,14 +233,17 @@ Inicializa un proyecto nuevo:
 4. crea `.devflow/task-planner/tasks/`;
 5. crea `.devflow/task-planner/tools/`;
 6. crea cada archivo inicial usando exactamente su plantilla oficial;
-7. copia el ensamblador estructurado oficial como `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
-8. copia el reservador determinista oficial como `.devflow/task-planner/tools/reserve-task-ids.mjs`;
-9. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
-10. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
-11. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
-12. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
-13. no agregues registros de ejemplo;
-14. no ejecutes el validador.
+7. copia el ensamblador determinista oficial de capacidades como `.devflow/task-planner/tools/assemble-capability-map.mjs`;
+8. copia el validador determinista oficial de capacidades como `.devflow/task-planner/tools/validate-capability-map.mjs`;
+9. copia el ensamblador estructurado oficial como `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
+10. copia el renderer determinista oficial de tareas como `.devflow/task-planner/tools/render-task-markdown.mjs`;
+11. copia el reservador determinista oficial como `.devflow/task-planner/tools/reserve-task-ids.mjs`;
+12. copia el validador oficial como `.devflow/task-planner/tools/validate-plan.mjs`;
+13. copia el actualizador oficial como `.devflow/task-planner/tools/update-timestamps.mjs`;
+14. copia el constructor del grafo de épicas oficial como `.devflow/task-planner/tools/build-epic-graph.mjs`;
+15. ejecuta `node .devflow/task-planner/tools/update-timestamps.mjs bootstrap`;
+16. no agregues registros de ejemplo;
+17. no ejecutes el validador.
 
 #### Caso B — `.devflow/task-planner/` ya existe
 
@@ -257,8 +278,9 @@ Primero:
    - informa que el proyecto requiere una migración explícita;
    - detén el proceso;
 8. comprueba que las rutas de `artifacts` sean compatibles con las plantillas
-   oficiales, incluyendo `draftsDirectory`, `taskIdReserver` y
-   `epicTaskBatchAssembler`;
+   oficiales, incluyendo `draftsDirectory`, `capabilityMapAssembler`,
+   `capabilityMapValidator`, `taskIdReserver`, `epicTaskBatchAssembler` y
+   `taskMarkdownRenderer`;
 9. lee `.devflow/task-planner/workflow.md`, si existe, y confirma que corresponde al
    workflow versión `7`;
 10. solo después de completar estas comprobaciones, crea los archivos iniciales
@@ -280,8 +302,11 @@ falten:
 - `.devflow/task-planner/readiness.json`;
 - `.devflow/task-planner/task-plan.json`;
 - `.devflow/task-planner/task-template.md`;
+- `.devflow/task-planner/tools/assemble-capability-map.mjs`;
 - `.devflow/task-planner/tools/assemble-epic-task-batch.mjs`;
+- `.devflow/task-planner/tools/render-task-markdown.mjs`;
 - `.devflow/task-planner/tools/reserve-task-ids.mjs`;
+- `.devflow/task-planner/tools/validate-capability-map.mjs`;
 - `.devflow/task-planner/tools/validate-plan.mjs`;
 - `.devflow/task-planner/tools/update-timestamps.mjs`;
 - `.devflow/task-planner/tools/build-epic-graph.mjs`.
@@ -344,7 +369,8 @@ Después de crear archivos iniciales:
    - `planner.timestampToolVersion = 1.0`;
 3. confirma que existen las rutas iniciales declaradas en
    `project-state.json.artifacts`, incluyendo `draftsDirectory`,
-   `taskIdReserver` y `epicTaskBatchAssembler`;
+   `capabilityMapAssembler`, `capabilityMapValidator`, `taskIdReserver`,
+   `epicTaskBatchAssembler` y `taskMarkdownRenderer`;
 4. confirma que:
    - `semantic-contract.json.status = initialized`;
    - `requirements.json.status = initialized`;

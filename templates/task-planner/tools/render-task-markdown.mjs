@@ -22,6 +22,7 @@ function usage() {
   node .devflow/task-planner/tools/render-task-markdown.mjs --task-batch <batch.json>
   node .devflow/task-planner/tools/render-task-markdown.mjs --task <TASK-ID>
   node .devflow/task-planner/tools/render-task-markdown.mjs --all
+  node .devflow/task-planner/tools/render-task-markdown.mjs --task-batch <batch.json> --output-dir .devflow/task-planner/drafts
 `);
 }
 
@@ -88,7 +89,7 @@ function indexContracts(records) {
 }
 
 function parseArgs(argv) {
-  const args = { taskBatches: [], taskIds: [], includeAll: false };
+  const args = { taskBatches: [], taskIds: [], includeAll: false, outputDir: null };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -107,6 +108,13 @@ function parseArgs(argv) {
       const taskId = argv[index + 1];
       if (!taskId) throw new Error('--task requiere un valor');
       args.taskIds.push(taskId);
+      index += 1;
+      continue;
+    }
+    if (arg === '--output-dir') {
+      const outputDir = argv[index + 1];
+      if (!outputDir) throw new Error('--output-dir requiere un valor');
+      args.outputDir = outputDir;
       index += 1;
       continue;
     }
@@ -504,7 +512,8 @@ async function main() {
 
   const skeletons = await resolveTaskSkeletons(args);
 
-  await mkdir(TASKS_DIR, { recursive: true });
+  const resolvedOutputDir = path.resolve(args.outputDir || TASKS_DIR);
+  await mkdir(resolvedOutputDir, { recursive: true });
 
   const results = [];
 
@@ -531,7 +540,9 @@ async function main() {
 
     const markdown = assembleMarkdown(task, capability, contracts, allContracts, capabilityMap);
 
-    const normalizedFile = task.file || `.devflow/task-planner/tasks/${task.id}.md`;
+    const normalizedFile = args.outputDir
+      ? path.join(args.outputDir, `${task.id}.md`).split(path.sep).join('/')
+      : task.file || `.devflow/task-planner/tasks/${task.id}.md`;
     const absoluteFile = path.resolve(normalizedFile);
     await writeFile(absoluteFile, markdown, 'utf8');
 
