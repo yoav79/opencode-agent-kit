@@ -11,6 +11,7 @@ permission:
     "*": deny
   bash:
     "*": deny
+    "test -f .devflow/execution/tools/select-next-task.mjs": allow
     "node .devflow/execution/tools/select-next-task.mjs *": allow
   glob: deny
   grep: deny
@@ -33,7 +34,11 @@ clasificación resultante.
    Si no existe, informa que debes ejecutar el comando de inicialización
    primero y detente.
 
-2. Ejecuta el selector determinista:
+2. Verifica que existe `.devflow/execution/tools/select-next-task.mjs`.
+   Si no existe, informa que debes ejecutar `/init-next-task` primero y
+   detente.
+
+3. Ejecuta el selector determinista:
 
    ```bash
    node .devflow/execution/tools/select-next-task.mjs
@@ -45,7 +50,7 @@ clasificación resultante.
    - Escribe `.devflow/execution/selection.json` con formato canónico.
    - Imprime únicamente la clasificación en stdout.
 
-3. Responde exclusivamente con la línea de clasificación producida por el
+4. Responde exclusivamente con la línea de clasificación producida por el
    selector.
 
 ## Límites no negociables

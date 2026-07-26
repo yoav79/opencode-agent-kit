@@ -20,13 +20,17 @@ publicado y el estado actual de ejecución mediante el selector determinista.
    Si no existe, informa que debes inicializar el espacio de ejecución primero
    y detente.
 
-3. Ejecuta el selector determinista:
+3. Verifica que existe `.devflow/execution/tools/select-next-task.mjs`.
+   Si no existe, informa que debes instalar los contratos de selección con
+   `/init-next-task` y detente.
+
+4. Ejecuta el selector determinista:
 
    ```bash
    node .devflow/execution/tools/select-next-task.mjs
    ```
 
-4. Responde únicamente con la clasificación resultante.
+5. Responde únicamente con la clasificación resultante.
 
 ## Contexto adicional
 

@@ -235,11 +235,11 @@
   "$defs": {
     "taskId": {
       "type": "string",
-      "pattern": "^TASK-(?:0*[1-9][0-9]*)$"
+      "pattern": "^TASK-[A-Z0-9][A-Z0-9_-]*$"
     },
     "epicId": {
       "type": "string",
-      "pattern": "^EPIC-[A-Z0-9][A-Z0-9_-]*$"
+      "pattern": "^(?:EPIC|EPC)-[A-Z0-9][A-Z0-9_-]*$"
     },
     "contentHash": {
       "type": "string",

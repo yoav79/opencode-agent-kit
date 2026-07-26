@@ -10,8 +10,9 @@ export const SELECTOR_NAME = 'select-next-task.mjs';
 export const SELECTOR_VERSION = '1.0';
 
 const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/;
-const TASK_ID_PATTERN = /^TASK-(0*[1-9][0-9]*)$/;
-const EPIC_ID_PATTERN = /^EPIC-[A-Z0-9][A-Z0-9_-]*$/;
+const TASK_ID_PATTERN = /^TASK-[A-Z0-9][A-Z0-9_-]*$/;
+const NUMERIC_TASK_ID_PATTERN = /^TASK-(0*[1-9][0-9]*)$/;
+const EPIC_ID_PATTERN = /^(?:EPIC|EPC)-[A-Z0-9][A-Z0-9_-]*$/;
 
 export const ROOT_KEYS = [
   'schemaVersion',
@@ -199,9 +200,15 @@ export function pushUniqueIssue(collection, entry) {
 
 export function taskNumericId(taskId) {
   if (typeof taskId !== 'string') return null;
-  const match = TASK_ID_PATTERN.exec(taskId);
+  const match = NUMERIC_TASK_ID_PATTERN.exec(taskId);
   if (!match) return null;
   return BigInt(match[1]);
+}
+
+export function taskIdentityKey(taskId) {
+  if (typeof taskId !== 'string' || !TASK_ID_PATTERN.test(taskId)) return null;
+  const numeric = taskNumericId(taskId);
+  return numeric === null ? `id:${taskId}` : `number:${numeric.toString()}`;
 }
 
 export function compareTaskIds(left, right) {
@@ -295,7 +302,7 @@ function requireArray(parent, key, source, inputIssues, reference = key) {
 
 export function validateTaskCollection(records, source, field, inputIssues) {
   const exactIds = new Set();
-  const numericOwners = new Map();
+  const identityOwners = new Map();
   const valid = [];
 
   for (const [index, record] of records.entries()) {
@@ -309,8 +316,8 @@ export function validateTaskCollection(records, source, field, inputIssues) {
     }
 
     const id = record.id ?? record.taskId;
-    const numericId = taskNumericId(id);
-    if (numericId === null) {
+    const identityKey = taskIdentityKey(id);
+    if (identityKey === null) {
       pushUniqueIssue(
         inputIssues,
         issue('TASK_ID_INVALID', source, `${reference} tiene un identificador de tarea inválido.`, reference),
@@ -327,8 +334,7 @@ export function validateTaskCollection(records, source, field, inputIssues) {
     }
     exactIds.add(id);
 
-    const numericKey = numericId.toString();
-    const previous = numericOwners.get(numericKey);
+    const previous = identityOwners.get(identityKey);
     if (previous && previous !== id) {
       pushUniqueIssue(
         inputIssues,
@@ -341,11 +347,11 @@ export function validateTaskCollection(records, source, field, inputIssues) {
       );
       continue;
     }
-    numericOwners.set(numericKey, id);
+    identityOwners.set(identityKey, id);
     valid.push(record);
   }
 
-  return { valid, numericOwners };
+  return { valid, identityOwners };
 }
 
 export function validateEpicCollection(records, source, inputIssues) {
@@ -734,7 +740,7 @@ export async function computeExpected(root) {
   const snapshot = snapshotFrom(documents);
   const epicMap = new Map(epics.map((epic) => [epic.id, epic]));
   const taskMap = new Map(tasks.map((task) => [task.id, task]));
-  const planTaskByNumeric = taskValidation.numericOwners;
+  const planTaskByIdentity = taskValidation.identityOwners;
   const executionByTaskId = new Map();
 
   if (executionState.project.id !== projectState.project.id) {
@@ -794,8 +800,8 @@ export async function computeExpected(root) {
   }
 
   for (const entry of executionValidation.valid) {
-    const numeric = taskNumericId(entry.taskId).toString();
-    const planId = planTaskByNumeric.get(numeric);
+    const identityKey = taskIdentityKey(entry.taskId);
+    const planId = identityKey === null ? null : planTaskByIdentity.get(identityKey);
     if (!planId) {
       pushUniqueIssue(
         stateIssues,
