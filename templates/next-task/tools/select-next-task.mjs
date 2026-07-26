@@ -1,456 +1,38 @@
 #!/usr/bin/env node
 
-import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+export * from './execution-contract-helpers.mjs';
+
+import {
+  isObject,
+  isPositiveInteger,
+  isNonNegativeInteger,
+  sameKeys,
+  loadJson,
+  issue,
+  pushUniqueIssue,
+  validateTaskCollection,
+  validateExecutionStateShape,
+  validateEpicCollection,
+  validateContentHash,
+  findTaskCycle,
+  compareTaskIds,
+  requireObject,
+  requireArray,
+  taskIdentityKey,
+  TASK_ID_PATTERN,
+  HASH_PATTERN,
+  FILES,
+  READY_STATUSES,
+  ACTIVE_STATUSES,
+} from './execution-contract-helpers.mjs';
+
 export const SELECTOR_NAME = 'select-next-task.mjs';
 export const SELECTOR_VERSION = '1.0';
-
-const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/;
-const TASK_ID_PATTERN = /^TASK-[A-Z0-9][A-Z0-9_-]*$/;
-const NUMERIC_TASK_ID_PATTERN = /^TASK-(0*[1-9][0-9]*)$/;
-const EPIC_ID_PATTERN = /^(?:EPIC|EPC)-[A-Z0-9][A-Z0-9_-]*$/;
-
-export const ROOT_KEYS = [
-  'schemaVersion',
-  'sourceSnapshot',
-  'selectedTaskId',
-  'epicId',
-  'executionWave',
-  'selectionReason',
-  'otherReadyTaskIds',
-  'classification',
-  'issues',
-];
-
-export const SNAPSHOT_KEYS = [
-  'planningVersion',
-  'epicPlanContentHash',
-  'taskPlanContentHash',
-  'capabilityMapContentHash',
-  'executionStateRevision',
-];
-
-export const REASON_KEYS = [
-  'dependenciesCompleted',
-  'attemptsAvailable',
-  'taskStatus',
-  'readyTaskCount',
-  'unlocksTaskIds',
-  'tieBreaker',
-];
-
-export const ISSUE_KEYS = ['code', 'source', 'message', 'reference'];
-const EXECUTION_ROOT_KEYS = [
-  'schemaVersion',
-  'engine',
-  'project',
-  'revision',
-  'status',
-  'policy',
-  'tasks',
-  'timestamps',
-];
-const ENGINE_KEYS = ['name', 'contractVersion'];
-const EXECUTION_PROJECT_KEYS = ['id', 'planningVersion'];
-const POLICY_KEYS = ['defaultMaxAttempts', 'maxConcurrentTasks'];
-const TASK_EXECUTION_KEYS = [
-  'taskId',
-  'status',
-  'attemptCount',
-  'maxAttempts',
-  'activeRunId',
-  'reservation',
-  'blocker',
-  'lastResult',
-  'updatedAt',
-];
-const TIMESTAMP_KEYS = ['createdAt', 'updatedAt'];
-const RESERVATION_KEYS = ['token', 'reservedAt', 'stateRevision'];
-const BLOCKER_KEYS = ['code', 'message', 'source'];
-const LAST_RESULT_KEYS = ['classification', 'runId', 'completedAt'];
-const READY_STATUSES = new Set(['pending', 'interrupted', 'failed_retryable']);
-const ACTIVE_STATUSES = new Set([
-  'reserved',
-  'running',
-  'waiting_human',
-  'waiting_external',
-]);
-const EXECUTION_STATUSES = new Set([
-  'initialized',
-  'active',
-  'paused',
-  'completed',
-  'failed',
-]);
-const TASK_STATUSES = new Set([
-  'pending',
-  'reserved',
-  'running',
-  'waiting_human',
-  'waiting_external',
-  'blocked',
-  'interrupted',
-  'completed',
-  'failed_retryable',
-  'failed_permanent',
-  'cancelled',
-]);
-export const CLASSIFICATIONS = new Set([
-  'NOT_EVALUATED',
-  'TASK_SELECTED',
-  'NO_READY_TASK',
-  'PLAN_NOT_READY',
-  'INPUT_INVALID',
-  'STATE_CONFLICT',
-]);
-
-export const FILES = {
-  projectState: '.devflow/task-planner/project-state.json',
-  readiness: '.devflow/task-planner/readiness.json',
-  epicPlan: '.devflow/task-planner/epic-plan.json',
-  taskPlan: '.devflow/task-planner/task-plan.json',
-  capabilityMap: '.devflow/task-planner/capability-map.json',
-  executionState: '.devflow/execution/execution-state.json',
-  executionSchema: '.devflow/execution/execution-state.schema.json',
-  selectionSchema: '.devflow/execution/task-selection.schema.json',
-  selection: '.devflow/execution/selection.json',
-};
-
-function usage() {
-  console.error(`Uso: node ${SELECTOR_NAME} [--root RUTA]`);
-}
-
-function parseArgs(argv) {
-  const options = {
-    root: process.cwd(),
-  };
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (arg === '--root') {
-      const value = argv[index + 1];
-      if (!value) throw new Error('Falta el valor de --root.');
-      options.root = path.resolve(value);
-      index += 1;
-    } else if (arg === '-h' || arg === '--help') {
-      usage();
-      process.exit(0);
-    } else {
-      throw new Error(`Argumento desconocido: ${arg}`);
-    }
-  }
-
-  return options;
-}
-
-export function isObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-export function isPositiveInteger(value) {
-  return Number.isInteger(value) && value >= 1;
-}
-
-export function isNonNegativeInteger(value) {
-  return Number.isInteger(value) && value >= 0;
-}
-
-export function isDateTimeOrNull(value) {
-  return value === null
-    || (typeof value === 'string'
-      && value.trim() !== ''
-      && !Number.isNaN(Date.parse(value)));
-}
-
-export function canonical(value) {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (isObject(value)) {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonical(value[key])]),
-    );
-  }
-  return value;
-}
-
-export function artifactDigest(document) {
-  const clone = structuredClone(document);
-  if (isObject(clone.timestamps)) delete clone.timestamps.contentHash;
-  const serialized = JSON.stringify(canonical(clone));
-  return `sha256:${createHash('sha256').update(serialized).digest('hex')}`;
-}
-
-export function issue(code, source, message, reference = null) {
-  return { code, source, message, reference };
-}
-
-export function pushUniqueIssue(collection, entry) {
-  const signature = `${entry.code}\u0000${entry.source}\u0000${entry.reference ?? ''}`;
-  if (!collection.some((existing) => (
-    `${existing.code}\u0000${existing.source}\u0000${existing.reference ?? ''}` === signature
-  ))) {
-    collection.push(entry);
-  }
-}
-
-export function taskNumericId(taskId) {
-  if (typeof taskId !== 'string') return null;
-  const match = NUMERIC_TASK_ID_PATTERN.exec(taskId);
-  if (!match) return null;
-  return BigInt(match[1]);
-}
-
-export function taskIdentityKey(taskId) {
-  if (typeof taskId !== 'string' || !TASK_ID_PATTERN.test(taskId)) return null;
-  const numeric = taskNumericId(taskId);
-  return numeric === null ? `id:${taskId}` : `number:${numeric.toString()}`;
-}
-
-export function compareTaskIds(left, right) {
-  const leftValue = taskNumericId(left);
-  const rightValue = taskNumericId(right);
-  if (leftValue === null && rightValue === null) return String(left).localeCompare(String(right));
-  if (leftValue === null) return 1;
-  if (rightValue === null) return -1;
-  if (leftValue < rightValue) return -1;
-  if (leftValue > rightValue) return 1;
-  return String(left).localeCompare(String(right));
-}
-
-export function sameKeys(value, expectedKeys) {
-  return isObject(value) && JSON.stringify(Object.keys(value)) === JSON.stringify(expectedKeys);
-}
-
-export async function loadJson(root, relativePath, inputIssues, { required = true } = {}) {
-  const absolutePath = path.join(root, relativePath);
-  let raw;
-
-  try {
-    raw = await readFile(absolutePath, 'utf8');
-  } catch (error) {
-    if (required) {
-      pushUniqueIssue(
-        inputIssues,
-        issue(
-          'REQUIRED_FILE_MISSING',
-          relativePath,
-          `No existe el archivo obligatorio ${relativePath}.`,
-          null,
-        ),
-      );
-    }
-    return { raw: null, value: null };
-  }
-
-  try {
-    const value = JSON.parse(raw);
-    if (!isObject(value)) {
-      pushUniqueIssue(
-        inputIssues,
-        issue(
-          'DOCUMENT_ROOT_INVALID',
-          relativePath,
-          'La raíz del documento debe ser un objeto JSON.',
-          null,
-        ),
-      );
-      return { raw, value: null };
-    }
-    return { raw, value };
-  } catch (error) {
-    pushUniqueIssue(
-      inputIssues,
-      issue(
-        'JSON_INVALID',
-        relativePath,
-        `El archivo no contiene JSON válido: ${error.message}`,
-        null,
-      ),
-    );
-    return { raw, value: null };
-  }
-}
-
-function requireObject(parent, key, source, inputIssues, reference = key) {
-  const value = parent?.[key];
-  if (!isObject(value)) {
-    pushUniqueIssue(
-      inputIssues,
-      issue('FIELD_INVALID', source, `${reference} debe ser un objeto.`, reference),
-    );
-    return null;
-  }
-  return value;
-}
-
-function requireArray(parent, key, source, inputIssues, reference = key) {
-  const value = parent?.[key];
-  if (!Array.isArray(value)) {
-    pushUniqueIssue(
-      inputIssues,
-      issue('FIELD_INVALID', source, `${reference} debe ser un arreglo.`, reference),
-    );
-    return [];
-  }
-  return value;
-}
-
-export function validateTaskCollection(records, source, field, inputIssues) {
-  const exactIds = new Set();
-  const identityOwners = new Map();
-  const valid = [];
-
-  for (const [index, record] of records.entries()) {
-    const reference = `${field}[${index}]`;
-    if (!isObject(record)) {
-      pushUniqueIssue(
-        inputIssues,
-        issue('FIELD_INVALID', source, `${reference} debe ser un objeto.`, reference),
-      );
-      continue;
-    }
-
-    const id = record.id ?? record.taskId;
-    const identityKey = taskIdentityKey(id);
-    if (identityKey === null) {
-      pushUniqueIssue(
-        inputIssues,
-        issue('TASK_ID_INVALID', source, `${reference} tiene un identificador de tarea inválido.`, reference),
-      );
-      continue;
-    }
-
-    if (exactIds.has(id)) {
-      pushUniqueIssue(
-        inputIssues,
-        issue('TASK_ID_DUPLICATED', source, `${id} aparece más de una vez.`, id),
-      );
-      continue;
-    }
-    exactIds.add(id);
-
-    const previous = identityOwners.get(identityKey);
-    if (previous && previous !== id) {
-      pushUniqueIssue(
-        inputIssues,
-        issue(
-          'TASK_ID_NUMERIC_COLLISION',
-          source,
-          `${previous} y ${id} representan el mismo identificador numérico.`,
-          id,
-        ),
-      );
-      continue;
-    }
-    identityOwners.set(identityKey, id);
-    valid.push(record);
-  }
-
-  return { valid, identityOwners };
-}
-
-export function validateEpicCollection(records, source, inputIssues) {
-  const ids = new Set();
-  const valid = [];
-
-  for (const [index, epic] of records.entries()) {
-    const reference = `epics[${index}]`;
-    if (!isObject(epic)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference} debe ser un objeto.`, reference));
-      continue;
-    }
-    if (typeof epic.id !== 'string' || !EPIC_ID_PATTERN.test(epic.id)) {
-      pushUniqueIssue(inputIssues, issue('EPIC_ID_INVALID', source, `${reference}.id es inválido.`, reference));
-      continue;
-    }
-    if (ids.has(epic.id)) {
-      pushUniqueIssue(inputIssues, issue('EPIC_ID_DUPLICATED', source, `${epic.id} aparece más de una vez.`, epic.id));
-      continue;
-    }
-    ids.add(epic.id);
-    if (!isPositiveInteger(epic.executionWave)) {
-      pushUniqueIssue(
-        inputIssues,
-        issue('FIELD_INVALID', source, `${epic.id}.executionWave debe ser un entero positivo.`, epic.id),
-      );
-    }
-    valid.push(epic);
-  }
-
-  return valid;
-}
-
-export function validateContentHash(document, source, inputIssues, { required = true } = {}) {
-  const hash = document?.timestamps?.contentHash;
-  if (hash === null || typeof hash === 'undefined') {
-    if (required) {
-      pushUniqueIssue(
-        inputIssues,
-        issue('CONTENT_HASH_INVALID', source, 'timestamps.contentHash es obligatorio para un artefacto validado o publicado.', 'timestamps.contentHash'),
-      );
-    }
-    return null;
-  }
-  if (typeof hash !== 'string' || !HASH_PATTERN.test(hash)) {
-    pushUniqueIssue(
-      inputIssues,
-      issue('CONTENT_HASH_INVALID', source, 'timestamps.contentHash no es un hash sha256 válido.', 'timestamps.contentHash'),
-    );
-    return null;
-  }
-
-  const expected = artifactDigest(document);
-  if (hash !== expected) {
-    pushUniqueIssue(
-      inputIssues,
-      issue(
-        'CONTENT_HASH_MISMATCH',
-        source,
-        'timestamps.contentHash no corresponde con el contenido actual del documento.',
-        'timestamps.contentHash',
-      ),
-    );
-  }
-  return hash;
-}
-
-export function findTaskCycle(tasks) {
-  const graph = new Map(tasks.map((task) => [task.id, Array.isArray(task.dependencyIds) ? task.dependencyIds : []]));
-  const visiting = new Set();
-  const visited = new Set();
-  const stack = [];
-
-  function visit(taskId) {
-    if (visiting.has(taskId)) {
-      const start = stack.indexOf(taskId);
-      return [...stack.slice(start), taskId];
-    }
-    if (visited.has(taskId)) return null;
-
-    visiting.add(taskId);
-    stack.push(taskId);
-    for (const dependencyId of graph.get(taskId) ?? []) {
-      if (!graph.has(dependencyId)) continue;
-      const cycle = visit(dependencyId);
-      if (cycle) return cycle;
-    }
-    stack.pop();
-    visiting.delete(taskId);
-    visited.add(taskId);
-    return null;
-  }
-
-  for (const taskId of graph.keys()) {
-    const cycle = visit(taskId);
-    if (cycle) return cycle;
-  }
-  return null;
-}
 
 export function snapshotFrom(documents) {
   const planningVersion = documents.projectState?.project?.planningVersion;
@@ -504,152 +86,6 @@ export function noReadySelection(sourceSnapshot) {
     classification: 'NO_READY_TASK',
     issues: [],
   };
-}
-
-export function validateExecutionStateShape(executionState, inputIssues) {
-  const source = FILES.executionState;
-  if (!executionState) return [];
-
-  if (!sameKeys(executionState, EXECUTION_ROOT_KEYS)) {
-    pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'La raíz no conserva exactamente la estructura contractual.', null));
-  }
-  if (executionState.schemaVersion !== 1) {
-    pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'schemaVersion debe ser 1.', 'schemaVersion'));
-  }
-
-  const engine = requireObject(executionState, 'engine', source, inputIssues);
-  if (engine) {
-    if (!sameKeys(engine, ENGINE_KEYS)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'engine no conserva la estructura contractual.', 'engine'));
-    }
-    if (engine.name !== 'next-task' || engine.contractVersion !== '1.0') {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'engine debe declarar next-task contractVersion 1.0.', 'engine'));
-    }
-  }
-
-  const project = requireObject(executionState, 'project', source, inputIssues);
-  if (project) {
-    if (!sameKeys(project, EXECUTION_PROJECT_KEYS)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'project no conserva la estructura contractual.', 'project'));
-    }
-    if (typeof project.id !== 'string' || project.id.trim() === '') {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'project.id debe ser un string no vacío.', 'project.id'));
-    }
-    if (!isPositiveInteger(project.planningVersion)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'project.planningVersion debe ser un entero positivo.', 'project.planningVersion'));
-    }
-  }
-
-  if (!isNonNegativeInteger(executionState.revision)) {
-    pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'revision debe ser un entero no negativo.', 'revision'));
-  }
-  if (!EXECUTION_STATUSES.has(executionState.status)) {
-    pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'status tiene un valor no permitido.', 'status'));
-  }
-
-  const policy = requireObject(executionState, 'policy', source, inputIssues);
-  if (policy) {
-    if (!sameKeys(policy, POLICY_KEYS)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'policy no conserva la estructura contractual.', 'policy'));
-    }
-    if (!isPositiveInteger(policy.defaultMaxAttempts)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'policy.defaultMaxAttempts debe ser un entero positivo.', 'policy.defaultMaxAttempts'));
-    }
-    if (!isPositiveInteger(policy.maxConcurrentTasks)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'policy.maxConcurrentTasks debe ser un entero positivo.', 'policy.maxConcurrentTasks'));
-    }
-  }
-
-  const timestamps = requireObject(executionState, 'timestamps', source, inputIssues);
-  if (timestamps) {
-    if (!sameKeys(timestamps, TIMESTAMP_KEYS)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'timestamps no conserva la estructura contractual.', 'timestamps'));
-    }
-    if (!isDateTimeOrNull(timestamps.createdAt)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'timestamps.createdAt debe ser null o date-time válido.', 'timestamps.createdAt'));
-    }
-    if (!isDateTimeOrNull(timestamps.updatedAt)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, 'timestamps.updatedAt debe ser null o date-time válido.', 'timestamps.updatedAt'));
-    }
-  }
-
-  const taskRecords = requireArray(executionState, 'tasks', source, inputIssues);
-  for (const [index, entry] of taskRecords.entries()) {
-    if (!isObject(entry)) continue;
-    const reference = entry.taskId ?? `tasks[${index}]`;
-
-    if (!sameKeys(entry, TASK_EXECUTION_KEYS)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference} no conserva la estructura contractual.`, reference));
-    }
-    if (!TASK_STATUSES.has(entry.status)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.status no está permitido.`, reference));
-    }
-    if (!isNonNegativeInteger(entry.attemptCount)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.attemptCount debe ser un entero no negativo.`, reference));
-    }
-    if (!isPositiveInteger(entry.maxAttempts)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.maxAttempts debe ser un entero positivo.`, reference));
-    }
-    if (!(entry.activeRunId === null || (typeof entry.activeRunId === 'string' && entry.activeRunId.trim() !== ''))) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.activeRunId debe ser null o string no vacío.`, reference));
-    }
-
-    if (!(entry.reservation === null || isObject(entry.reservation))) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.reservation debe ser null u objeto.`, reference));
-    } else if (isObject(entry.reservation)) {
-      if (!sameKeys(entry.reservation, RESERVATION_KEYS)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.reservation no conserva la estructura contractual.`, reference));
-      }
-      if (typeof entry.reservation.token !== 'string' || entry.reservation.token.trim() === '') {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.reservation.token es inválido.`, reference));
-      }
-      if (!isDateTimeOrNull(entry.reservation.reservedAt) || entry.reservation.reservedAt === null) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.reservation.reservedAt debe ser date-time válido.`, reference));
-      }
-      if (!isNonNegativeInteger(entry.reservation.stateRevision)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.reservation.stateRevision debe ser un entero no negativo.`, reference));
-      }
-    }
-
-    if (!(entry.blocker === null || isObject(entry.blocker))) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.blocker debe ser null u objeto.`, reference));
-    } else if (isObject(entry.blocker)) {
-      if (!sameKeys(entry.blocker, BLOCKER_KEYS)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.blocker no conserva la estructura contractual.`, reference));
-      }
-      if (typeof entry.blocker.code !== 'string' || !/^[A-Z][A-Z0-9_]*$/.test(entry.blocker.code)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.blocker.code es inválido.`, reference));
-      }
-      for (const field of ['message', 'source']) {
-        if (typeof entry.blocker[field] !== 'string' || entry.blocker[field].trim() === '') {
-          pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.blocker.${field} es inválido.`, reference));
-        }
-      }
-    }
-
-    if (!(entry.lastResult === null || isObject(entry.lastResult))) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.lastResult debe ser null u objeto.`, reference));
-    } else if (isObject(entry.lastResult)) {
-      if (!sameKeys(entry.lastResult, LAST_RESULT_KEYS)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.lastResult no conserva la estructura contractual.`, reference));
-      }
-      if (!['SUCCEEDED', 'FAILED', 'INTERRUPTED', 'CANCELLED'].includes(entry.lastResult.classification)) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.lastResult.classification es inválido.`, reference));
-      }
-      if (typeof entry.lastResult.runId !== 'string' || entry.lastResult.runId.trim() === '') {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.lastResult.runId es inválido.`, reference));
-      }
-      if (!isDateTimeOrNull(entry.lastResult.completedAt) || entry.lastResult.completedAt === null) {
-        pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.lastResult.completedAt debe ser date-time válido.`, reference));
-      }
-    }
-
-    if (!isDateTimeOrNull(entry.updatedAt)) {
-      pushUniqueIssue(inputIssues, issue('FIELD_INVALID', source, `${reference}.updatedAt debe ser null o date-time válido.`, reference));
-    }
-  }
-
-  return taskRecords;
 }
 
 export async function computeExpected(root) {
@@ -1023,6 +459,33 @@ export async function computeExpected(root) {
   };
 
   return { expected, documents };
+}
+
+function usage() {
+  console.error(`Uso: node ${SELECTOR_NAME} [--root RUTA]`);
+}
+
+function parseArgs(argv) {
+  const options = {
+    root: process.cwd(),
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--root') {
+      const value = argv[index + 1];
+      if (!value) throw new Error('Falta el valor de --root.');
+      options.root = path.resolve(value);
+      index += 1;
+    } else if (arg === '-h' || arg === '--help') {
+      usage();
+      process.exit(0);
+    } else {
+      throw new Error(`Argumento desconocido: ${arg}`);
+    }
+  }
+
+  return options;
 }
 
 async function main() {

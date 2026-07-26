@@ -4,14 +4,13 @@ agent: general
 subtask: true
 ---
 
-Prepara un run de ejecución para la tarea actualmente seleccionada. Lee
-`selection.json` como fuente de verdad, crea el directorio del intento, copia
-la selección como evidencia y registra la reserva en `execution-state.json`.
+Prepara un run de ejecución para la tarea actualmente seleccionada. El motor
+transaccional lee `selection.json`, adquiere un lock exclusivo, valida el
+estado, crea el directorio del intento, copia la selección como evidencia y
+registra la reserva en `execution-state.json` mediante una transacción atómica.
 
-Este comando no usa `next-task`; queda pendiente moverlo a un orquestador de
-ejecución, run-preparer o script determinista dedicado.
-
-Este comando es el paso entre `/select-next-task` y `/build-task-context`.
+Este comando es el paso entre `/select-next-task` y `/build-task-context`. No
+selecciona tareas ni construye contexto.
 
 ## Entrada admitida
 
@@ -50,118 +49,64 @@ Ejemplos:
 
 2. Verifica que existe `.devflow/execution/tools/prepare-task-run.mjs`.
 
-3. Lee `.devflow/execution/selection.json`.
+3. Ejecuta el tool local del proyecto, no reimplementes la lógica a mano:
 
-   - Si no existe, informa `SELECTION_NOT_FOUND`.
-   - Si `classification != TASK_SELECTED`, informa `SELECTION_NOT_TASK_SELECTED`.
-   - Si `selectedTaskId` es `null`, informa `SELECTION_NOT_TASK_SELECTED`.
+   ```bash
+   node .devflow/execution/tools/prepare-task-run.mjs [--attempt N]
+   ```
 
-4. Lee `.devflow/execution/execution-state.json`.
+4. El tool delega en el motor transaccional que:
 
-5. Si el argumento incluye `attempt`, usa exactamente ese número.
+   - Lee y valida `selection.json`.
+   - Verifica `classification === TASK_SELECTED` y `selectedTaskId` presente.
+   - Adquiere un lock exclusivo entre procesos.
+   - Relee `execution-state.json` bajo lock.
+   - Detecta y recupera transiciones incompletas (journal pendiente).
+   - Si la revisión de la selección no coincide con el estado actual,
+     responde `STALE_SELECTION` sin crear archivos.
+   - Si la evidencia del intento ya existe y coincide, responde
+     `IDEMPOTENT` sin modificar estado.
+   - Determina el número de intento: usa `--attempt` si se proporcionó,
+     o `max(existing)+1` desde `runs/<TASK-ID>/`.
+   - Crea el directorio `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/`.
+   - Copia `selection.json` como evidencia inmutable.
+   - Actualiza `execution-state.json` (revision+1, reservation, timestamps).
+   - Todo mediante archivos temporales + rename atómico.
+   - Libera el lock.
 
-6. Si no incluye `attempt`, resuélvelo de forma determinista desde
-   `.devflow/execution/runs/<TASK-ID>/`:
+5. Informa el resultado canónico:
 
-   - si no hay intentos existentes: `attempt = 1`;
-   - si los hay: `attempt = max(existing) + 1`.
+   ```json
+   {
+     "classification": "RUN_PREPARED",
+     "taskId": "TASK-006",
+     "attempt": 1,
+     "runPath": ".devflow/execution/runs/TASK-006/attempt-01",
+     "previousRevision": 4,
+     "newRevision": 5,
+     "recovered": false,
+     "idempotent": false
+   }
+   ```
 
-7. Convierte el intento a un nombre con mínimo dos dígitos:
+## Clasificaciones de salida
 
-   - `1` → `attempt-01`
-   - `9` → `attempt-09`
-   - `10` → `attempt-10`
-
-8. Si el `attempt` explícito ya existe en
-   `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json` y la
-   evidencia es idéntica a la selección global actual:
-
-   - no crees otro intento;
-   - no vuelvas a reservar;
-   - devuelve el mismo resultado `prepared`.
-
-   Si el directorio existe pero la evidencia difiere, informa `RUN_CONFLICT`.
-
-9. Antes de reservar, exige que
-   `selection.sourceSnapshot.executionStateRevision == execution-state.revision`.
-
-   Si no coincide, no crees el run, no toques el estado e informa
-   `STALE_SELECTION`.
-
-10. Ejecuta el tool local del proyecto, no reimplementes la lógica a mano:
-
-    ```bash
-    node .devflow/execution/tools/prepare-task-run.mjs [--attempt N]
-    ```
-
-11. El tool debe crear, cuando corresponda:
-
-    ```
-    .devflow/execution/runs/<TASK-ID>/attempt-<NN>/
-    ```
-
-12. El tool debe copiar la selección global como evidencia inmutable:
-
-    ```
-    .devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json
-    ```
-
-13. El tool debe actualizar `execution-state.json` así:
-
-   - agrega o actualiza la entrada de la tarea en `tasks[]`;
-   - `status: "reserved"`;
-   - `attemptCount`: no se incrementa en esta fase de reserva;
-   - `maxAttempts`: conserva el existente o usa `policy.defaultMaxAttempts`;
-   - `activeRunId: null`;
-   - `reservation`: persistida con `stateRevision` igual a
-     `selection.sourceSnapshot.executionStateRevision`;
-   - `updatedAt: null`.
-
-   Ejemplo mínimo:
-
-      ```json
-      {
-        "taskId": "<TASK-ID>",
-        "status": "reserved",
-        "attemptCount": 0,
-        "maxAttempts": "<policy.defaultMaxAttempts>",
-        "activeRunId": null,
-        "reservation": {
-          "token": "<RUN-PATH>",
-          "reservedAt": "<timestamp-oficial>",
-          "stateRevision": "<selection.sourceSnapshot.executionStateRevision>"
-        },
-        "blocker": null,
-        "lastResult": null,
-        "updatedAt": null
-      }
-      ```
-
-   - incrementa `revision` en `1`;
-   - obtiene el timestamp con el tool oficial compartido, no escribas fechas manualmente;
-   - después de escribir el JSON, actualiza timestamps con el tool oficial de execution:
-
-      ```
-      node .devflow/execution/tools/touch-execution-state.mjs .devflow/execution/execution-state.json <fecha-iso>
-      ```
-
-14. Verifica que el directorio existe y contiene `selection.json`.
-
-15. Informa solo:
-
-   - `taskId`
-   - `attempt`
-   - `runPath`
-   - `newRevision`
-   - `status: prepared`
+| Clasificación | Exit code | Significado |
+|---|---|---|
+| `RUN_PREPARED` | 0 | Run preparado exitosamente |
+| `IDEMPOTENT` | 0 | El run ya estaba preparado, no se modificó nada |
+| `RECOVERED` | 0 | Run recuperado desde journal incompleto |
+| `STALE_SELECTION` | 1 | La selección ya no corresponde a la revisión actual |
+| `RUN_CONFLICT` | 1 | Conflicto (tarea no reservable, evidencia diferente, etc.) |
+| `LOCK_FAILED` / `LOCK_TIMEOUT` | 2 | Error interno, lock no disponible |
 
 ## Notas
 
 - Este comando no selecciona la tarea. Usa `/select-next-task` primero.
 - Este comando no construye el contexto. Usa `/build-task-context` después.
 - No modifiques `selection.json` global ni otros artefactos del plan.
-- Reserva no es ejecución: `attemptCount` aumenta después, cuando el run
-  realmente empieza o termina, no durante `prepare`.
+- Reserva no es ejecución: `attemptCount` no se incrementa durante `prepare`.
+- El motor asegura la liberación del lock incluso ante errores.
 
 ## Contexto adicional
 

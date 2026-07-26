@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import {
   computeExpected,
+  SELECTOR_NAME,
+} from './select-next-task.mjs';
+
+import {
   FILES,
   ROOT_KEYS,
   SNAPSHOT_KEYS,
@@ -16,7 +19,7 @@ import {
   sameKeys,
   isObject,
   loadJson,
-} from './select-next-task.mjs';
+} from './execution-contract-helpers.mjs';
 
 const VALIDATOR_NAME = 'validate-next-task.mjs';
 const VALIDATOR_VERSION = '1.0';

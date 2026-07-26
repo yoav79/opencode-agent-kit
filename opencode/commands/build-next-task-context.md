@@ -1,12 +1,11 @@
 ---
-description: Construye contexto para la última tarea seleccionada por /select-next-task, sin necesidad de escribir taskId manualmente
+description: Construye contexto para la última tarea seleccionada, delegando en /build-task-context solo si el run ya está preparado
 agent: context-builder
 subtask: true
 ---
 
-Construye el contexto de ejecución para la última tarea seleccionada. Lee
-`selection.json` para obtener el `taskId` y determina el número de intento
-desde `execution-state.json`. No requiere escribir el `taskId` manualmente.
+Wrapper de solo lectura que localiza la última tarea seleccionada y, si el run
+ya fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
 
 ## Instrucciones
 
@@ -19,31 +18,44 @@ desde `execution-state.json`. No requiere escribir el `taskId` manualmente.
 
 4. Lee `.devflow/execution/execution-state.json`.
 
-5. Determina el `taskId` desde `selection.selectedTaskId` y el `attempt`
-   desde la cantidad de intentos existentes en `execution-state.tasks` para
-   esa tarea, más uno. Si no existe entrada, `attempt = 1`.
+5. Determina el `taskId` desde `selection.selectedTaskId`.
 
-6. Convierte el intento a nombre con mínimo dos dígitos (ej: `1` → `attempt-01`).
+6. Busca en `execution-state.tasks[]` una entrada para ese `taskId`. Si no
+   existe o su estado no es `reserved`, `running`, `waiting_human` o
+   `waiting_external`, informa que primero debe ejecutarse:
 
-7. Verifica que exista `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json`.
-   Si no existe:
-   - Crea el directorio del intento.
-   - Copia `.devflow/execution/selection.json` al run como evidencia.
-   - Agrega o actualiza la entrada de la tarea en
-     `execution-state.json.tasks[]` con `status: reserved`, incrementa
-     `revision`, y luego actualiza timestamps con:
-     ```
-      node $HOME/.config/opencode/templates/execution/tools/touch-execution-state.mjs .devflow/execution/execution-state.json
-     ```
+   ```text
+   /prepare-task-run
+   ```
 
-8. Continúa con el proceso normal de construcción de contexto usando el
-   `taskId` y `attempt` resueltos. Lee el `selection.json` del run (no el
-   global), los artefactos del plan, predecesores, repo, etc.
+   y detente sin modificar archivos.
 
-9. Escribe `execution-context.json` y `execution-prompt.md` en el directorio
-   del intento.
+7. Determina el `attempt` a partir de la reserva existente. Busca en
+   `.devflow/execution/runs/<TASK-ID>/` los directorios `attempt-*` y
+   resuelve el intento preparado. Si existe más de un intento o la resolución
+   es ambigua (múltiples directorios con `selection.json` válido), falla
+   explícitamente con `AMBIGUOUS_ATTEMPT` sin elegir silenciosamente.
 
-10. Informa la tarea, intento y clasificación resultante.
+8. Si no existe ningún intento preparado, informa:
+
+   ```text
+   /prepare-task-run
+   ```
+
+   y detente sin modificar archivos.
+
+9. Verifica que exista `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json`
+   y que su contenido coincida con la selección global actual. Si no coincide,
+   informa `RUN_CONFLICT` y detente.
+
+10. Una vez resuelto el `taskId` y `attempt`, procede exactamente como
+    `/build-task-context` con esos valores: lee el `selection.json` del run
+    (no el global), los artefactos del plan, predecesores, repo, etc.
+
+11. Escribe `execution-context.json` y `execution-prompt.md` en el directorio
+    del intento.
+
+12. Informa la tarea, intento y clasificación resultante.
 
 ## Salida
 
@@ -54,12 +66,25 @@ Para la tarea y el intento resueltos, escribe:
 .devflow/execution/runs/<TASK-ID>/attempt-<NN>/execution-prompt.md
 ```
 
+## Errores canónicos
+
+| Código | Significado |
+|--------|-------------|
+| `SELECTION_NOT_FOUND` | No existe `.devflow/execution/selection.json`. Ejecuta `/select-next-task`. |
+| `SELECTION_NOT_TASK_SELECTED` | La selección global no está en estado `TASK_SELECTED`. |
+| `RUN_NOT_PREPARED` | La tarea no tiene un run preparado. Ejecuta `/prepare-task-run` primero. |
+| `AMBIGUOUS_ATTEMPT` | Existen múltiples intentos preparados y la resolución es ambigua. |
+| `RUN_CONFLICT` | La evidencia del run no coincide con la selección global. |
+
 ## Notas
 
-- Este comando automatiza lo que de otro modo sería:
-  `/select-next-task` + `/prepare-task-run {...}` + `/build-task-context {...}`
-- Si ya existe un run preparado para la tarea, lo reutiliza.
-- No modifiques `selection.json` global ni otros artefactos.
+- Este comando no ejecuta, simula ni reemplaza `/prepare-task-run`. Si el run
+  no está preparado, se detiene y pide ejecutar `/prepare-task-run`.
+- No modifica `execution-state.json`, no crea directorios, no copia
+  `selection.json`, no reserva tareas, no incrementa intentos ni ejecuta
+  transiciones de estado.
+- El flujo canónico completo es:
+  `/select-next-task` → `/prepare-task-run` → `/build-task-context`
 
 ## Contexto adicional
 

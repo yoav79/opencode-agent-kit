@@ -1,8 +1,7 @@
 # Execution Runtime
 
-Este template instala el estado mutable de ejecución y las herramientas de
-orquestación. Es compartido por el scheduler, el ejecutor, el reviewer y el
-orquestador de DevFlow.
+Este template instala el estado mutable de ejecución, el motor transaccional
+de ejecución y las herramientas de orquestación.
 
 ## Ubicación en el proyecto
 
@@ -12,77 +11,135 @@ El contenido se copia a:
 .devflow/execution/
 ├── execution-state.json
 ├── execution-state.schema.json
+├── transition-journal.json        (sidecar, existe solo durante una transición)
+├── lock/                          (lock exclusivo entre procesos)
 └── tools/
+    ├── execution-contract-helpers.mjs
+    ├── execution-transition-engine.mjs
     ├── prepare-task-run.mjs
     └── touch-execution-state.mjs
 ```
 
-El directorio `runs/` contiene la evidencia de cada intento de ejecución y es
-creado y administrado únicamente por el orquestador.
+El directorio `runs/` contiene la evidencia de cada intento de ejecución.
 
 ## Archivos
 
 ### `execution-state.json`
 
 Estado canónico y mutable de la ejecución. Es la única fuente de verdad para el
-progreso de tareas, reservas, intentos y bloqueos. Solo el orquestador debe
-modificarlo.
+progreso de tareas, reservas, intentos y bloqueos. Solo el motor de transiciones
+debe modificarlo.
 
-Campos principales:
-
-- `schemaVersion` — siempre `1`
-- `engine` — nombre y versión del contrato (`next-task`, `1.0`)
-- `project` — identificador y versión de planificación
-- `revision` — contador monotónico incrementado en cada modificación
-- `status` — `initialized`, `active`, `paused`, `completed`, `failed`
-- `policy` — `defaultMaxAttempts` y `maxConcurrentTasks`
-- `tasks[]` — arreglo de estados de tareas individuales
-- `timestamps` — `createdAt` y `updatedAt`
+Campos principales definidos en `execution-state.schema.json`.
 
 ### `execution-state.schema.json`
 
 Contrato JSON Schema Draft 2020-12 que valida la estructura de
 `execution-state.json`. Inmutable durante una ejecución.
 
-### `tools/touch-execution-state.mjs`
+### `transition-journal.json` (sidecar)
 
-Herramienta determinista que actualiza `timestamps.createdAt` y
-`timestamps.updatedAt` en `execution-state.json`.
+Persiste la intención de una transición antes de la mutación definitiva.
+Existe solo durante una transición incompleta. Contiene:
 
-Uso:
+- versión del contrato
+- tipo de transición (prepare_task_run)
+- identificador de tarea e intento
+- revisión esperada y revisión objetivo
+- hash verificable de la selección
+- fase de la transición (started / completed)
+- timestamp oficial
+- artefactos esperados
 
-```bash
-node tools/touch-execution-state.mjs .devflow/execution/execution-state.json
-```
+En caso de crash, el motor de transiciones detecta el journal y completa,
+revierte o declara conflicto según una matriz de recuperación documentada.
 
-No calcula ni modifica `timestamps.contentHash`.
+### `lock/`
+
+Lock exclusivo entre procesos implementado mediante `mkdir` atómico.
+Contiene metadata (PID, host, timestamp) para detectar locks abandonados.
+
+### `tools/execution-contract-helpers.mjs`
+
+Módulo de utilidades puras y compartidas sin efectos laterales:
+
+- `isObject`, `isPositiveInteger`, `isNonNegativeInteger`, `isDateTimeOrNull`
+- `sameKeys`, `issue`, `pushUniqueIssue`
+- `loadJson`
+- `validateExecutionStateShape`, `validateTaskCollection`
+- `artifactDigest`
+- Constantes de paths (`FILES`, `EXECUTION_ENGINE_FILES`)
+- Constantes de keys y statuses
+
+No escribe estado, no toma locks, no selecciona tareas, no ejecuta transiciones.
+
+### `tools/execution-transition-engine.mjs`
+
+Dueño único de las mutaciones de `execution-state.json`. Secuencia transaccional:
+
+1. Carga y valida la selección
+2. Adquiere lock exclusivo del runtime
+3. Bajo lock: relee estado, selección, journal, evidencia
+4. Valida revisión, estado reservable, intentos, conflictos
+5. Detecta y recupera transiciones parciales vía journal
+6. Obtiene timestamp oficial una sola vez
+7. Calcula nuevo estado en memoria
+8. Escribe journal de intención (fase: started)
+9. Escribe evidencia (temp + rename atómico)
+10. Escribe estado (temp + rename atómico)
+11. Limpia journal
+12. Libera lock
+
+Exporta `prepareTaskRun(options)`.
 
 ### `tools/prepare-task-run.mjs`
 
-Herramienta determinista que:
+Wrapper CLI fino. Solo:
+1. Parsea argumentos (`--root`, `--attempt`)
+2. Invoca `execution-transition-engine.mjs`
+3. Imprime resultado JSON canónico en stdout
+4. Mapea errores a exit codes
 
-- lee `.devflow/execution/selection.json`;
-- exige `classification = TASK_SELECTED`;
-- rechaza selecciones stale comparando
-  `sourceSnapshot.executionStateRevision` contra `execution-state.json.revision`;
-- resuelve el intento desde `--attempt` o como `max(existing)+1`;
-- crea `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/`;
-- copia `selection.json` como evidencia inmutable;
-- persiste la reserva en `execution-state.json` sin incrementar `attemptCount`.
+No contiene lógica de reserva, validación ni persistencia.
 
-Uso:
+### `tools/touch-execution-state.mjs`
 
-```bash
-node tools/prepare-task-run.mjs [--root RUTA] [--attempt N]
+Herramienta determinista para inicialización de timestamps.
+Usada únicamente por `/init-execution`. El motor de transiciones
+incorpora timestamps directamente sin llamar a esta herramienta.
+
+## Resultado CLI canónico
+
+`prepare-task-run.mjs` produce JSON estable:
+
+```json
+{
+  "classification": "RUN_PREPARED",
+  "taskId": "TASK-006",
+  "attempt": 1,
+  "runPath": ".devflow/execution/runs/TASK-006/attempt-01",
+  "previousRevision": 4,
+  "newRevision": 5,
+  "recovered": false,
+  "idempotent": false
+}
 ```
 
-Si se reejecuta con el mismo `--attempt` y la misma evidencia ya existe, no
-duplica el run ni vuelve a reservar la tarea.
+Clasificaciones:
+- `RUN_PREPARED`: transición exitosa
+- `IDEMPOTENT`: mismo estado ya preparado, no se modificó nada
+- `RECOVERED`: transición completada desde un journal pendiente
+- `STALE_SELECTION`: la revisión de la selección ya no corresponde
+- `RUN_CONFLICT`: la tarea no es reservable o hay evidencia contradictoria
 
 ## Propiedad de los archivos
 
-- `execution-state.json`: mutable únicamente por el orquestador.
+- `execution-state.json`: mutable únicamente por `execution-transition-engine.mjs`.
+- `transition-journal.json`: sidecar transitorio, único responsable el motor.
+- `lock/`: directorio de lock, único responsable el motor.
 - `*.schema.json`: contratos inmutables durante una ejecución.
-- `runs/`: creado y administrado únicamente por el orquestador.
-- `tools/prepare-task-run.mjs`: herramienta determinista para reservar runs.
-- `tools/touch-execution-state.mjs`: herramienta determinista, no modificable.
+- `runs/`: creado y administrado únicamente por el motor.
+- `tools/prepare-task-run.mjs`: wrapper CLI, sin lógica de negocio.
+- `tools/execution-transition-engine.mjs`: motor transaccional, único autorizado para mutar el estado.
+- `tools/execution-contract-helpers.mjs`: utilidades puras, sin efectos laterales.
+- `tools/touch-execution-state.mjs`: herramienta de inicialización, no usada por el motor.

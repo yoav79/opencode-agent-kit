@@ -27,7 +27,9 @@ compartidos por el scheduler, el ejecutor, el reviewer y el orquestador.
 
 ## Archivos generados por el agente
 
-El agente `context-builder` genera para cada intento:
+El agente `context-builder` solo escribe `execution-context.json` y
+`execution-prompt.md` dentro de un run previamente preparado por
+`/prepare-task-run`:
 
 ```text
 .devflow/execution/runs/<TASK-ID>/attempt-<NN>/
@@ -35,4 +37,6 @@ El agente `context-builder` genera para cada intento:
 └── execution-prompt.md
 ```
 
-Estos archivos son la entrada para el ejecutor de tareas.
+Estos archivos son la entrada para el ejecutor de tareas. El agente no crea
+directorios, no modifica `execution-state.json` y no modifica ningún
+`selection.json`.
