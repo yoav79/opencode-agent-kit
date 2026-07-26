@@ -20,8 +20,9 @@ Aunque las suites no ejecutan OpenCode, cubren invariantes del runtime:
 
 - **Permisos de agentes:** se verifica que `context-builder.md` tenga
   `mode: subagent`, no pueda editar `execution-state.json` ni `selection.json`,
-  no tenga permiso `mkdir`, bloquee patrones sensibles de lectura, use la tool
-  determinista `inspect-repository-context.mjs`, y que solo edite
+  no tenga permiso `mkdir`, no mantenga `read: "*": allow`, bloquee patrones
+  sensibles de lectura, use la tool determinista
+  `inspect-repository-context.mjs`, y que solo edite
   `execution-context.json` y `execution-prompt.md`.
 - **Comandos:** `build-next-task-context.md` no contiene instrucciones para
   ejecutar o referenciar `prepare-task-run`, y resuelve el intento solo desde

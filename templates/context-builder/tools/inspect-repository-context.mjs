@@ -10,7 +10,8 @@ const TOOL_NAME = 'inspect-repository-context.mjs';
 const MAX_FILE_BYTES = 16384;
 const MAX_PREVIEW_CHARS = 1200;
 const DEFAULT_MAX_FILES = 50;
-const SKIP_DIRS = new Set(['.git', 'node_modules']);
+const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', 'coverage', 'target', 'vendor']);
+const SKIP_RELATIVE_PATHS = new Set(['.devflow/execution/runs']);
 const BINARY_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.pdf', '.zip', '.gz', '.sqlite', '.db']);
 const SENSITIVE_PATTERNS = [
   /^.*\.pem$/i,
@@ -142,6 +143,10 @@ async function collectFiles(root, includePath, entries, excluded, maxFiles) {
   }
 
   const relativePath = path.relative(root, absolutePath).replace(/\\/g, '/') || '.';
+  if (SKIP_RELATIVE_PATHS.has(relativePath)) {
+    excluded.push({ path: relativePath, reason: 'SKIPPED_DIRECTORY' });
+    return;
+  }
   if (relativePath !== '.' && isSensitive(relativePath)) {
     excluded.push({ path: relativePath, reason: 'SENSITIVE_PATTERN' });
     return;

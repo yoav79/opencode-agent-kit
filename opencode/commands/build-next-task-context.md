@@ -50,7 +50,9 @@ fue preparado por `/prepare-task-run`, delega en `/build-task-context`.
    - contiene un `attempt` válido;
    - apunta al run canónico `.devflow/execution/runs/<TASK-ID>/attempt-<NN>`.
 
-   Si falla cualquiera de estas validaciones, falla con `RUN_TOKEN_INVALID`.
+    Si el token no cumple el contrato estructural de `execution-state.json`,
+    falla con `EXECUTION_STATE_INVALID`. Si supera esa validación pero no
+    resuelve el run canónico esperado, falla con `RUN_TOKEN_INVALID`.
 
 10. Verifica que exista `.devflow/execution/runs/<TASK-ID>/attempt-<NN>/selection.json`
     y que su contenido coincida exactamente con la selección global actual. Si
@@ -85,8 +87,8 @@ Para la tarea y el intento resueltos, escribe:
 | `SELECTION_NOT_FOUND` | No existe `.devflow/execution/selection.json`. Ejecuta `/select-next-task`. |
 | `SELECTION_NOT_TASK_SELECTED` | La selección global no está en estado `TASK_SELECTED`. |
 | `RUN_NOT_PREPARED` | La tarea no tiene un run preparado. Ejecuta `/prepare-task-run` primero. |
-| `EXECUTION_STATE_INVALID` | `execution-state.json` no resuelve exactamente una entrada canónica para la tarea seleccionada. |
-| `RUN_TOKEN_INVALID` | El token persistido del run no cumple el formato o la ubicación canónica de `.devflow/execution/runs/`. |
+| `EXECUTION_STATE_INVALID` | `execution-state.json` no resuelve exactamente una entrada canónica para la tarea seleccionada o contiene un token persistido inválido según su contrato estructural. |
+| `RUN_TOKEN_INVALID` | El token persistido pasó la validación estructural, pero no resuelve el run canónico esperado. |
 | `RUN_CONFLICT` | La evidencia del run no coincide con la selección global. |
 
 ## Notas

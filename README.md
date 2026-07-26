@@ -182,6 +182,8 @@ Permisos: Solo lectura sobre planificación, ejecución y repo. Escribe
 únicamente `execution-context.json` y `execution-prompt.md` en un run
 previamente preparado. No selecciona tareas, no reserva tareas, no crea
 directorios, no modifica `execution-state.json` ni ningún `selection.json`.
+La lectura directa queda limitada a `AGENTS.md` y `.devflow/**`; para el
+repositorio del producto debe usar `inspect-repository-context.mjs`.
 
 ### `consistency-reviewer` — Revisor de Consistencia
 

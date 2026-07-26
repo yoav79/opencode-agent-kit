@@ -2,12 +2,15 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, '..', '..', '..');
+const INSPECT_TOOL = path.join(REPO_ROOT, 'templates', 'context-builder', 'tools', 'inspect-repository-context.mjs');
 
 const frontmatterRe = /^---\n(.*?)\n---\n/s;
 
@@ -20,6 +23,10 @@ function parseFrontmatter(text) {
 function getEditSection(frontmatter) {
   const editMatch = /^  edit:\n((?:    .*\n?)*)/m.exec(frontmatter);
   return editMatch ? editMatch[1] : null;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 test('context-builder: mode debe ser subagent', async () => {
@@ -55,7 +62,17 @@ test('context-builder: debe negar patrones sensibles de lectura', async () => {
   const text = await readFile(path.join(REPO_ROOT, 'opencode', 'agents', 'context-builder.md'), 'utf8');
   const { frontmatter } = parseFrontmatter(text);
   for (const pattern of ['*.pem', '*.key', '*.p12', '*.pfx', 'id_rsa', 'id_ed25519', '*.sqlite', '*.db', '*.dump', '*.backup', 'credentials*', 'secrets*', '*.env', '*.env.*']) {
-    assert.match(frontmatter, new RegExp(`"${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}":\\s*deny`), `Missing deny rule for ${pattern}`);
+    assert.match(frontmatter, new RegExp(`"${escapeRegExp(pattern)}":\\s*deny`), `Missing deny rule for ${pattern}`);
+  }
+});
+
+test('context-builder: no debe mantener read global sobre todo el repositorio', async () => {
+  const text = await readFile(path.join(REPO_ROOT, 'opencode', 'agents', 'context-builder.md'), 'utf8');
+  const { frontmatter } = parseFrontmatter(text);
+  assert.ok(!/read:\n\s+"\*":\s*allow/m.test(frontmatter), 'Must not keep read "*": allow');
+
+  for (const pattern of ['AGENTS.md', '.devflow/software-architect/**', '.devflow/task-planner/**', '.devflow/execution/**', '.devflow/memory/**']) {
+    assert.match(frontmatter, new RegExp(`"${escapeRegExp(pattern)}":\\s*allow`), `Missing allow rule for ${pattern}`);
   }
 });
 
@@ -120,4 +137,32 @@ test('build-next-task-context: no debe escanear intentos históricos ni usar AMB
   assert.ok(!/AMBIGUOUS_ATTEMPT/.test(body), 'Must not mention AMBIGUOUS_ATTEMPT');
   assert.ok(!/attempt-\*/.test(body), 'Must not scan attempt-* directories');
   assert.ok(!/último intento|last attempt/i.test(body), 'Must not use heuristic attempt selection');
+});
+
+test('inspect-repository-context: excluye runs históricos y redacta secretos', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'inspect-repository-context-'));
+  try {
+    await mkdir(path.join(root, '.devflow', 'execution', 'runs', 'TASK-001', 'attempt-01'), { recursive: true });
+    await mkdir(path.join(root, 'src'), { recursive: true });
+    await writeFile(path.join(root, '.devflow', 'execution', 'runs', 'TASK-001', 'attempt-01', 'selection.json'), '{"classification":"TASK_SELECTED"}\n', 'utf8');
+    await writeFile(path.join(root, '.env'), 'API_KEY=super-secret\n', 'utf8');
+    await writeFile(path.join(root, 'src', 'feature.ts'), 'const token = "abc123";\nexport const answer = 42;\n', 'utf8');
+
+    const result = spawnSync('node', [INSPECT_TOOL, '--root', root, '--include', '.', '--max-files', '10'], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+
+    const report = JSON.parse(result.stdout);
+    assert.ok(report.excluded.some((entry) => entry.path === '.devflow/execution/runs' && entry.reason === 'SKIPPED_DIRECTORY'));
+    assert.ok(report.excluded.some((entry) => entry.path === '.env' && entry.reason === 'SENSITIVE_PATTERN'));
+
+    const feature = report.files.find((entry) => entry.path === 'src/feature.ts');
+    assert.ok(feature, 'Expected src/feature.ts in inspector report');
+    assert.equal(feature.redacted, true);
+    assert.match(feature.preview, /\[REDACTED\]/);
+    assert.ok(!report.files.some((entry) => entry.path.includes('.devflow/execution/runs/TASK-001/attempt-01/selection.json')));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

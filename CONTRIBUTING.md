@@ -60,6 +60,7 @@ permission:
 - **Explica el rol, autoridad y limites** del agente en el cuerpo del markdown.
 - **No agregues un modelo obligatorio** salvo que exista una razon comprobada.
 - **Define permisos por minimo privilegio.** Un agente de solo lectura no necesita permiso de edicion.
+- **Para inspeccion de repositorios, prefiere una tool determinista y una read allowlist.** Evita `read: "*": allow` cuando el agente puede trabajar con un inspector controlado y rutas contractuales.
 - **No dupliques instrucciones** que pertenecen a una regla compartida.
 - **Incluye restricciones explicitas.** Por ejemplo, si el agente no debe hacer commits, declaralo en el frontmatter Y en el cuerpo.
 - **Documenta el workflow completo** con fases, precondiciones y salidas.

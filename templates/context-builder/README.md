@@ -20,6 +20,28 @@ El contenido se copia a:
 La ubicación runtime es `.devflow/execution/` porque sus archivos serán
 compartidos por el scheduler, el ejecutor, el reviewer y el orquestador.
 
+## Política de lectura
+
+`context-builder` ya no tiene `read: "*": allow` sobre el repositorio. La
+lectura directa queda limitada a:
+
+- `AGENTS.md`
+- `.devflow/software-architect/**`
+- `.devflow/task-planner/**`
+- `.devflow/execution/**`
+- `.devflow/memory/**`
+- los contratos globales del propio template
+
+Para el código y los archivos del producto debe usar
+`tools/inspect-repository-context.mjs`, que:
+
+- selecciona rutas explícitas;
+- excluye patrones sensibles y directorios ruidosos;
+- limita tamaño de lectura;
+- redacta líneas con secretos;
+- devuelve rutas y hashes estables;
+- evita copiar archivos completos e irrelevantes al prompt.
+
 ## Contratos
 
 - `context-build-request.schema.json` — esquema de la solicitud de entrada

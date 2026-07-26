@@ -143,7 +143,7 @@ test('falla con RUN_NOT_PREPARED si la tarea no tiene reserva ni run activo', as
   }
 });
 
-test('falla con RUN_TOKEN_INVALID si el token persistido escapa del runtime', async () => {
+test('falla con EXECUTION_STATE_INVALID si el token persistido no cumple el contrato canónico', async () => {
   const root = await fixture();
   try {
     await writeState(root, (state) => {

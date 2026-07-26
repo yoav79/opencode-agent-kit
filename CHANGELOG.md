@@ -23,11 +23,12 @@ cada hito.
   `execution-transition-engine.mjs` o `execution-contract-helpers.mjs`.
   (este commit)
 - **CI workflow** — `.github/workflows/ci.yml` con triggers push y
-  pull_request, Node 18, permisos mínimos (`contents: read`), sin secretos ni
+  pull_request, Node 22/24, permisos mínimos (`contents: read`), sin secretos ni
   pasos mutantes. Ejecuta `make test` como entrypoint único.
   (este commit)
-- **test-next-task-tools** — Target que verifica sintaxis de
-  `select-next-task.mjs` y `validate-next-task.mjs` con `node --check`.
+- **test-next-task-tools** — Target que ejecuta `node --test`
+  sobre `templates/next-task/tools/*.test.mjs` y mantiene `node --check` como
+  validación sintáctica adicional.
   (este commit)
 - **test-execution-tools** — Target que ejecuta pruebas del motor
   transaccional: `prepare-task-run.test.mjs` y
@@ -42,7 +43,7 @@ cada hito.
 
 - **`/build-next-task-context`** — Resuelve el intento activo exclusivamente desde `reservation.token` o `activeRunId`, valida el token canónico y deja de escanear intentos históricos. (este commit)
 - **`test-next-task-tools`** — Deja de ser solo `node --check` y ahora ejecuta `node --test templates/next-task/tools/*.test.mjs` además de la validación sintáctica. (este commit)
-- **`context-builder`** — Mantiene lectura amplia pero con denylist explícita para secretos y usa una tool determinista de inspección del repositorio en lugar de depender de lecturas indiscriminadas. (este commit)
+- **`context-builder`** — Elimina `read: "*": allow`, limita la lectura directa a `AGENTS.md` y `.devflow/**`, y usa una tool determinista de inspección del repositorio en lugar de depender de lecturas indiscriminadas. (este commit)
 - **`/init-next-task` y `/init-execution`** — Declaran e instalan explícitamente el helper compartido `.devflow/shared/tools/devflow-runtime-helpers.mjs`; `next-task` ya no depende de `execution-contract-helpers.mjs`. (este commit)
 - **CI workflow** — Actualizado a Node LTS vigente con matrix, `concurrency` y `make test` como entrypoint único. (este commit)
 

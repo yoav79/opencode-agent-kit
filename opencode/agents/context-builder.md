@@ -5,7 +5,12 @@ temperature: 0.1
 permission:
   "*": deny
   read:
-    "*": allow
+    "*": deny
+    "AGENTS.md": allow
+    ".devflow/software-architect/**": allow
+    ".devflow/task-planner/**": allow
+    ".devflow/execution/**": allow
+    ".devflow/memory/**": allow
     "*.env": deny
     "*.env.*": deny
     "*.pem": deny
@@ -174,14 +179,18 @@ Ejecuta esta secuencia antes de derivar contenido:
 18. Verifica predecesores y sus resultados persistidos.
 19. Lee únicamente memoria verificada y relevante.
 20. Inspecciona el repositorio actual de forma selectiva con
-    `.devflow/execution/tools/inspect-repository-context.mjs` y solo lee archivos
-    adicionales cuando el reporte no alcance.
-21. Clasifica el contexto.
-22. Escribe primero `execution-context.json`.
-23. Vuelve a leerlo y comprueba su consistencia.
-24. Escribe `execution-prompt.md` como proyección del JSON.
-25. Vuelve a leer ambos archivos y verifica que representan la misma tarea,
-    intento, alcance y clasificación.
+    `.devflow/execution/tools/inspect-repository-context.mjs`.
+21. Si el reporte no alcanza, vuelve a ejecutar esa misma tool con
+     `--include` más específicos para las rutas detectadas.
+22. No uses `read` directo sobre archivos del producto fuera de `AGENTS.md` y
+     `.devflow/**`; la evidencia del repositorio debe provenir del inspector
+     determinista.
+23. Clasifica el contexto.
+24. Escribe primero `execution-context.json`.
+25. Vuelve a leerlo y comprueba su consistencia.
+26. Escribe `execution-prompt.md` como proyección del JSON.
+27. Vuelve a leer ambos archivos y verifica que representan la misma tarea,
+     intento, alcance y clasificación.
 
 # Resolución de la selección
 
@@ -371,6 +380,13 @@ Debes registrar:
 - pruebas existentes relacionadas;
 - restricciones de `AGENTS.md` y configuraciones del proyecto;
 - evidencia técnica creada por predecesores.
+
+Para archivos del producto usa el inspector determinista, no lecturas directas:
+
+- empieza con includes acotados al directorio o archivo más relevante;
+- usa el preview, tamaño, hash y bandera `redacted` como evidencia principal;
+- si necesitas más detalle, vuelve a ejecutar el inspector con rutas más
+  específicas en lugar de ampliar la lectura del repositorio completo.
 
 No debes:
 
