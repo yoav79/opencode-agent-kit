@@ -347,7 +347,11 @@ no existan colisiones entre invocaciones sucesivas.
    ```
    ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/contracts/epic-decomposer.md
    ```
-2. Verifica cada input requerido por el contrato:
+2. Lee el prompt runtime canonico desde:
+   ```
+   ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/contracts/epic-decomposer.runtime-prompt.md
+   ```
+3. Verifica cada input requerido por el contrato:
    - `.devflow/task-planner/epics/<EPIC-ID>.md` debe existir
    - Las capacidades filtradas en el paso 1 deben existir en
      `capability-map.json`
@@ -357,7 +361,7 @@ no existan colisiones entre invocaciones sucesivas.
    - `construction-strategy.md` debe existir
    - `decisions.json` debe existir
    - `task-plan.json` debe existir
-3. Si falta algún input, devuelve `BLOCKED` con la lista exacta de faltantes.
+4. Si falta algun input, devuelve `BLOCKED` con la lista exacta de faltantes.
 
 ### Paso 4 — Invocar al subagente
 
@@ -365,12 +369,18 @@ no existan colisiones entre invocaciones sucesivas.
    (`mkdir -p .devflow/task-planner/drafts`).
 2. Invoca al subagente mediante la herramienta `task`:
    - Selecciona el subagente `epic-decomposer`
-   - El prompt debe incluir:
-     - `currentEpicId`
-     - Las rutas de todos los inputs requeridos
-     - El mapa `capabilityId -> taskId` preasignado (paso 2)
-     - Instrucción de que debe escribir los drafts en
-       `.devflow/task-planner/drafts/`
+   - Usa como base el prompt runtime canonico y reemplaza todos sus
+     placeholders con valores concretos de la epica actual.
+   - El prompt final debe incluir:
+      - `currentEpicId`
+      - La ruta del archivo Markdown de la epica actual
+      - La lista de capacidades de la epica
+      - Las rutas de todos los inputs requeridos
+      - El mapa `capabilityId -> taskId` preasignado (paso 2)
+      - Las rutas autorizadas de lectura
+      - Las rutas autorizadas de escritura en `.devflow/task-planner/drafts/`
+      - Las prohibiciones explicitas, el formato de salida requerido y los
+        codigos de retorno esperados
 3. Lee el resultado del subagente y su return code.
 
 ## Manejo de resultados
