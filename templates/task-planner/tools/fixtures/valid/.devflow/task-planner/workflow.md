@@ -1109,9 +1109,9 @@ El subagente `epic-decomposer` no puede:
    e. Mergea `drafts/<EPIC-ID>.task-plan.partial.json` en `task-plan.json`.
    f. Actualiza `ownerTaskId` en `capability-map.json`.
    g. Actualiza `taskIds` y `decomposed` en `epic-plan.json`.
-   h. Actualiza contadores y `project-state.json`.
-   i. Ejecuta `build-epic-graph.mjs`.
-   j. Si quedan épicas, continúa; si no, avanza a `plan_validation`.
+    h. Actualiza contadores y `project-state.json`.
+    i. Si quedan épicas, continúa; si no, avanza a `plan_validation` y ejecuta
+       `build-epic-graph.mjs`.
 6. Si `BLOCKED`, el agente principal informa al usuario y no avanza.
 
 ## Regla de promoción

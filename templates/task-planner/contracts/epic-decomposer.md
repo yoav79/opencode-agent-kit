@@ -118,3 +118,7 @@ El task-planner (orquestador) es responsable de:
 7. Actualizar `capability-map.json` (ownerTaskId)
 8. Actualizar `project-state.json`
 9. Manejar `BLOCKED` informando al usuario
+
+`build-epic-graph.mjs` no forma parte de la promoción por épica.
+El orquestador lo ejecuta una sola vez al terminar la descomposición
+completa de todas las épicas, no tras cada promoción individual.

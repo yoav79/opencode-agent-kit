@@ -115,4 +115,8 @@ Después de tu respuesta `GENERATED`, el task-planner:
 3. Lee `drafts/<EPIC-ID>.task-plan.partial.json` (pre-generado por
    `assemble-epic-task-batch.mjs`) y lo fusiona en `task-plan.json`
 4. Actualiza `epic-plan.json` y `capability-map.json`
-5. Avanza a la siguiente épica o a `plan_validation`
+5. Continúa con la siguiente épica
+
+`build-epic-graph.mjs` se ejecuta una sola vez al terminar la
+descomposición completa de todas las épicas, no tras cada promoción.
+Tú no decides ni disparas esta herramienta.
