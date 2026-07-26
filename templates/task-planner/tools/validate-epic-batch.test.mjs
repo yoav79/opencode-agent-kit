@@ -2,7 +2,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_ROOT = path.join(HERE, 'fixtures', 'valid');
 const VALIDATOR_SOURCE = path.join(HERE, 'validate-epic-batch.mjs');
+const EPIC_ID = 'EPIC-DOM-001';
 
 async function json(file) {
   return JSON.parse(await readFile(file, 'utf8'));
@@ -18,6 +19,25 @@ async function json(file) {
 
 async function writeJson(file, value) {
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+}
+
+async function prepareDrafts(root) {
+  const taskPlanner = path.join(root, '.devflow', 'task-planner');
+  const drafts = path.join(taskPlanner, 'drafts');
+  await mkdir(drafts, { recursive: true });
+
+  const taskPlan = await json(path.join(taskPlanner, 'task-plan.json'));
+  const tasks = taskPlan.tasks.filter((task) => task.epicId === EPIC_ID);
+  await writeJson(path.join(drafts, `${EPIC_ID}.task-plan.partial.json`), {
+    tasks,
+  });
+
+  for (const task of tasks) {
+    await cp(
+      path.join(taskPlanner, 'tasks', `${task.id}.md`),
+      path.join(drafts, `${task.id}.md`),
+    );
+  }
 }
 
 async function withFixture(mutate) {
@@ -34,10 +54,11 @@ async function withFixture(mutate) {
     ),
   );
   try {
+    await prepareDrafts(root);
     if (mutate) await mutate(root);
     const run = spawnSync(
       'node',
-      ['.devflow/task-planner/tools/validate-epic-batch.mjs', '--epic', 'EPIC-DOM-001'],
+      ['.devflow/task-planner/tools/validate-epic-batch.mjs', '--epic', EPIC_ID],
       { cwd: root, encoding: 'utf8' },
     );
     const result = JSON.parse(run.stdout || '{}');
@@ -60,8 +81,21 @@ test('acepta épica consistente sin errores', async () => {
   const result = await withFixture();
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.result.status, 'passed');
-  assert.equal(result.result.epicId, 'EPIC-DOM-001');
+  assert.equal(result.result.epicId, EPIC_ID);
   assert.equal(result.result.errorCount, 0);
+  assert.equal(result.result.taskCount, 7);
+});
+
+test('valida drafts aunque task-plan global todavía esté vacío', async () => {
+  const result = await withFixture(async (root) => {
+    const file = path.join(root, '.devflow', 'task-planner', 'task-plan.json');
+    const data = await json(file);
+    data.status = 'in_progress';
+    data.tasks = [];
+    await writeJson(file, data);
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.result.status, 'passed');
   assert.equal(result.result.taskCount, 7);
 });
 
@@ -71,7 +105,7 @@ test('rechaza tarea sin bloque semántico', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -92,7 +126,7 @@ test('rechaza backend binding ajeno', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -113,7 +147,8 @@ test('rechaza behaviorIds desalineados con capability', async () => {
       root,
       '.devflow',
       'task-planner',
-      'task-plan.json',
+      'drafts',
+      `${EPIC_ID}.task-plan.partial.json`,
     );
     const data = await json(file);
     const task = data.tasks.find((t) => t.id === 'TASK-003');
@@ -130,7 +165,8 @@ test('rechaza semanticKeys desalineados con capability', async () => {
       root,
       '.devflow',
       'task-planner',
-      'task-plan.json',
+      'drafts',
+      `${EPIC_ID}.task-plan.partial.json`,
     );
     const data = await json(file);
     const task = data.tasks.find((t) => t.id === 'TASK-003');
@@ -147,7 +183,8 @@ test('rechaza requirementCoverage.behaviorIds != task.behaviorIds', async () => 
       root,
       '.devflow',
       'task-planner',
-      'task-plan.json',
+      'drafts',
+      `${EPIC_ID}.task-plan.partial.json`,
     );
     const data = await json(file);
     const task = data.tasks.find((t) => t.id === 'TASK-003');
@@ -168,7 +205,7 @@ test('rechaza SCOPE faltante en markdown', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -188,7 +225,7 @@ test('rechaza AC faltante en markdown', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -210,7 +247,7 @@ test('rechaza heading obligatorio faltante', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -230,7 +267,7 @@ test('rechaza bloque semántico con campos incorrectos', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -253,7 +290,7 @@ test('rechaza bloque semántico con markdown no canónico', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -280,7 +317,7 @@ test('rechaza SCOPE faltante en tarea habilitante', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-001.md',
     );
     const text = await readFile(file, 'utf8');
@@ -308,6 +345,8 @@ test('no toca archivos globales', async () => {
     ),
   );
 
+  await prepareDrafts(root);
+
   const before = {};
   const globalFiles = [
     'task-plan.json',
@@ -324,7 +363,7 @@ test('no toca archivos globales', async () => {
 
   spawnSync(
     'node',
-    ['.devflow/task-planner/tools/validate-epic-batch.mjs', '--epic', 'EPIC-DOM-001'],
+    ['.devflow/task-planner/tools/validate-epic-batch.mjs', '--epic', EPIC_ID],
     { cwd: root, encoding: 'utf8' },
   );
 
@@ -345,7 +384,7 @@ test('reporta errores agrupados por tarea', async () => {
       root,
       '.devflow',
       'task-planner',
-      'tasks',
+      'drafts',
       'TASK-003.md',
     );
     const text = await readFile(file, 'utf8');
@@ -364,7 +403,7 @@ test('reporta errores agrupados por tarea', async () => {
   }
 });
 
-test('retorna 0 y advertencia si no hay tareas para el épico', async () => {
+test('rechaza la validación si falta el partial de la épica', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'epic-batch-empty-'));
   await cp(FIXTURE_ROOT, root, { recursive: true });
   await cp(
@@ -387,7 +426,11 @@ test('retorna 0 y advertencia si no hay tareas para el épico', async () => {
       ],
       { cwd: root, encoding: 'utf8' },
     );
-    assert.equal(run.status, 0);
+    assert.equal(run.status, 1);
+    assert.match(
+      run.stderr,
+      /Falta drafts\/EPIC-NONEXISTENT\.task-plan\.partial\.json/,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

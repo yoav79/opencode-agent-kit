@@ -9,11 +9,10 @@ const ROOT = process.cwd();
 const TP = path.join(ROOT, '.devflow', 'task-planner');
 
 const P = {
-  tasks: path.join(TP, 'task-plan.json'),
   capabilities: path.join(TP, 'capability-map.json'),
   semantic: path.join(TP, 'semantic-contract.json'),
   requirements: path.join(TP, 'requirements.json'),
-  taskDir: path.join(TP, 'tasks'),
+  draftDir: path.join(TP, 'drafts'),
 };
 
 const REQUIRED_HEADINGS = [
@@ -241,7 +240,7 @@ function usage() {
     `validate-epic-batch.mjs v${TOOL_VERSION}\n\n` +
       `Uso:\n` +
       `  node .devflow/task-planner/tools/validate-epic-batch.mjs --epic EPIC-ID\n\n` +
-      `Valida una sola épica antes de promoverla al plan global.\n` +
+      `Valida una sola épica desde drafts/ antes de promoverla al plan global.\n` +
       `No modifica ningún archivo.\n`,
   );
 }
@@ -317,10 +316,12 @@ async function main() {
     process.exit(1);
   }
 
-  let taskPlan, capabilityMap, semanticContract, requirements;
+  const partialPath = path.join(P.draftDir, `${epicId}.task-plan.partial.json`);
+
+  let taskPartial, capabilityMap, semanticContract, requirements;
   try {
-    [taskPlan, capabilityMap, semanticContract, requirements] = await Promise.all([
-      readJson(P.tasks, 'task-plan.json'),
+    [taskPartial, capabilityMap, semanticContract, requirements] = await Promise.all([
+      readJson(partialPath, `drafts/${epicId}.task-plan.partial.json`),
       readJson(P.capabilities, 'capability-map.json'),
       readJson(P.semantic, 'semantic-contract.json'),
       readJson(P.requirements, 'requirements.json'),
@@ -330,26 +331,32 @@ async function main() {
     process.exit(1);
   }
 
-  const taskIndex = indexById(arr(taskPlan.tasks), 'task-plan.json');
+  const partialTasks = arr(taskPartial.tasks);
+  indexById(partialTasks, `drafts/${epicId}.task-plan.partial.json`);
   const capabilityIndex = indexById(arr(capabilityMap.capabilities), 'capability-map.json');
   const semanticContractMap = indexContracts(arr(semanticContract.contracts));
   const semanticContracts = arr(semanticContract.contracts);
   const requirementIndex = indexById(arr(requirements.requirements), 'requirements.json');
 
-  const epic = arr(taskPlan.tasks).filter((t) => t.epicId === epicId);
-  if (epic.length === 0) {
-    process.stderr.write(
-      `Advertencia: No se encontraron tareas con epicId=${epicId} en task-plan.json.\n`,
+  const epic = partialTasks.filter((t) => t.epicId === epicId);
+  for (const task of partialTasks.filter((t) => t.epicId !== epicId)) {
+    addError(
+      'EPIC_PARTIAL_FOREIGN_TASK',
+      `drafts/${epicId}.task-plan.partial.json contiene ${task.id ?? 'una tarea'} con epicId=${JSON.stringify(task.epicId)}.`,
+      typeof task.id === 'string' ? task.id : null,
     );
-    process.exit(0);
   }
-
-  const taskIds = new Set(epic.map((t) => t.id));
+  if (epic.length === 0) {
+    addError(
+      'EPIC_TASKS_MISSING',
+      `No se encontraron tareas con epicId=${epicId} en drafts/${epicId}.task-plan.partial.json.`,
+    );
+  }
 
   for (const task of epic) {
     const taskId = task.id;
 
-    const markdownPath = path.join(P.taskDir, `${taskId}.md`);
+    const markdownPath = path.join(P.draftDir, `${taskId}.md`);
     let markdown;
     try {
       markdown = await readText(markdownPath, `${taskId} Markdown`);
