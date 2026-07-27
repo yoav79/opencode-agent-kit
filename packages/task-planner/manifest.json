@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "name": "task-planner",
+  "version": "1.0.0",
+  "description": "Espacio de trabajo del Task Planner: estado, workflow, contratos, planes y herramientas de validación",
+  "dependencies": [
+    "shared-runtime"
+  ],
+  "files": [
+    {
+      "source": "templates/task-planner/project-state.json",
+      "target": ".devflow/task-planner/project-state.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/workflow.md",
+      "target": ".devflow/task-planner/workflow.md",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/decisions.json",
+      "target": ".devflow/task-planner/decisions.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/semantic-contract.json",
+      "target": ".devflow/task-planner/semantic-contract.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/requirements.json",
+      "target": ".devflow/task-planner/requirements.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/capability-map.json",
+      "target": ".devflow/task-planner/capability-map.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/epic-plan.json",
+      "target": ".devflow/task-planner/epic-plan.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/readiness.json",
+      "target": ".devflow/task-planner/readiness.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/task-plan.json",
+      "target": ".devflow/task-planner/task-plan.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/task-template.md",
+      "target": ".devflow/task-planner/task-template.md",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/task-planner/tools/assemble-capability-map.mjs",
+      "target": ".devflow/task-planner/tools/assemble-capability-map.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/assemble-epic-task-batch.mjs",
+      "target": ".devflow/task-planner/tools/assemble-epic-task-batch.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/build-epic-graph.mjs",
+      "target": ".devflow/task-planner/tools/build-epic-graph.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/render-task-markdown.mjs",
+      "target": ".devflow/task-planner/tools/render-task-markdown.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/reserve-task-ids.mjs",
+      "target": ".devflow/task-planner/tools/reserve-task-ids.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/update-timestamps.mjs",
+      "target": ".devflow/task-planner/tools/update-timestamps.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/validate-capability-map.mjs",
+      "target": ".devflow/task-planner/tools/validate-capability-map.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/validate-epic-batch.mjs",
+      "target": ".devflow/task-planner/tools/validate-epic-batch.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/task-planner/tools/validate-plan.mjs",
+      "target": ".devflow/task-planner/tools/validate-plan.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/task-planner/drafts",
+    ".devflow/task-planner/epics",
+    ".devflow/task-planner/tasks",
+    ".devflow/task-planner/tools"
+  ]
+}

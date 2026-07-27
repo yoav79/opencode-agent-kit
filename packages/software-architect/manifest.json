@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "software-architect",
+  "version": "1.0.0",
+  "description": "Espacio de trabajo del Software Architect: state, schema, workflow, doc-templates, contratos y herramientas de validación",
+  "dependencies": [
+    "shared-runtime"
+  ],
+  "files": [
+    {
+      "source": "templates/software-architect/project-state.json",
+      "target": ".devflow/software-architect/project-state.json",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/software-architect/project-state.schema.json",
+      "target": ".devflow/software-architect/project-state.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/software-architect/workflow.md",
+      "target": ".devflow/software-architect/workflow.md",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/software-architect/tools/validate-blueprint.mjs",
+      "target": ".devflow/software-architect/tools/validate-blueprint.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/software-architect/tools/migrate-v1-to-v2.mjs",
+      "target": ".devflow/software-architect/tools/migrate-v1-to-v2.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/software-architect/docs",
+    ".devflow/software-architect/drafts",
+    ".devflow/software-architect/decisions",
+    ".devflow/software-architect/archive",
+    ".devflow/software-architect/tools"
+  ]
+}

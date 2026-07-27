@@ -21,20 +21,6 @@ permission:
     "node $HOME/.config/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
     "node $XDG_CONFIG_HOME/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
     "node ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/tools/validate-blueprint.mjs *": allow
-    "mkdir -p .devflow/software-architect": allow
-    "mkdir -p .devflow/software-architect/drafts": allow
-    "mkdir -p .devflow/software-architect/docs": allow
-    "mkdir -p .devflow/software-architect/archive": allow
-    "mkdir -p .devflow/software-architect/decisions": allow
-    "cp -n $HOME/.config/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
-    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.json .devflow/software-architect/project-state.json": allow
-    "cp -n $HOME/.config/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
-    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/project-state.schema.json .devflow/software-architect/project-state.schema.json": allow
-    "cp -n $HOME/.config/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
-    "cp -n $XDG_CONFIG_HOME/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/software-architect/workflow.md .devflow/software-architect/workflow.md": allow
   task: allow
   webfetch: ask
   websearch: ask

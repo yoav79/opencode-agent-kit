@@ -6,6 +6,7 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 
 python3 - "$REPO_ROOT" <<'PY'
 import json
+import os
 import posixpath
 import re
 import sys
@@ -233,61 +234,21 @@ for agent_dir in sorted(root.glob("templates/*/")):
     except Exception as exc:
         errors.append(f"Error reading {scaffold_file.relative_to(root)}: {exc}")
 
-execution_scaffold = scaffolds.get("execution")
-shared_scaffold = scaffolds.get("shared")
-if execution_scaffold:
-    execution_directory = execution_scaffold["directory"]
-    execution_paths = {
-        installed_path(execution_directory, relative)
-        for relative in execution_scaffold.get("files", [])
-    }
-    execution_dirs = {
-        f"{normalize_directory(execution_directory)}/{relative}/"
-        for relative in execution_scaffold.get("dirs", [])
-    }
-    shared_dirs = set()
-    if shared_scaffold and isinstance(shared_scaffold.get("directory"), str):
-        shared_dirs = {
-            f"{normalize_directory(shared_scaffold['directory'])}/{relative}/"
-            for relative in shared_scaffold.get("dirs", [])
-        }
-    for relative in execution_scaffold.get("files", []):
-        source_relative = f"templates/execution/{relative}"
-        if source_relative not in required_path_set:
-            errors.append(f"Execution scaffold file missing from required_paths: {source_relative}")
-    compare_doc_paths("opencode/commands/init-execution.md", "## Runtime instalado", execution_paths)
-    compare_doc_paths("opencode/commands/init-execution.md", "## Directorios instalados", execution_dirs | shared_dirs)
-    compare_doc_paths("templates/execution/README.md", "## Runtime instalado por /init-execution", execution_paths)
-    compare_doc_paths("README.md", "### Runtime instalado por `/init-execution`", execution_paths)
+execution_package_files = set()
+for pkg_name in ("next-task", "execution", "context-builder"):
+    pkg_path = root / "packages" / pkg_name / "manifest.json"
+    if not pkg_path.exists():
+        errors.append(f"Package manifest missing: packages/{pkg_name}/manifest.json")
+        continue
+    try:
+        pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
+        for f in pkg.get("files", []):
+            execution_package_files.add(f["target"])
+    except Exception as exc:
+        errors.append(f"Error reading {pkg_path.relative_to(root)}: {exc}")
 
-    init_execution_text = (root / "opencode/commands/init-execution.md").read_text(encoding="utf-8")
-    for required_reference in (
-        ".devflow/execution/tools/execution-contract-helpers.mjs",
-        ".devflow/execution/tools/execution-transition-engine.mjs",
-    ):
-        if required_reference not in init_execution_text:
-            errors.append(f"init-execution.md missing required runtime reference: {required_reference}")
-
-next_task_scaffold = scaffolds.get("next-task")
-if next_task_scaffold:
-    next_task_directory = next_task_scaffold["directory"]
-    next_task_runtime_paths = {
-        installed_path(next_task_directory, relative)
-        for relative in next_task_scaffold.get("files", [])
-        if relative != "README.md"
-    }
-    for relative in ("selection.json", "task-selection.schema.json", "tools/select-next-task.mjs", "tools/validate-next-task.mjs"):
-        source_relative = f"templates/next-task/{relative}"
-        if source_relative not in required_path_set:
-            errors.append(f"next-task runtime path missing from required_paths: {source_relative}")
-    compare_doc_paths("opencode/commands/init-execution.md", "## Dependencia de next-task", next_task_runtime_paths)
-    compare_doc_paths("opencode/commands/prepare-task-run.md", "## Dependencia de next-task", next_task_runtime_paths)
-    compare_doc_paths("templates/execution/README.md", "## Dependencias instaladas por /init-next-task", next_task_runtime_paths)
-    compare_doc_paths("README.md", "### Dependencias instaladas por `/init-next-task`", next_task_runtime_paths)
-
-    init_next_task_text = (root / "opencode/commands/init-next-task.md").read_text(encoding="utf-8")
-    if ".devflow/shared/tools/devflow-runtime-helpers.mjs" not in init_next_task_text:
-        errors.append("init-next-task.md must reference .devflow/shared/tools/devflow-runtime-helpers.mjs")
+# Remove README.md from the set if present (seed file, not runtime)
+execution_runtime_paths = {p for p in execution_package_files if not p.endswith("README.md")}
 
 all_installed_paths = set()
 for paths in installed_files_by_directory.values():
@@ -407,6 +368,187 @@ if bntc.exists():
         # Must not reference prepare-task-run.mjs as something to run
         if re.search(r"prepare-task-run\.mjs", body):
             errors.append("build-next-task-context: must not reference prepare-task-run.mjs as an executable")
+
+# --- DevFlow Installer validation ---
+
+packages_dir = root / "packages"
+expected_packages = {
+    "shared-runtime", "software-architect", "task-planner",
+    "next-task", "execution", "context-builder",
+    "planning-stack", "execution-stack", "all",
+}
+
+for pkg_name in sorted(expected_packages):
+    manifest_path = packages_dir / pkg_name / "manifest.json"
+    if not manifest_path.exists():
+        errors.append(f"Package missing manifest: packages/{pkg_name}/manifest.json")
+        continue
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        errors.append(f"Invalid manifest {manifest_path.relative_to(root)}: {exc}")
+        continue
+
+    if manifest.get("schemaVersion") != 1:
+        errors.append(f"{manifest_path.relative_to(root)}: schemaVersion must be 1")
+    if manifest.get("name") != pkg_name:
+        errors.append(f"{manifest_path.relative_to(root)}: name must match directory name: {pkg_name}")
+    if "version" not in manifest:
+        errors.append(f"{manifest_path.relative_to(root)}: missing version")
+
+    # Validate dependencies exist
+    for dep in manifest.get("dependencies", []):
+        if dep not in expected_packages:
+            errors.append(f"{manifest_path.relative_to(root)}: unknown dependency: {dep}")
+        dep_path = packages_dir / dep / "manifest.json"
+        if not dep_path.exists():
+            errors.append(f"{manifest_path.relative_to(root)}: dependency manifest not found: {dep}")
+
+    # Validate packages referenced exist (metapackages)
+    for sub in manifest.get("packages", []):
+        if sub not in expected_packages:
+            errors.append(f"{manifest_path.relative_to(root)}: unknown sub-package: {sub}")
+
+    # Validate files
+    seen_targets = {}
+    for f in manifest.get("files", []):
+        if "source" not in f or "target" not in f:
+            errors.append(f"{manifest_path.relative_to(root)}: file entry missing source or target: {f}")
+            continue
+        source = f["source"]
+        target = f["target"]
+
+        # Source must exist
+        source_path = root / source
+        if not source_path.exists():
+            errors.append(f"{manifest_path.relative_to(root)}: source not found: {source}")
+
+        # Target must be relative
+        if os.path.isabs(target) or target.startswith("/"):
+            errors.append(f"{manifest_path.relative_to(root)}: target must be relative: {target}")
+
+        # No traversal
+        normalized = posixpath.normpath(target)
+        if normalized.startswith("..") or "/../" in f"/{target}":
+            errors.append(f"{manifest_path.relative_to(root)}: target must not contain traversal: {target}")
+
+        # Ownership: no two packages claim the same target
+        if target in seen_targets:
+            errors.append(f"Ownership conflict: '{target}' claimed by '{seen_targets[target]}' and '{pkg_name}'")
+        seen_targets[target] = pkg_name
+
+# Validate metapackage resolution
+def resolve_metapackage(name, visited=None, leaf_packages_set=None):
+    if leaf_packages_set is None:
+        leaf_packages_set = set()
+    if visited is None:
+        visited = set()
+    if name in visited:
+        return set()
+    visited.add(name)
+    manifest_path = packages_dir / name / "manifest.json"
+    if not manifest_path.exists():
+        return set()
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return set()
+    sub_pkgs = manifest.get("packages", [])
+    if sub_pkgs:
+        # This is a metapackage - resolve its children
+        for sub in sub_pkgs:
+            resolve_metapackage(sub, visited, leaf_packages_set)
+    else:
+        # This is a leaf package
+        leaf_packages_set.add(name)
+    return leaf_packages_set
+
+planning_set = resolve_metapackage("planning-stack")
+planning_expected = {"shared-runtime", "software-architect", "task-planner"}
+if planning_set != planning_expected:
+    errors.append(f"planning-stack resolves to {planning_set}, expected {planning_expected}")
+
+execution_set = resolve_metapackage("execution-stack")
+execution_expected = {"shared-runtime", "next-task", "execution", "context-builder"}
+if execution_set != execution_expected:
+    errors.append(f"execution-stack resolves to {execution_set}, expected {execution_expected}")
+
+all_set = resolve_metapackage("all")
+all_expected = planning_expected | execution_expected
+if all_set != all_expected:
+    errors.append(f"all resolves to {all_set}, expected {all_expected}")
+
+# Cycle detection (manifest-level)
+def has_cycles(name, stack=None, visited=None):
+    if stack is None:
+        stack = set()
+    if visited is None:
+        visited = set()
+    if name in stack:
+        return True
+    if name in visited:
+        return False
+    stack.add(name)
+    visited.add(name)
+    manifest_path = packages_dir / name / "manifest.json"
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for dep in manifest.get("dependencies", []):
+                if has_cycles(dep, stack, visited):
+                    return True
+            for sub in manifest.get("packages", []):
+                if has_cycles(sub, stack, visited):
+                    return True
+        except Exception:
+            pass
+    stack.discard(name)
+    return False
+
+for pkg_name in sorted(expected_packages):
+    if has_cycles(pkg_name):
+        errors.append(f"Dependency cycle detected in package: {pkg_name}")
+
+# Validate legacy init wrappers delegate to devflow CLI
+init_wrapper_commands = [
+    "init-software-architect",
+    "init-task-planner",
+    "init-execution",
+    "init-next-task",
+]
+for cmd_name in init_wrapper_commands:
+    cmd_path = root / "opencode" / "commands" / f"{cmd_name}.md"
+    if not cmd_path.exists():
+        errors.append(f"Wrapper command not found: opencode/commands/{cmd_name}.md")
+        continue
+    text = cmd_path.read_text(encoding="utf-8")
+    if "bin/devflow.mjs init" not in text:
+        errors.append(f"{cmd_name}.md: must delegate to devflow init CLI (missing 'bin/devflow.mjs init')")
+    # No manual install logic
+    for forbidden_pattern in ["cp -n", "mkdir -p", "shutil.copy", "create directory", "crea directorio"]:
+        if forbidden_pattern in text:
+            errors.append(f"{cmd_name}.md: must not contain manual install instructions (found: '{forbidden_pattern}')")
+
+# Validate devflow-init command exists
+devflow_init_path = root / "opencode" / "commands" / "devflow-init.md"
+if not devflow_init_path.exists():
+    errors.append("Missing devflow-init command: opencode/commands/devflow-init.md")
+else:
+    text = devflow_init_path.read_text(encoding="utf-8")
+    if "bin/devflow.mjs init" not in text:
+        errors.append("devflow-init.md: must delegate to devflow init CLI")
+
+# Validate agents don't have obsolete init permissions (frontmatter only)
+for agent_file in sorted((root / "opencode/agents").glob("*.md")):
+    text = agent_file.read_text(encoding="utf-8")
+    match = frontmatter_re.match(text)
+    if not match:
+        continue
+    frontmatter = match.group(1)
+    # No cp -n for template files (init-related) in frontmatter
+    cp_init_pattern = re.compile(r'cp -n.*templates/')
+    if cp_init_pattern.search(frontmatter):
+        errors.append(f"{agent_file.relative_to(root)}: must not contain cp -n for template installation in permissions")
 
 if errors:
     print("Validation failed:")

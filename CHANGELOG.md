@@ -11,6 +11,13 @@ cada hito.
 
 ### Added
 
+- **Instalador centralizado de DevFlow** — `bin/devflow.mjs` con comandos `init` y `audit`. Resuelve dependencias topológicamente, detecta ciclos, administra ownership de archivos, writeario lockfile atómico y audita instalaciones. (este commit)
+- **Package manifests** — 9 manifests en `packages/` (6 leaf + 3 metapackages) con schemaVersion 1, dependencias, clasificación de archivos (managed/mutable/seed) y ownership exclusivo. (este commit)
+- **`/devflow-init`** — Comando canónico que delega en el instalador central. (este commit)
+- **Wrappers de compatibilidad** — `/init-software-architect`, `/init-task-planner`, `/init-execution`, `/init-next-task` convertidos a wrappers mínimos que delegan en `devflow init`. (este commit)
+- **Pruebas del instalador** — `tests/test-devflow-installer.sh` con 16 tests: instalación básica, idempotencia, directorios compartidos, mutables vs managed, dependencias, lockfile, auditoría y errores. (este commit)
+- **Validación de manifests** — `scripts/validate.sh` extendido con 14 nuevas validaciones estructurales sobre packages, manifests, ownership, ciclos y wrappers. (este commit)
+
 - **Helper compartido de runtime** — `templates/shared/tools/devflow-runtime-helpers.mjs` concentra validación JSON, IDs, hashes, issues y resolución canónica de `runPath`; `execution` y `next-task` lo instalan explícitamente en `.devflow/shared/tools/`. (este commit)
 - **Pruebas funcionales de next-task** — `templates/next-task/tools/select-next-task.test.mjs` cubre selección real, dependencias, cycles, waves, concurrencia lógica, estados `paused/completed`, IDs descriptivos y ambiguos, validación de `selection.json` y no mutación de `execution-state.json`. (este commit)
 - **Migración v1→v2 de execution-state** — `migrate-execution-state-v1-to-v2.mjs` migra el ownership legacy `next-task` al nuevo owner `devflow-execution` con backup `.v1` y tests deterministas. (este commit)
@@ -41,6 +48,7 @@ cada hito.
 
 ### Changed
 
+- **Agent permissions** — `software-architect` y `task-planner` ya no tienen permisos `cp -n` ni `mkdir -p` para inicialización. La instalación es responsabilidad exclusiva del instalador central. (este commit)
 - **`/build-next-task-context`** — Resuelve el intento activo exclusivamente desde `reservation.token` o `activeRunId`, valida el token canónico y deja de escanear intentos históricos. (este commit)
 - **`test-next-task-tools`** — Deja de ser solo `node --check` y ahora ejecuta `node --test templates/next-task/tools/*.test.mjs` además de la validación sintáctica. (este commit)
 - **`context-builder`** — Elimina `read: "*": allow`, limita la lectura directa a `AGENTS.md` y `.devflow/**`, y usa una tool determinista de inspección del repositorio en lugar de depender de lecturas indiscriminadas. (este commit)

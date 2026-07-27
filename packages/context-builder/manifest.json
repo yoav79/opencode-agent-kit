@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "context-builder",
+  "version": "1.0.0",
+  "description": "Schemas de contexto ejecutable, templates y herramienta de inspección de repositorio",
+  "dependencies": [
+    "shared-runtime"
+  ],
+  "files": [
+    {
+      "source": "templates/context-builder/context-build-request.schema.json",
+      "target": ".devflow/execution/context-build-request.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/context-builder/execution-context.schema.json",
+      "target": ".devflow/execution/execution-context.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/context-builder/execution-context.template.json",
+      "target": ".devflow/execution/execution-context.template.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/context-builder/execution-prompt.template.md",
+      "target": ".devflow/execution/execution-prompt.template.md",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/context-builder/tools/inspect-repository-context.mjs",
+      "target": ".devflow/execution/tools/inspect-repository-context.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/execution/tools"
+  ]
+}

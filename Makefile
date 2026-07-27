@@ -1,4 +1,4 @@
-.PHONY: help validate test test-repository test-software-architect-tools test-task-planner-tools test-next-task-tools test-execution-tools test-agent-contracts install uninstall dry-run publish
+.PHONY: help validate test test-repository test-installer test-software-architect-tools test-task-planner-tools test-next-task-tools test-execution-tools test-agent-contracts install uninstall dry-run publish
 
 .DEFAULT_GOAL := help
 
@@ -10,10 +10,13 @@ help: ## Muestra esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-validate: ## Valida integridad del repositorio (JSON, frontmatter, nombres, cobertura de tests)
+validate: ## Valida integridad del repositorio (JSON, frontmatter, nombres, cobertura de tests, manifests)
 	./scripts/validate.sh
 
-test: validate test-repository test-software-architect-tools test-task-planner-tools test-next-task-tools test-execution-tools test-agent-contracts ## Ejecuta todas las pruebas deterministas
+test: validate test-installer test-repository test-software-architect-tools test-task-planner-tools test-next-task-tools test-execution-tools test-agent-contracts ## Ejecuta todas las pruebas deterministas
+
+test-installer: ## Prueba el instalador centralizado de DevFlow
+	./tests/test-devflow-installer.sh
 
 test-repository: ## Prueba instalación, scaffold y desinstalación
 	./tests/test-scripts.sh

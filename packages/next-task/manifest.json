@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "next-task",
+  "version": "1.0.0",
+  "description": "Contratos de selección determinista de next-task: selection.json, schema y herramientas de selección",
+  "dependencies": [
+    "shared-runtime"
+  ],
+  "files": [
+    {
+      "source": "templates/next-task/README.md",
+      "target": ".devflow/execution/README.md",
+      "kind": "seed"
+    },
+    {
+      "source": "templates/next-task/selection.json",
+      "target": ".devflow/execution/selection.json",
+      "kind": "mutable"
+    },
+    {
+      "source": "templates/next-task/task-selection.schema.json",
+      "target": ".devflow/execution/task-selection.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/next-task/tools/select-next-task.mjs",
+      "target": ".devflow/execution/tools/select-next-task.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/next-task/tools/validate-next-task.mjs",
+      "target": ".devflow/execution/tools/validate-next-task.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/execution/tools"
+  ]
+}

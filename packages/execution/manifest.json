@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "name": "execution",
+  "version": "1.0.0",
+  "description": "Estado mutable de ejecución, contratos JSON Schema y herramientas de orquestación para DevFlow",
+  "dependencies": [
+    "shared-runtime"
+  ],
+  "files": [
+    {
+      "source": "templates/execution/execution-state.json",
+      "target": ".devflow/execution/execution-state.json",
+      "kind": "mutable"
+    },
+    {
+      "source": "templates/execution/execution-state.schema.json",
+      "target": ".devflow/execution/execution-state.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/transition-journal.schema.json",
+      "target": ".devflow/execution/transition-journal.schema.json",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/tools/execution-contract-helpers.mjs",
+      "target": ".devflow/execution/tools/execution-contract-helpers.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/tools/execution-transition-engine.mjs",
+      "target": ".devflow/execution/tools/execution-transition-engine.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/tools/migrate-execution-state-v1-to-v2.mjs",
+      "target": ".devflow/execution/tools/migrate-execution-state-v1-to-v2.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/tools/prepare-task-run.mjs",
+      "target": ".devflow/execution/tools/prepare-task-run.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/execution/tools/touch-execution-state.mjs",
+      "target": ".devflow/execution/tools/touch-execution-state.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/execution/runs",
+    ".devflow/execution/tools"
+  ]
+}

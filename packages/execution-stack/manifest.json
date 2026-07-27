@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "name": "execution-stack",
+  "version": "1.0.0",
+  "description": "Metapackage que agrupa shared-runtime, next-task, execution y context-builder",
+  "dependencies": [],
+  "packages": [
+    "shared-runtime",
+    "next-task",
+    "execution",
+    "context-builder"
+  ],
+  "files": [],
+  "directories": []
+}

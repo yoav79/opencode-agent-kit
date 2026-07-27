@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "name": "all",
+  "version": "1.0.0",
+  "description": "Metapackage que agrupa todos los packages de DevFlow",
+  "dependencies": [],
+  "packages": [
+    "planning-stack",
+    "execution-stack"
+  ],
+  "files": [],
+  "directories": []
+}

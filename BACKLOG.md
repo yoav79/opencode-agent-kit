@@ -140,21 +140,17 @@ automática de que las versiones del comando coincidan con las plantillas.
 
 </div>
 
-<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
 
 ### [Medio] Crear orquestador de ejecución para init y prepare
-**[next-task]**
+**[next-task]** — HECHO
 
-`/init-next-task` y `/prepare-task-run` ya no deben usar `next-task`, porque
-inicializar, crear runs, copiar evidencia y modificar `execution-state.json` son
-responsabilidades de orquestación, no de selección. Falta crear un rol dedicado
-(`execution-orchestrator`, `execution-admin`, `run-preparer`) o un script
-determinista externo.
+Implementado mediante `bin/devflow.mjs` (instalador centralizado). Los comandos
+init ahora son wrappers que delegan al CLI. `prepare-task-run` sigue siendo
+responsabilidad del motor de ejecución.
 
 - **P:** media | **E:** M | **A:** agente, comando
-- **Referencias:** `opencode/commands/init-next-task.md`, `opencode/commands/prepare-task-run.md`, `opencode/agents/next-task.md`
-- **Criterio de salida:** init y prepare usan un orquestador/script dedicado con permisos mínimos para inicialización y reserva, mientras `next-task` sigue asociado solo a `/select-next-task`
-- **Depende de:** Ninguna
+- **Completado en:** este commit
 
 </div>
 
@@ -1142,5 +1138,51 @@ copia al proyecto.
 - **Criterio de salida:** decisión documentada sobre si task-planner.md debe copiarse al proyecto o no
 - **Depende de:** Ninguna
 - **Completado en:** (este commit)
+
+</div>
+
+<div style="background:#d4edda; border-left:4px solid #28a745; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Crítico] Instalador centralizado de DevFlow
+**[general]** — HECHO
+
+`bin/devflow.mjs` con comandos `init` y `audit`. Manifests en `packages/`.
+Resolución topológica, detección de ciclos, ownership exclusivo, lockfile
+atómico.
+
+- **P:** crítica | **E:** L | **A:** infraestructura
+- **Completado en:** este commit
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] devflow update
+**[general]**
+
+Implementar `devflow update <package>` para actualizar archivos managed cuando
+el template origen cambia. Debe comparar hashes y sobrescribir managed files con
+aprobación explícita.
+
+- **P:** media | **E:** M | **A:** instalador
+- **Referencias:** `bin/devflow.mjs`
+- **Criterio de salida:** `devflow update execution` actualiza schemas y tools sin tocar mutables ni seeds
+- **Depende de:** Instalador centralizado de DevFlow
+
+</div>
+
+<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:1em 1.2em; margin:0.8em 0; border-radius:6px;">
+
+### [Medio] devflow migrate
+**[general]**
+
+Implementar `devflow migrate` para migrar instalaciones legacy (scaffold.json)
+al nuevo sistema de manifests con lockfile. Debe preservar archivos mutables
+existentes y registrar ownership retroactivo.
+
+- **P:** media | **E:** M | **A:** instalador
+- **Referencias:** `bin/devflow.mjs`, `packages/`
+- **Criterio de salida:** repositorios con `.devflow/` legacy se migran sin pérdida de datos
+- **Depende de:** Instalador centralizado de DevFlow
 
 </div>

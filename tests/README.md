@@ -7,6 +7,7 @@ contratos de archivos sin iniciar OpenCode ni depender de un modelo.
 
 | Suite | Cobertura | Fuera de alcance |
 |-------|-----------|------------------|
+| `test-devflow-installer.sh` | Instalador centralizado: 16 tests que cubren instalación básica, idempotencia, directorios compartidos, mutables vs managed, dependencias, lockfile, auditoría y errores | Instalación en proyectos reales, migración desde scaffold.json, actualización de packages |
 | `test-scripts.sh` | Instalación por symlinks, creación de scaffold y desinstalación | Ejecución de agentes, slash commands y permisos en runtime |
 | `test-software-architect-tools.sh` | Validator, migración v1 a v2, estados reproducibles, publish | Entrevistas, delegación con `task`, gates humanos y promoción realizada por OpenCode |
 | `test-task-planner-tools` (`node --test`) | 6 suites: permisos (`task: allow`), timestamps, validación de plan, épicas, capacidades, epic-decomposition | Planificación completa con agente, decisiones humanas, interacción con blueprint |
@@ -71,6 +72,7 @@ make test
 También pueden ejecutarse por separado:
 
 ```bash
+make test-installer
 make test-repository
 make test-software-architect-tools
 make test-task-planner-tools

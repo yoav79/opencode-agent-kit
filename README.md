@@ -203,13 +203,15 @@ Permisos: Solo lectura sobre los documentos fuente. Solo escribe en drafts/.
 
 | Comando | Agente | Descripcion |
 |---------|--------|-------------|
-| `/init-software-architect` | software-architect | Inicializa o continua el diseno de arquitectura del proyecto |
+| `/devflow-init` | general | Instalador centralizado: `devflow init <package>` instala paquetes de DevFlow con resolución de dependencias y lockfile |
+| `/init-software-architect` | software-architect | *(legacy)* Wrapper que invoca `devflow init software-architect` |
 | `/compile-blueprint` | blueprint-compiler | Compila drafts de Technical Requirements o Software Blueprint |
 | `/publish-blueprint` | software-architect | Publica el blueprint aprobado hacia `docs/software-architect/` |
 | `/review-consistency` | consistency-reviewer | Revisa la consistencia del Software Blueprint completo |
-| `/init-task-planner` | task-planner | Inicializa o continua la planificacion de tareas del proyecto |
-| `/init-execution` | general | Inicializa el estado mutable, la migración v1→v2 y las herramientas de orquestación en `.devflow/execution/`, además del helper compartido en `.devflow/shared/` |
-| `/init-next-task` | general | Instala los contratos de selección determinista en `.devflow/execution/` y el helper compartido requerido en `.devflow/shared/` |
+| `/init-task-planner` | task-planner | *(legacy)* Wrapper que invoca `devflow init task-planner` |
+| `/devflow-init` | general | Instalador centralizado: `devflow init <package>` instala paquetes de DevFlow con resolución de dependencias y lockfile. Wrapper de `bin/devflow.mjs` |
+| `/init-execution` | general | *(legacy)* Wrapper que invoca `devflow init execution` |
+| `/init-next-task` | general | *(legacy)* Wrapper que invoca `devflow init next-task` |
 | `/select-next-task` | next-task | Invoca el selector determinista `select-next-task.mjs` para producir `selection.json` |
 | `/prepare-task-run` | general | Invoca el motor transaccional `execution-transition-engine.mjs` via `prepare-task-run.mjs` para reservar la tarea seleccionada |
 | `/build-task-context` | context-builder | Construye contexto para una tarea e intento explicitos en un run ya preparado |
@@ -229,6 +231,7 @@ opencode-agent-kit/
 │   │   ├── next-task.md
 │   │   └── context-builder.md
 │   ├── commands/                  # Comandos slash (.md)
+│   │   ├── devflow-init.md      # Canonical: invoca bin/devflow.mjs
 │   │   ├── init-software-architect.md
 │   │   ├── compile-blueprint.md
 │   │   ├── publish-blueprint.md
@@ -312,6 +315,18 @@ opencode-agent-kit/
 │       ├── execution-context.template.json
 │       ├── execution-prompt.template.md
 │       └── scaffold.json
+├── bin/
+│   └── devflow.mjs                 # CLI del instalador centralizado (init, audit)
+├── packages/                       # Manifests de paquetes DevFlow
+│   ├── all/
+│   ├── shared-runtime/
+│   ├── software-architect/
+│   ├── task-planner/
+│   ├── next-task/
+│   ├── execution/
+│   ├── context-builder/
+│   ├── planning-stack/
+│   └── execution-stack/
 ├── scripts/
 │   ├── install.sh                 # Instalacion global via symlinks
 │   ├── uninstall.sh               # Desinstalacion segura
@@ -430,9 +445,8 @@ estado canónico y solo funciona si el run ya fue preparado.
 
 El flujo canónico:
 
-1. `/init-execution` — Inicializa el estado mutable y herramientas de orquestación en `.devflow/execution/`
-2. `/init-next-task` — Instala los contratos de selección determinista en `.devflow/execution/`
-3. `/select-next-task` — Selector: invoca `select-next-task.mjs` para producir `selection.json`
+1. `/devflow-init execution-stack` — Instala execution + next-task + shared-runtime con resolución de dependencias y lockfile
+2. `/select-next-task` — Selector: invoca `select-next-task.mjs` para producir `selection.json`
 4. `/prepare-task-run` — Motor de transición: valida la selección, crea el
    directorio del run, copia evidencia y registra la reserva en
    `execution-state.json`
@@ -440,8 +454,15 @@ El flujo canónico:
    `execution-prompt.md` con el alcance, criterios, predecesores y contexto
    técnico del repositorio
 
-### Runtime instalado por `/init-execution`
+### Runtime instalado por `devflow init execution-stack`
 
+El metapaquete `execution-stack` instala `shared-runtime`, `next-task` y
+`execution` en orden topológico:
+
+**shared-runtime:**
+- `.devflow/shared/tools/devflow-runtime-helpers.mjs`
+
+**execution:**
 - `.devflow/execution/README.md`
 - `.devflow/execution/execution-state.json`
 - `.devflow/execution/execution-state.schema.json`
@@ -452,18 +473,38 @@ El flujo canónico:
 - `.devflow/execution/tools/prepare-task-run.mjs`
 - `.devflow/execution/tools/touch-execution-state.mjs`
 
-### Dependencia compartida instalada por `/init-execution` y `/init-next-task`
-
-- `.devflow/shared/tools/devflow-runtime-helpers.mjs`
-
-### Dependencias instaladas por `/init-next-task`
-
-`/prepare-task-run` requiere además estas rutas instaladas por `next-task`:
-
+**next-task (dependencia de execution):**
 - `.devflow/execution/selection.json`
 - `.devflow/execution/task-selection.schema.json`
 - `.devflow/execution/tools/select-next-task.mjs`
 - `.devflow/execution/tools/validate-next-task.mjs`
+
+El lockfile en `.devflow/devflow-lock.json` registra qué paquetes están
+instalados, sus dependencias y los hashes de sus managed files.
+`devflow audit` verifica la integridad de la instalación.
+
+### Instalador centralizado (`devflow init`)
+
+Los paquetes DevFlow se instalan mediante `bin/devflow.mjs`, invocado
+normalmente a través del slash command `/devflow-init`:
+
+```bash
+node bin/devflow.mjs init <package>    # Instala un paquete y sus dependencias
+node bin/devflow.mjs audit             # Verifica integridad de la instalación
+node bin/devflow.mjs audit --fix       # Reinstala managed files faltantes
+```
+
+Paquetes disponibles: `shared-runtime`, `software-architect`, `task-planner`,
+`next-task`, `execution`, `context-builder`, `planning-stack`, `execution-stack`,
+`all`.
+
+Cada paquete declara en `packages/<name>/manifest.json`:
+- **Archivos managed** (code/schemas, verificados por hash)
+- **Archivos mutables** (nunca sobrescritos)
+- **Archivos seed** (creados solo si no existen)
+- **Dependencias** de otros paquetes (resueltas topológicamente con detección
+  de ciclos)
+- **Ownership** exclusivo: un archivo pertenece a un solo paquete
 
 ### Validacion del Repositorio
 
@@ -494,6 +535,7 @@ make test
 Ejecución separada:
 
 ```bash
+make test-installer
 make test-repository
 make test-software-architect-tools
 make test-task-planner-tools
@@ -505,6 +547,7 @@ make test-agent-contracts
 | Target | Cobertura |
 |--------|-----------|
 | `validate` | Integridad del repositorio (JSON, frontmatter, rutas requeridas, cobertura de tests) |
+| `test-installer` | Instalador centralizado: 16 tests (instalación básica, idempotencia, shared directories, mutables vs managed, dependencias, lockfile, auditoría, errores CLI) |
 | `test-repository` | Instalación por symlinks, creación de scaffold, simulación contractual de `/init-execution` + `/init-next-task` y desinstalación |
 | `test-software-architect-tools` | Validador de blueprint, migración v1→v2, estados reproducibles, publish |
 | `test-task-planner-tools` | Herramientas deterministas de task-planner (6 suites: permisos, timestamps, validación de plan, épicas, capacidades) |
@@ -512,7 +555,7 @@ make test-agent-contracts
 | `test-execution-tools` | Motor de transiciones de ejecución (prepare-task-run, execution-transition-engine) |
 | `test-agent-contracts` | Contratos de permisos de agentes y resolución determinista de `build-next-task-context` |
 
-La suite completa (`make test`) ejecuta `validate` primero, luego las 6 suites
+La suite completa (`make test`) ejecuta `validate` primero, luego las 7 suites
 de prueba en orden. Cualquier fallo en cualquier suite detiene la ejecución.
 
 ### Cobertura de runtime
@@ -528,11 +571,10 @@ El runtime de OpenCode que sí queda cubierto indirectamente:
   lock, journal y fault injection.
 - **Preparación de runs:** se prueba `prepare-task-run.mjs` como CLI real con
   fixture completo de `.devflow/execution/`.
-- **Instalación real del runtime:** `test-scripts.sh` instala templates
-  globales en un directorio temporal, simula `/init-execution` y
-  `/init-next-task`, inicializa `execution-state.json`, ejecuta
-  `prepare-task-run.mjs` y falla si faltan `execution-transition-engine.mjs` o
-  `execution-contract-helpers.mjs`.
+- **Instalación real del runtime:** `test-scripts.sh` y `test-devflow-installer.sh`
+  instalan templates globales en un directorio temporal, simulan `/init-execution`
+  y `/init-next-task`, inicializan `execution-state.json`, ejecutan
+  `prepare-task-run.mjs` y verifican lockfile, hashes e integridad.
 - **Validación estructural:** `validate.sh` verifica que toda herramienta
   runtime tenga su ruta en `required_paths`, que todo frontmatter sea válido,
   y que ningún archivo `.test.mjs` quede fuera de `make test`.

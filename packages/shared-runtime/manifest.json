@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-runtime",
+  "version": "1.0.0",
+  "description": "Herramientas compartidas de runtime para DevFlow",
+  "dependencies": [],
+  "files": [
+    {
+      "source": "templates/shared/tools/devflow-runtime-helpers.mjs",
+      "target": ".devflow/shared/tools/devflow-runtime-helpers.mjs",
+      "kind": "managed"
+    },
+    {
+      "source": "templates/shared/tools/timestamp.mjs",
+      "target": ".devflow/shared/tools/timestamp.mjs",
+      "kind": "managed"
+    }
+  ],
+  "directories": [
+    ".devflow/shared/tools"
+  ]
+}

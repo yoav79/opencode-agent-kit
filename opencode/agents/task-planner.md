@@ -15,26 +15,7 @@ permission:
     "*": deny
     "cp *": ask
     "mkdir *": ask
-    "mkdir -p .devflow/task-planner .devflow/task-planner/epics .devflow/task-planner/tasks .devflow/task-planner/drafts .devflow/task-planner/tools": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/project-state.json .devflow/task-planner/project-state.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/workflow.md .devflow/task-planner/workflow.md": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/decisions.json .devflow/task-planner/decisions.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/semantic-contract.json .devflow/task-planner/semantic-contract.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/requirements.json .devflow/task-planner/requirements.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/capability-map.json .devflow/task-planner/capability-map.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/epic-plan.json .devflow/task-planner/epic-plan.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/readiness.json .devflow/task-planner/readiness.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-plan.json .devflow/task-planner/task-plan.json": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/task-template.md .devflow/task-planner/task-template.md": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-capability-map.mjs .devflow/task-planner/tools/assemble-capability-map.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/assemble-epic-task-batch.mjs .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/render-task-markdown.mjs .devflow/task-planner/tools/render-task-markdown.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/reserve-task-ids.mjs .devflow/task-planner/tools/reserve-task-ids.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-capability-map.mjs .devflow/task-planner/tools/validate-capability-map.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-epic-batch.mjs .devflow/task-planner/tools/validate-epic-batch.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/validate-plan.mjs .devflow/task-planner/tools/validate-plan.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/update-timestamps.mjs .devflow/task-planner/tools/update-timestamps.mjs": allow
-    "cp -n ${XDG_CONFIG_HOME:-$HOME/.config}/opencode/templates/task-planner/tools/build-epic-graph.mjs .devflow/task-planner/tools/build-epic-graph.mjs": allow
+
     "node .devflow/task-planner/tools/assemble-capability-map.mjs": allow
     "node .devflow/task-planner/tools/assemble-capability-map.mjs *": allow
     "node .devflow/task-planner/tools/assemble-epic-task-batch.mjs": allow

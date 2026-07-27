@@ -32,18 +32,12 @@ test('edit no queda globalmente abierto; solo permite .devflow/task-planner/**',
   assert.match(text, /edit:\n\s+"\*": deny\n\s+".devflow\/task-planner\/\*\*": allow/);
 });
 
-test('solo las copias cp -n de plantillas conocidas quedan permitidas', async () => {
+test('el agente ya no tiene cp -n de plantillas (delegado al instalador central)', async () => {
   const text = await agentText();
   const VAR = String.raw`\$\{XDG_CONFIG_HOME:-\$HOME\/\.config\}\/opencode\/templates\/task-planner`;
-  assert.match(text, new RegExp(`cp -n ${VAR}\/project-state\.json \.devflow\/task-planner\/project-state\.json": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/assemble-capability-map\.mjs \.devflow\/task-planner\/tools\/assemble-capability-map\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/assemble-epic-task-batch\.mjs \.devflow\/task-planner\/tools\/assemble-epic-task-batch\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/render-task-markdown\.mjs \.devflow\/task-planner\/tools\/render-task-markdown\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/reserve-task-ids\.mjs \.devflow\/task-planner\/tools\/reserve-task-ids\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/update-timestamps\.mjs \.devflow\/task-planner\/tools\/update-timestamps\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/validate-capability-map\.mjs \.devflow\/task-planner\/tools\/validate-capability-map\.mjs": allow`));
-  assert.match(text, new RegExp(`cp -n ${VAR}\/tools\/build-epic-graph\.mjs \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow`));
-  assert.match(text, /node \.devflow\/task-planner\/tools\/build-epic-graph\.mjs": allow/);
+  assert.doesNotMatch(text, new RegExp(`cp -n ${VAR}\/project-state\.json`));
+  assert.doesNotMatch(text, new RegExp(`cp -n ${VAR}\/tools\/`));
+  assert.match(text, /"cp \*": ask/);
 });
 
 test('task-planner permite ejecutar las tools semánticas oficiales', async () => {

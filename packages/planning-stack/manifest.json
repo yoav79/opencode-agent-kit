@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "name": "planning-stack",
+  "version": "1.0.0",
+  "description": "Metapackage que agrupa shared-runtime, software-architect y task-planner",
+  "dependencies": [],
+  "packages": [
+    "shared-runtime",
+    "software-architect",
+    "task-planner"
+  ],
+  "files": [],
+  "directories": []
+}
